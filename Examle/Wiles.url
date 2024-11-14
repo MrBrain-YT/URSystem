@@ -1,8 +1,0 @@
-While(1)
-    Debug(Test debug message1)
-    While(2)
-        Debug(Test debug)
-        While
-            Debug(4)
-            Debug(33)
-        Debug(Test debug2)

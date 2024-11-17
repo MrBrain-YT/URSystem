@@ -13,7 +13,9 @@ class Robot:
     def robot_access(Robots:dict, name:str, code:str):
         return Robots[name]["SecureCode"] == code
 
-    def is_robot(token, users):
+    def is_robot(token):
+        from API.accounts_manager import AccountManager
+        users:dict = AccountManager().get_users()
         tokens = []
         for i in [i for i in users]:
             tokens.append(users.get(i)["token"])
@@ -31,18 +33,35 @@ class Robot:
     
     
 class System:   
-    def SaveToCache(Robots:dict, tools:dict, frames:dict) -> None:
+    
+    @staticmethod
+    def SaveToCache(robots:dict=None, tools:dict=None, frames:dict=None) -> None:
+        from API.multi_robots_system import URMSystem
+        from API.frames_manager import FramesManager
+        from API.tools_manager import ToolsManager
+        print(ToolsManager().get_tools())
         os.remove("./configuration/robots_cache.py")
         with open("./configuration/robots_cache.py", "w") as file:
-            file.write(f"robots = {Robots}")
-            file.write(f"\ntools = {tools}")
-            file.write(f"\nframes = {frames}")
+            file.write(f"robots = {robots if robots is not None else URMSystem().get_robots()}")
+            file.write(f"\ntools = {tools if tools is not None else ToolsManager().get_tools()}")
+            file.write(f"\nframes = {frames if frames is not None else FramesManager().get_frames()}")
+        if robots is not None:
+            URMSystem().set_robots(robots)
+        if tools is not None:
+            ToolsManager().set_tools(tools)
+        if frames is not None:
+            FramesManager().set_frame(frames)
 
 class User:
-    def role_access(token, target_role, users) -> bool:
+    
+    @staticmethod
+    def role_access(token, target_role) -> bool:
+        from API.accounts_manager import AccountManager
+        users:dict = AccountManager().get_users()
         tokens = []
-        for i in [i for i in users]:
-            tokens.append(users.get(i)["token"])
+        for name in [name for name in users.keys()]:
+            tokens.append(users.get(name)["token"])
+
         if token in tokens:
             # Get role from token
             con = sqlite3.connect("databases\\Users.sqlite")
@@ -72,6 +91,7 @@ class User:
 
     @staticmethod
     def update_user_info():
+        from API.accounts_manager import AccountManager
         users = {}
         con = sqlite3.connect("databases\\Users.sqlite")
         cur = con.cursor()
@@ -83,6 +103,7 @@ class User:
                     "role": i[2],
                     "token": i[3]
                     }
+        AccountManager().set_users(users)
         return users
     
     def update_token(self) -> dict:

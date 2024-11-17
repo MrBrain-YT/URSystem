@@ -47,6 +47,7 @@ def UPS():
                         url = "https://localhost:5000/SetProgramRun"
                         data = {'Robot':i, "State":"False", "token":os.environ.get("SYSTEM_API_TOKEN")}
                         requests.post(url, data=json.loads(json.dumps(data, ensure_ascii=False))).text
+        
         except:
             pass
 

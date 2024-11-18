@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, request
 
 class RobotManager:
@@ -60,7 +62,6 @@ class RobotManager:
             robots = URMSystem().get_robots()
             if Robot.is_robot(info.get("token")):
                 robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
-                print(info.get('RobotReady'))
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return "True"
@@ -116,20 +117,26 @@ class RobotManager:
                                 Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
                                 return "Values ​​are not validated"
                             else:
+                                robots[info.get("Robot")]["RobotReady"] = "False"
+                                
                                 for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                                    robots[info.get("Robot")]["Position"][f"J{i}"] = float(info.get(f'J{i}'))
+                                    robots[info.get("Robot")]["Position"][f"J{i}"] = float(info.get(f'J{i}'))   
+                                
                                 if robots[info.get("Robot")]["Kinematic"] != "None":
                                     modul = kinematics[info.get("Robot")]
                                     result_forward = modul.Forward(float(info.get("J1")), float(info.get("J2")), float(info.get("J3")), float(info.get("J4")))
                                     robots[info.get("Robot")]["XYZposition"]["X"] = result_forward[0]
                                     robots[info.get("Robot")]["XYZposition"]["Y"] = result_forward[1]
                                     robots[info.get("Robot")]["XYZposition"]["Z"] = result_forward[2]
+                                
                                 System().SaveToCache(robots=robots)
                                 User().update_token()
-                                
                                 Robot_loger(info.get("Robot")).info(f"""Was setted robot current position: {
                                     info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+                                
+                                time.sleep(2)
                                 return "True"
+                            
             else:
                 return "You are not on the users list"
             
@@ -300,6 +307,8 @@ class RobotManager:
                                     
                                     Robot_loger(info.get("Robot")).info(f"""The robot has been moved to coordinates: X-{
                                         info.get("X")},Y-{info.get("Y")},Z-{info.get("Z")}""")
+                                    
+                                    time.sleep(2)
                                     return "True"
                                 except:
                                     return "An error has occurred"

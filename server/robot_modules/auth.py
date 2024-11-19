@@ -11,7 +11,7 @@ import json
 
 import requests
 
-from . import __robot as Robot
+import robot_modules.robot as Robot
 
 
 class Auth():

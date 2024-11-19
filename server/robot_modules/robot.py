@@ -5,7 +5,7 @@ import requests
 import numpy as np
 from scipy.interpolate import CubicSpline
 
-from . import __tools
+import tools
 
 external_token = ""
 robot_name = ""
@@ -18,7 +18,7 @@ class tokenizer():
         global external_token
         external_token = self.token
 
-class Robot(__tools.Tools):
+class Robot(tools.Tools):
     
     def __init__(self, host:str, port:int, code:str, *token:str) -> None:
         self.__host = host

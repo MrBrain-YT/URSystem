@@ -1,8 +1,12 @@
 import time
+import secrets
 
 from flask import Flask, request
 
 class RobotManager:
+    
+    def __init__(self):
+        self.is_robot_ready_setted_false = True
     
     def __call__(self, app: Flask, loger) -> Flask:
         from server_functions import System, User, Robot
@@ -62,6 +66,9 @@ class RobotManager:
             robots = URMSystem().get_robots()
             if Robot.is_robot(info.get("token")):
                 robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
+                if info.get('RobotReady') == "False":
+                    self.is_robot_ready_setted_false = True
+                    print("test")
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return "True"
@@ -110,32 +117,37 @@ class RobotManager:
                         Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
                         return "The robot is currently in emergency stop"
                     else:
-                        if robots[info.get("Robot")]["RobotReady"] == "False":
+                        if not self.is_robot_ready_setted_false and bool(robots[info.get("Robot")]["RobotReady"]) == False:
                             continue
-                        else:
-                            if Robot.check_angles(info, robots) == False:
-                                Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
-                                return "Values ​​are not validated"
+                        elif bool(robots[info.get("Robot")]["RobotReady"]) == True or self.is_robot_ready_setted_false:
+                            if robots[info.get("Robot")]["RobotReady"] == "False":
+                                continue
                             else:
-                                robots[info.get("Robot")]["RobotReady"] = "False"
-                                
-                                for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                                    robots[info.get("Robot")]["Position"][f"J{i}"] = float(info.get(f'J{i}'))   
-                                
-                                if robots[info.get("Robot")]["Kinematic"] != "None":
-                                    modul = kinematics[info.get("Robot")]
-                                    result_forward = modul.Forward(float(info.get("J1")), float(info.get("J2")), float(info.get("J3")), float(info.get("J4")))
-                                    robots[info.get("Robot")]["XYZposition"]["X"] = result_forward[0]
-                                    robots[info.get("Robot")]["XYZposition"]["Y"] = result_forward[1]
-                                    robots[info.get("Robot")]["XYZposition"]["Z"] = result_forward[2]
-                                
-                                System().SaveToCache(robots=robots)
-                                User().update_token()
-                                Robot_loger(info.get("Robot")).info(f"""Was setted robot current position: {
-                                    info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                                
-                                time.sleep(2)
-                                return "True"
+                                if Robot.check_angles(info, robots) == False:
+                                    Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
+                                    return "Values ​​are not validated"
+                                else:
+                                    robots[info.get("Robot")]["RobotReady"] = "False"
+                                    
+                                    for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
+                                        robots[info.get("Robot")]["Position"][f"J{i}"] = float(info.get(f'J{i}'))   
+                                    
+                                    if robots[info.get("Robot")]["Kinematic"] != "None":
+                                        modul = kinematics[info.get("Robot")]
+                                        result_forward = modul.Forward(float(info.get("J1")), float(info.get("J2")), float(info.get("J3")), float(info.get("J4")))
+                                        robots[info.get("Robot")]["XYZposition"]["X"] = result_forward[0]
+                                        robots[info.get("Robot")]["XYZposition"]["Y"] = result_forward[1]
+                                        robots[info.get("Robot")]["XYZposition"]["Z"] = result_forward[2]
+                                        
+                                    self.is_robot_ready_setted_false = False
+                                    
+                                    System().SaveToCache(robots=robots)
+                                    User().update_token()
+                                    Robot_loger(info.get("Robot")).info(f"""Was setted robot current position: {
+                                        info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+                                    
+                                    time.sleep(2)
+                                    return "True"
                             
             else:
                 return "You are not on the users list"
@@ -209,6 +221,7 @@ class RobotManager:
                     return "The robot is currently in emergency stop"
                 else:
                     robots[info.get("Robot")]["Program"] = info.get('Program')
+                    robots[info.get("Robot")]["ProgramToken"] = secrets.token_hex(16)
                     System().SaveToCache(robots=robots)
                     User().update_token()
                     Robot_loger(info.get("Robot")).info(f"Was setted robot programm")
@@ -223,6 +236,7 @@ class RobotManager:
             robots = URMSystem().get_robots()
             if User.role_access(info.get("token"), "user") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
                 robots[info.get("Robot")]["Program"] = ""
+                robots[info.get("Robot")]["ProgramToken"] = ""
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 Robot_loger(info.get("Robot")).info(f"Was deleted robot programm")

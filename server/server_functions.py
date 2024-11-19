@@ -39,7 +39,6 @@ class System:
         from API.multi_robots_system import URMSystem
         from API.frames_manager import FramesManager
         from API.tools_manager import ToolsManager
-        print(ToolsManager().get_tools())
         os.remove("./configuration/robots_cache.py")
         with open("./configuration/robots_cache.py", "w") as file:
             file.write(f"robots = {robots if robots is not None else URMSystem().get_robots()}")

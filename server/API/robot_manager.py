@@ -19,7 +19,8 @@ class RobotManager:
         def GetCurentPosition():
             info = request.form
             robots = URMSystem().get_robots()
-            if Robot.is_robot(info.get("token")):
+            if (User.role_access(info.get("token"), "user") and \
+            Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")):
                 return str(robots[info.get("Robot")]["Position"])
             else:
                 return "Your account is not a robot account"
@@ -91,8 +92,7 @@ class RobotManager:
                 Robot_loger(info.get("Robot")).info(f"Emergency stop button activated")
                 return "True"
             else:
-                loger.warning("URSystem", f"User access denied to set robot emergency because this not robot account. User with token: {request.form.get('token')}")
-                return "Your account is not a robot account"
+                return "You are not on the users list"
             
         ''' Get emergency stop '''
         @app.route('/GetRobotEmergency', methods=['POST'])
@@ -110,8 +110,8 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             kinematics:dict = KinematicsManager().get_kinematics()
-            if (User.role_access(info.get("token"), "user") and \
-            Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")):
+            if ((User.role_access(info.get("token"), "user") and \
+            Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token"))) and Robot().check_program_token(info.get("Robot"), info.get("program_token")):
                 while True:
                     if robots[info.get("Robot")]["Emergency"] == "True":
                         Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
@@ -157,29 +157,33 @@ class RobotManager:
         def HomePosition():
             info = request.form
             robots = URMSystem().get_robots()
-            if User.role_access(info.get("token"), "user") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
-                if Robot.check_angles(info, robots) == False:
-                    Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
-                    return "Values ​​are not validated"
+            if robots[info.get("Robot")]["Program"] == "":
+                if (User.role_access(info.get("token"), "user") and Robot.robot_access(robots, info.get("Robot"), info.get("Code"))):
+                    if Robot.check_angles(info, robots) == False:
+                        Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
+                        return "Values ​​are not validated"
+                    else:
+                        for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
+                            robots[info.get("Robot")]["HomePosition"][f"J{i}"] = float(info.get(f'J{i}'))
+                        System().SaveToCache(robots=robots)
+                        User().update_token()
+                        
+                        Robot_loger(info.get("Robot")).info(f"""Was setted robot home position: {
+                            info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+                        return "True"
                 else:
-                    for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                        robots[info.get("Robot")]["HomePosition"][f"J{i}"] = float(info.get(f'J{i}'))
-                    System().SaveToCache(robots=robots)
-                    User().update_token()
-                    
-                    Robot_loger(info.get("Robot")).info(f"""Was setted robot home position: {
-                        info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                    return "True"
+                    return "You are not on the users list"
             else:
-                return "You are not on the users list"
+                loger.warning("URSystem", f"The robot executes an automatic program. It is currently not possible to change the HomePosition parameter. User with token: {info.get('token')}")
+                return "The robot executes an automatic program. It is currently not possible to change the parameter"
 
         """ Curent robot speed """
         @app.route('/CurentSpeed', methods=['POST'])
         def CurentSpeed():
             info = request.form
             robots = URMSystem().get_robots()
-            if (User.role_access(info.get("token"), "user") and \
-            Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")):
+            if ((User.role_access(info.get("token"), "user") and \
+            Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token"))) and Robot().check_program_token(info.get("Robot"), info.get("program_token")):
                 if robots[info.get("Robot")]["Emergency"] == "True":
                     Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
                     return "The robot is currently in emergency stop"
@@ -199,23 +203,27 @@ class RobotManager:
         def StandartSpeed():
             info = request.form
             robots = URMSystem().get_robots()
-            if User.role_access(info.get("token"), "user") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
-                for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                    robots["First"]["StandartSpeed"][f"J{i}"] = float(info.get(f'J{i}'))
-                System().SaveToCache(robots=robots)
-                User().update_token()
-                Robot_loger(info.get("Robot")).info(f"""Was setted robot standart speed: {
-                        info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                return "True"
+            if robots[info.get("Robot")]["Program"] == "":
+                if (User.role_access(info.get("token"), "user") and Robot.robot_access(robots, info.get("Robot"), info.get("Code"))):
+                        for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
+                            robots["First"]["StandartSpeed"][f"J{i}"] = float(info.get(f'J{i}'))
+                        System().SaveToCache(robots=robots)
+                        User().update_token()
+                        Robot_loger(info.get("Robot")).info(f"""Was setted robot standart speed: {
+                                info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+                        return "True"
+                else:
+                    return "You are not on the users list"
             else:
-                return "You are not on the users list"
+                loger.warning("URSystem", f"The robot executes an automatic program. It is currently not possible to change the StandartSpeed parameter. User with token: {info.get('token')}")
+                return "The robot executes an automatic program. It is currently not possible to change the parameter"
             
         """ Set program """
         @app.route('/SetProgram', methods=['POST'])
         def Program():
             info = request.form
             robots = URMSystem().get_robots()
-            if User.role_access(info.get("token"), "user") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
+            if (User.role_access(info.get("token"), "user") and Robot.robot_access(robots, info.get("Robot"), info.get("Code"))):
                 if robots[info.get("Robot")]["Emergency"] == "True":
                     Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
                     return "The robot is currently in emergency stop"
@@ -297,37 +305,38 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             kinematics:dict = KinematicsManager().get_kinematics()
-            if User.role_access(info.get("token"), "user") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
-                if kinematics[info.get("Robot")] != "None":
-                    while True:
-                        if robots[info.get("Robot")]["Emergency"] == "True":
-                            Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
-                            return "The robot is currently in emergency stop"
-                        else:
-                            if robots[info.get("Robot")]["RobotReady"] == "False":
-                                continue
+            if (User.role_access(info.get("token"), "user") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")))\
+                and Robot().check_program_token(info.get("Robot"), info.get("program_token")):
+                    if kinematics[info.get("Robot")] != "None":
+                        while True:
+                            if robots[info.get("Robot")]["Emergency"] == "True":
+                                Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
+                                return "The robot is currently in emergency stop"
                             else:
-                                try:
-                                    modul = kinematics[info.get("Robot")]
-                                    result_inverse = modul.Inverse(float(info.get("X")), float(info.get("Y")), float(info.get("Z")))
-                                    for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
-                                        robots[info.get("Robot")]["Position"][f"J{j}"] = result_inverse[j-1]
+                                if robots[info.get("Robot")]["RobotReady"] == "False":
+                                    continue
+                                else:
+                                    try:
+                                        modul = kinematics[info.get("Robot")]
+                                        result_inverse = modul.Inverse(float(info.get("X")), float(info.get("Y")), float(info.get("Z")))
+                                        for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
+                                            robots[info.get("Robot")]["Position"][f"J{j}"] = result_inverse[j-1]
+                                            
+                                        robots[info.get("Robot")]["XYZposition"]["X"] = float(info.get("X"))
+                                        robots[info.get("Robot")]["XYZposition"]["Y"] = float(info.get("Y"))
+                                        robots[info.get("Robot")]["XYZposition"]["Z"] = float(info.get("Z"))
+                                        System().SaveToCache(robots=robots)
+                                        User().update_token()
                                         
-                                    robots[info.get("Robot")]["XYZposition"]["X"] = float(info.get("X"))
-                                    robots[info.get("Robot")]["XYZposition"]["Y"] = float(info.get("Y"))
-                                    robots[info.get("Robot")]["XYZposition"]["Z"] = float(info.get("Z"))
-                                    System().SaveToCache(robots=robots)
-                                    User().update_token()
-                                    
-                                    Robot_loger(info.get("Robot")).info(f"""The robot has been moved to coordinates: X-{
-                                        info.get("X")},Y-{info.get("Y")},Z-{info.get("Z")}""")
-                                    
-                                    time.sleep(2)
-                                    return "True"
-                                except:
-                                    return "An error has occurred"
-                else:
-                    return "This command does not work if you are not using kinematics"
+                                        Robot_loger(info.get("Robot")).info(f"""The robot has been moved to coordinates: X-{
+                                            info.get("X")},Y-{info.get("Y")},Z-{info.get("Z")}""")
+                                        
+                                        time.sleep(2)
+                                        return "True"
+                                    except:
+                                        return "An error has occurred"
+                    else:
+                        return "This command does not work if you are not using kinematics"
             else:
                 return "You are not on the users list"
 
@@ -336,42 +345,50 @@ class RobotManager:
         def MinAngles():
             info = request.form
             robots = URMSystem().get_robots()
-            if User.role_access(info.get("token"), "administrator") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
-                if robots[info.get("Robot")]["Emergency"] == "True":
-                    Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
-                    return "The robot is currently in emergency stop"
+            if robots[info.get("Robot")]["Program"] == "":
+                if User.role_access(info.get("token"), "administrator") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
+                    if robots[info.get("Robot")]["Emergency"] == "True":
+                        Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
+                        return "The robot is currently in emergency stop"
+                    else:
+                        for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
+                            robots[info.get("Robot")]["MinAngles"][f"J{i}"] = float(info.get(f'J{i}'))
+                        System().SaveToCache(robots=robots)
+                        User().update_token()
+                        Robot_loger(info.get("Robot")).info(f"""Was setted robot minimal angles: {
+                            info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+                        return robots[info.get("Robot")]["MinAngles"]
                 else:
-                    for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                        robots[info.get("Robot")]["MinAngles"][f"J{i}"] = float(info.get(f'J{i}'))
-                    System().SaveToCache(robots=robots)
-                    User().update_token()
-                    Robot_loger(info.get("Robot")).info(f"""Was setted robot minimal angles: {
-                        info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                    return robots[info.get("Robot")]["MinAngles"]
+                    loger.warning("URSystem", f"User access denied to set robot {info.get('Robot')} minimal angles. User with token: {request.form.get('token')}")
+                    return "You don't have enough rights"
             else:
-                loger.warning("URSystem", f"User access denied to set robot {info.get('Robot')} minimal angles. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
+                loger.warning("URSystem", f"The robot executes an automatic program. It is currently not possible to change the MinAngles parameter. User with token: {info.get('token')}")
+                return "The robot executes an automatic program. It is currently not possible to change the parameter"
 
         ''' Set maximum angle of rotation '''
         @app.route('/MaxAngles', methods=['POST'])
         def MaxAngles():
             info = request.form
             robots = URMSystem().get_robots()
-            if User.role_access(info.get("token"), "administrator") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
-                if robots[info.get("Robot")]["Emergency"] == "True":
-                    Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
-                    return "The robot is currently in emergency stop"
+            if robots[info.get("Robot")]["Program"] == "":
+                if User.role_access(info.get("token"), "administrator") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
+                    if robots[info.get("Robot")]["Emergency"] == "True":
+                        Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
+                        return "The robot is currently in emergency stop"
+                    else:
+                        for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
+                            robots[info.get("Robot")]["MaxAngles"][f"J{i}"] = float(info.get(f'J{i}'))
+                        System().SaveToCache(robots=robots)
+                        User().update_token()
+                        Robot_loger(info.get("Robot")).info(f"""Was setted robot maximal angles: {
+                            info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+                        return robots[info.get("Robot")]["MaxAngles"]
                 else:
-                    for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                        robots[info.get("Robot")]["MaxAngles"][f"J{i}"] = float(info.get(f'J{i}'))
-                    System().SaveToCache(robots=robots)
-                    User().update_token()
-                    Robot_loger(info.get("Robot")).info(f"""Was setted robot maximal angles: {
-                        info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                    return robots[info.get("Robot")]["MaxAngles"]
+                    loger.warning("URSystem", f"User access denied to set robot {info.get('Robot')} maximal angles. User with token: {request.form.get('token')}")
+                    return "You don't have enough rights"
             else:
-                loger.warning("URSystem", f"User access denied to set robot {info.get('Robot')} maximal angles. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
+                loger.warning("URSystem", f"The robot executes an automatic program. It is currently not possible to change the MaxAngles parameter. User with token: {info.get('token')}")
+                return "The robot executes an automatic program. It is currently not possible to change the parameter"
 
         ''' Set program is running '''
         @app.route('/SetProgramRun', methods=['POST'])

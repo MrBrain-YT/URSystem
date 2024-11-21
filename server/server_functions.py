@@ -30,6 +30,17 @@ class Robot:
             else: return False
         else:
             raise ValueError("Token incorrect")
+        
+    @staticmethod
+    def check_program_token(robot_name:str, _program_token:str) -> bool:
+        from API.multi_robots_system import URMSystem
+        robots:dict = URMSystem.get_robots()
+        program_token = robots[robot_name]["ProgramToken"]
+        if program_token == _program_token or program_token == "":
+            return True
+        else:
+            return False
+        
     
     
 class System:   

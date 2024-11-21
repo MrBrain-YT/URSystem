@@ -20,11 +20,12 @@ class tokenizer():
 
 class Robot(tools.Tools):
     
-    def __init__(self, host:str, port:int, code:str, *token:str) -> None:
+    def __init__(self, host:str, port:int, code:str, program_token:str, *token:str) -> None:
         self.__host = host
         self.__name = robot_name
         self.__port = port
         self.__code = code
+        self.__program_token = program_token
         self.__token = token if external_token == "" else external_token
         super().__init__(host=self.__host, port=self.__port, token=self.__token)
     
@@ -47,7 +48,8 @@ class Robot(tools.Tools):
             data = {
                 "Robot": self.__name,
                 "token": self.__token,
-                "Code" : self.__code
+                "Code" : self.__code,
+                "program_token": self.__program_token
                 }
             for i in range(1, len(angles)+1):
                 data[f"J{i}"] = angles[i-1]
@@ -57,7 +59,8 @@ class Robot(tools.Tools):
             data = {
                 "Robot": self.__name,
                 "token": self.__token,
-                "Code" : self.__code
+                "Code" : self.__code,
+                "program_token": self.__program_token
                 }
             for i in range(1, len(angles)+1):
                 data[f"J{i}"] = 1
@@ -76,7 +79,8 @@ class Robot(tools.Tools):
                 "Y": position[1],
                 "Z": position[2],
                 "token": self.__token,
-                "Code" : self.__code
+                "Code" : self.__code,
+                "program_token": self.__program_token
                 }
             return requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
         else:
@@ -144,7 +148,7 @@ class Robot(tools.Tools):
     
     def lin(self, angles:list, step_count:int=100) -> None:
         if self.check_emergency():
-        # Lin robot moving
+            # Lin robot moving
             url = f"https://{self.__host}:{str(self.__port)}/GetCurentPosition"
             data = {
                 "Robot": self.__name,
@@ -167,7 +171,8 @@ class Robot(tools.Tools):
             data = {
                 "Robot": self.__name,
                 "token": self.__token,
-                "Code" : self.__code
+                "Code" : self.__code,
+                "program_token": self.__program_token
                 }
             for i in range(1, len(angles)+1):
                 data[f"J{i}"] = angles[i-1]
@@ -178,7 +183,8 @@ class Robot(tools.Tools):
             data = {
                 "Robot": self.__name,
                 "token": self.__token,
-                "Code" : self.__code
+                "Code" : self.__code,
+                "program_token": self.__program_token
                 }
             for i in range(1, len(angles)+1):
                 data[f"J{i}"] = speeds[i-1]
@@ -270,13 +276,13 @@ class Robot(tools.Tools):
             }
         return requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
 
-    def set_robot_ready(self) -> str:
-        if self.check_emergency():
-            url = f"https://{self.__host}:{str(self.__port)}/SetRobotReady"
-            data = {
-                "Robot": self.__name,
-                "token": self.__token
-                }
-            return requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
-        else:
-            return "The robot is currently in emergency stop"
+    # def set_robot_ready(self) -> str:
+    #     if self.check_emergency():
+    #         url = f"https://{self.__host}:{str(self.__port)}/SetRobotReady"
+    #         data = {
+    #             "Robot": self.__name,
+    #             "token": self.__token
+    #             }
+    #         return requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
+    #     else:
+    #         return "The robot is currently in emergency stop"

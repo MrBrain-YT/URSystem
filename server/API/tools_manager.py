@@ -17,70 +17,65 @@ class ToolsManager:
     
     def __call__(self, app:Flask, loger: Loger) -> Flask:
         from server_functions import System, User
+        from API.access_checker import Access
+
+        access = Access(Loger=loger)
         
         # get tools
         @app.route("/URTools", methods=['POST'])
+        @access.check_user(user_role="administrator")
         def Tools():
             tools = globals()["tools"]
-            if User.role_access(request.form.get("token"), "administrator"):
-                User().update_token()
-                return str(tools)
-            else:
-                loger.warning("URTools", f"User access denied to get tools. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
+            User().update_token()
+            return str(tools)
+
 
         # get and set tool configuration
         @app.route("/URTool", methods=['POST'])
+        @access.check_user(user_role="user")
         def Tool():
             info = request.form
             tools = globals()["tools"]
-            if User.role_access(info.get("token"), "user"):
-                if info.get("type") == "write":
-                    if info.get("id") in [i for i in tools.values()]:
-                        tools[info.get("id")] = info.get("config")
-                        System().SaveToCache(tools=tools)
-                        User().update_token()
-                        return "True"
-                    else:
-                        loger.error("URTools", f"The tool {info.get('id')} has not been created and cannot be modified")
-                        return "The tool has not been created"
+            if info.get("type") == "write":
+                if info.get("id") in [i for i in tools.values()]:
+                    tools[info.get("id")] = info.get("config")
+                    System().SaveToCache(tools=tools)
+                    User().update_token()
+                    return "True"
                 else:
-                    return tools[info.get("id")]
+                    loger.error("URTools", f"The tool {info.get('id')} has not been created and cannot be modified")
+                    return "The tool has not been created"
             else:
-                return "You are not on the users list"
+                return tools[info.get("id")]
+
 
         # creating tool 
         @app.route("/URTC", methods=['POST'])
+        @access.check_user(user_role="administrator")
         def URTC():
             info = request.form
             tools = globals()["tools"]
-            if User.role_access(info.get("token"), "administrator"):
-                if info.get("id") not in [i for i in tools.values()]:
-                    tools[info.get("id")] = ""
-                    System().SaveToCache(tools=tools)
-                    User().update_token()
-                    loger.info("URTools", f"Tool {info.get('id')} was created")
-                    return "True"
-                else:
-                    loger.error("URTools", f"The tool {info.get('id')} already exists")
-                    return "The tool already exists"
+            if info.get("id") not in [i for i in tools.values()]:
+                tools[info.get("id")] = ""
+                System().SaveToCache(tools=tools)
+                User().update_token()
+                loger.info("URTools", f"Tool {info.get('id')} was created")
+                return "True"
             else:
-                loger.warning("URTools", f"User access denied to create tool. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
+                loger.error("URTools", f"The tool {info.get('id')} already exists")
+                return "The tool already exists"
+
             
         # delete tool
         @app.route("/URTD", methods=['POST'])
+        @access.check_user(user_role="administrator")
         def URTD():
             info = request.form
             tools = globals()["tools"]
-            if User.role_access(info.get("token"), "administrator"):
-                del tools[info.get("id")]
-                System().SaveToCache(tools=tools)
-                User().update_token()
-                loger.info("URTools", f"Tool {info.get('id')} was deleted")
-                return "True"
-            else:
-                loger.warning("URTools", f"User access denied to delete tool. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
+            del tools[info.get("id")]
+            System().SaveToCache(tools=tools)
+            User().update_token()
+            loger.info("URTools", f"Tool {info.get('id')} was deleted")
+            return "True"
             
         return app

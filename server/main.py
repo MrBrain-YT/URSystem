@@ -52,7 +52,7 @@ loger = Loger()
 app = Flask(__name__)
 
 """ Init server functions"""
-app = FramesManager(frames)(app)
+app = FramesManager(frames)(app, loger)
 
 """ URMSystem """ # URMS - United Robotics Multi System
 app = URMSystem(Robots)(app, loger)

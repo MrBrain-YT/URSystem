@@ -2,28 +2,29 @@ from flask import Flask, request
 
 class LogsManager:
     
-    def __call__(self, app:Flask, Robots:dict) -> Flask:
+    def __call__(self, app:Flask, loger) -> Flask:
         from server_functions import User
         from utils.loger import Robot_loger
+        from API.multi_robots_system import URMSystem
+        from API.access_checker import Access
+
+        access = Access(Loger=loger)
 
         # get log
         @app.route("/URLog", methods=['POST'])
+        @access.check_user("user")
         def URLog():
-            if User.role_access(request.form.get("token"), "user"):
-                User().update_token()
-                return Robots[request.form.get("Robot")]["Logs"] 
-            else:
-                return "You are not on the users list"
+            robots:dict = URMSystem().get_robots()
+            User().update_token()
+            return robots[request.form.get("Robot")]["Logs"] 
 
         # add new log
         @app.route("/URLogs", methods=['POST'])
+        @access.check_user("user")
         def URLogs():
             info = request.form
-            if User.role_access(info.get("token"), "user"):
-                    Robot_loger(info.get("Robot")).debug(info.get("Text"))
-                    User().update_token()
-                    return "True"
-            else:
-                return "You are not on the users list"
-        
+            Robot_loger(info.get("Robot")).debug(info.get("Text"))
+            User().update_token()
+            return "True"
+
         return app

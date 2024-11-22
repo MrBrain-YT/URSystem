@@ -1,7 +1,5 @@
 import time
 import secrets
-from typing import Callable
-from functools import wraps
 
 from flask import Flask, request
 
@@ -15,80 +13,13 @@ class RobotManager:
         from utils.loger import Robot_loger
         from API.multi_robots_system import URMSystem
         from API.kinematics_manager import KinematicsManager
-        
-        def check_robot(func:Callable):
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                info = request.form
-                if Robot.is_robot(info.get("token")):
-                    return func(*args, **kwargs)
-                else:
-                    return "Your account is not a robot account"
-            return wrapper
-        
-        def check_user(user_role:str):
-            def check_user_wrapper(func:Callable):
-                @wraps(func)
-                def wrapper(*args, **kwargs):
-                    info = request.form
-                    if User.role_access(info.get("token"), user_role):
-                        return func(*args, **kwargs)
-                    else:
-                        return "You don't have enough rights"
-                return wrapper
-            return check_user_wrapper
-        
-        def check_robot_user(user_role:str):
-            def check_robot_user_wrapper(func:Callable):
-                @wraps(func)
-                def wrapper(*args, **kwargs):
-                    info = request.form
-                    robots:dict = URMSystem().get_robots()
-                    if (User.role_access(info.get("token"), user_role) and \
-                    Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")):
-                        return func(*args, **kwargs)
-                    else:
-                        return "You are not on the users list"
-                return wrapper
-            return check_robot_user_wrapper
-        
-        def check_robot_user_prog_token(user_role:str):
-            def check_robot_user_prog_token_wrapper(func:Callable):
-                @wraps(func)
-                def wrapper(*args, **kwargs):
-                    info = request.form
-                    robots:dict = URMSystem().get_robots()
-                    if ((User.role_access(info.get("token"), user_role) and \
-                    Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")))\
-                    and Robot().check_program_token(info.get("Robot"), info.get("program_token")):
-                        return func(*args, **kwargs)
-                    else:
-                        return "You are not on the users list or program token is not valid"
-                return wrapper
-            return check_robot_user_prog_token_wrapper
-        
-        def check_robot_user_prog(user_role:str):
-            def check_robot_user_prog_wrapper(func:Callable):
-                @wraps(func)
-                def wrapper(*args, **kwargs):
-                    info = request.form
-                    robots:dict = URMSystem().get_robots()
-                    if robots[info.get("Robot")]["Program"] == "":
-                        if User.role_access(info.get("token"), user_role) and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
-                            return func(*args, **kwargs)
-                        else:
-                            loger.warning("URSystem", f"User access denied to set robot {info.get('Robot')} minimal angles. User with token: {request.form.get('token')}")
-                            return "You don't have enough rights"
-                    else:
-                        loger.warning("URSystem", f"The robot executes an automatic program. It is currently not possible to change the MinAngles parameter. User with token: {info.get('token')}")
-                        return "The robot executes an automatic program. It is currently not possible to change the parameter"
-                return wrapper
-            return check_robot_user_prog_wrapper
-        
+        from API.access_checker import Access
+
+        access = Access(Loger=loger)
         
         """ Get curent robot position """
         @app.route('/GetCurentPosition', methods=['POST'])
-        @check_robot
+        @access.check_robot_or_user(user_role="user")
         def GetCurentPosition():
             info = request.form
             robots = URMSystem().get_robots()
@@ -96,7 +27,7 @@ class RobotManager:
             
         """ Set curent robot motor position """
         @app.route('/SetCurentMotorPosition', methods=['POST'])
-        @check_robot
+        @access.check_robot
         def SetCurentMotorPosition():
             info = request.form
             robots = URMSystem().get_robots()
@@ -110,7 +41,7 @@ class RobotManager:
             
         """ Get curent robot speed """
         @app.route('/GetCurentSpeed', methods=['POST'])
-        @check_robot
+        @access.check_robot
         def GetCurentSpeed():
             info = request.form
             robots = URMSystem().get_robots()
@@ -119,7 +50,7 @@ class RobotManager:
             
         """ Get robot ready parametr """
         @app.route('/GetRobotReady', methods=['POST'])
-        @check_robot
+        @access.check_robot
         def GetRobotReady():
             info = request.form
             robots = URMSystem().get_robots()
@@ -127,7 +58,7 @@ class RobotManager:
             
         """ Set robot ready parametr """
         @app.route('/SetRobotReady', methods=['POST'])
-        @check_robot
+        @access.check_robot
         def SetRobotReady():
             info = request.form
             robots = URMSystem().get_robots()
@@ -141,7 +72,7 @@ class RobotManager:
             
         ''' Activate and deativate emergency stop '''
         @app.route('/SetRobotEmergency', methods=['POST'])
-        @check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user")
         def SetRobotEmergency():
             info = request.form
             robots = URMSystem().get_robots()
@@ -157,7 +88,7 @@ class RobotManager:
             
         ''' Get emergency stop '''
         @app.route('/GetRobotEmergency', methods=['POST'])
-        @check_robot
+        @access.check_robot
         def GetRobotEmergency():
             info = request.form
             robots = URMSystem().get_robots()
@@ -166,7 +97,7 @@ class RobotManager:
 
         """ Curent robot position"""
         @app.route('/CurentPosition', methods=['POST'])
-        @check_robot_user_prog_token(user_role="user")
+        @access.check_robot_user_prog_token(user_role="user")
         def CurentPosition():
             info = request.form
             robots = URMSystem().get_robots()
@@ -212,7 +143,7 @@ class RobotManager:
             
         """ Curent home position"""
         @app.route('/HomePosition', methods=['POST'])
-        @check_robot_user_prog(user_role="user")
+        @access.check_robot_user_prog(user_role="user")
         def HomePosition():
             info = request.form
             robots = URMSystem().get_robots()
@@ -231,7 +162,7 @@ class RobotManager:
 
         """ Curent robot speed """
         @app.route('/CurentSpeed', methods=['POST'])
-        @check_robot_user_prog_token(user_role="user")
+        @access.check_robot_user_prog_token(user_role="user")
         def CurentSpeed():
             info = request.form
             robots = URMSystem().get_robots()
@@ -250,7 +181,7 @@ class RobotManager:
 
         """ Standart robot speed"""
         @app.route('/StandartSpeed', methods=['POST'])
-        @check_robot_user_prog(user_role="user")
+        @access.check_robot_user_prog(user_role="user")
         def StandartSpeed():
             info = request.form
             robots = URMSystem().get_robots()
@@ -265,7 +196,7 @@ class RobotManager:
             
         """ Set program """
         @app.route('/SetProgram', methods=['POST'])
-        @check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user")
         def Program():
             info = request.form
             robots = URMSystem().get_robots()
@@ -283,7 +214,7 @@ class RobotManager:
 
         """ Delete program """
         @app.route('/DeleteProgram', methods=['POST'])
-        @check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user")
         def DeleteProgram():
             info = request.form
             robots = URMSystem().get_robots()
@@ -297,7 +228,7 @@ class RobotManager:
 
         """ Get XYZ from angle robot position """
         @app.route('/angle_to_xyz', methods=['POST'])
-        @check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user")
         def angle_to_xyz():
             info = request.form
             kinematics:dict = KinematicsManager().get_kinematics()
@@ -318,7 +249,7 @@ class RobotManager:
 
         """ Get angle from XYZ robot position """
         @app.route('/XYZ_to_angle', methods=['POST'])
-        @check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user")
         def XYZ_to_angle():
             info = request.form
             robots = URMSystem().get_robots()
@@ -339,7 +270,7 @@ class RobotManager:
             
         """ Set curent robot XYZ position """
         @app.route('/Move_XYZ', methods=['POST'])
-        @check_robot_user_prog_token(user_role="user")
+        @access.check_robot_user_prog_token(user_role="user")
         def Move_XYZ():
             info = request.form
             robots = URMSystem().get_robots()
@@ -378,7 +309,7 @@ class RobotManager:
 
         ''' Set minimal angle of rotation '''
         @app.route('/MinAngles', methods=['POST'])
-        @check_robot_user_prog(user_role="administrator")
+        @access.check_robot_user_prog(user_role="administrator")
         def MinAngles():
             info = request.form
             robots = URMSystem().get_robots()
@@ -397,7 +328,7 @@ class RobotManager:
 
         ''' Set maximum angle of rotation '''
         @app.route('/MaxAngles', methods=['POST'])
-        @check_robot_user_prog(user_role="administrator")
+        @access.check_robot_user_prog(user_role="administrator")
         def MaxAngles():
             info = request.form
             robots = URMSystem().get_robots()
@@ -415,7 +346,7 @@ class RobotManager:
 
         ''' Set program is running '''
         @app.route('/SetProgramRun', methods=['POST'])
-        @check_user(user_role="System")
+        @access.check_user(user_role="System")
         def SetProgramRun():
             info = request.form
             robots = URMSystem().get_robots()

@@ -8,6 +8,7 @@ from utils.loger import Loger
 class AccountManager:
     
     def __init__(self, users:dict=None):
+        self.loger_module = "URAccount"
         if users is not None:
             globals()["users"] = users
     
@@ -27,7 +28,7 @@ class AccountManager:
         access = Access(Loger=loger)
         
         @app.route("/CreateAccount", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def CreateAccount():
             info = request.form
             users:dict = globals()["users"]
@@ -53,7 +54,7 @@ class AccountManager:
                 return "The account has already been created"
             
         @app.route("/DeleteAccount", methods=['POST'])
-        @access.check_user(user_role="SuperAdmin")
+        @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def DeleteAccount():
             info = request.form
             users:dict = globals()["users"]
@@ -70,7 +71,7 @@ class AccountManager:
             
         # get account
         @app.route("/GetAccounts", methods=['POST'])
-        @access.check_user(user_role="SuperAdmin")
+        @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def GetAccounts():
             users:dict = globals()["users"]
             user = {}
@@ -102,7 +103,7 @@ class AccountManager:
 
         # change password
         @app.route("/ChangePass", methods=['POST'])
-        @access.check_user(user_role="SuperAdmin")
+        @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def change_password():
             info = request.form
             con = sqlite3.connect("Databases\\Users.sqlite")
@@ -117,7 +118,7 @@ class AccountManager:
             
         # get user token
         @app.route("/GetToken", methods=['POST'])
-        @access.check_user(user_role="SuperAdmin")
+        @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def get_user_token():
             info = request.form
             con = sqlite3.connect("Databases\\Users.sqlite")
@@ -131,7 +132,7 @@ class AccountManager:
             
         # change user token
         @app.route("/ChangeToken", methods=['POST'])
-        @access.check_user(user_role="SuperAdmin")
+        @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def changedoken():
             info = request.form
             users:dict = globals()["users"]

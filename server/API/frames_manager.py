@@ -3,6 +3,7 @@ from flask import Flask, request
 class FramesManager:
     
     def __init__(self, frames: dict=None):
+        self.loger_module = "URFrames"
         if frames is not None:
             globals()["frames"] = frames
         
@@ -20,7 +21,7 @@ class FramesManager:
         
         """ URFrames """
         @app.route("/GetFrames", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def GetFrames():
             return str(globals()["frames"])
 
@@ -42,7 +43,7 @@ class FramesManager:
 
             
         @app.route("/DelFrame", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def DelFrame():
             info = request.form
             del globals()["frames"][info.get("id")]

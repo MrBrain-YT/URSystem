@@ -7,6 +7,7 @@ class RobotManager:
     
     def __init__(self):
         self.is_robot_ready_setted_false = True
+        self.loger_module = "URManager"
     
     def __call__(self, app: Flask, loger) -> Flask:
         from server_functions import System, User, Robot
@@ -72,7 +73,7 @@ class RobotManager:
             
         ''' Activate and deativate emergency stop '''
         @app.route('/SetRobotEmergency', methods=['POST'])
-        @access.check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user", loger_module=self.loger_module)
         def SetRobotEmergency():
             info = request.form
             robots = URMSystem().get_robots()
@@ -143,7 +144,7 @@ class RobotManager:
             
         """ Curent home position"""
         @app.route('/HomePosition', methods=['POST'])
-        @access.check_robot_user_prog(user_role="user")
+        @access.check_robot_user_prog(user_role="user", loger_module=self.loger_module)
         def HomePosition():
             info = request.form
             robots = URMSystem().get_robots()
@@ -181,7 +182,7 @@ class RobotManager:
 
         """ Standart robot speed"""
         @app.route('/StandartSpeed', methods=['POST'])
-        @access.check_robot_user_prog(user_role="user")
+        @access.check_robot_user_prog(user_role="user", loger_module=self.loger_module)
         def StandartSpeed():
             info = request.form
             robots = URMSystem().get_robots()
@@ -196,7 +197,7 @@ class RobotManager:
             
         """ Set program """
         @app.route('/SetProgram', methods=['POST'])
-        @access.check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user", loger_module=self.loger_module)
         def Program():
             info = request.form
             robots = URMSystem().get_robots()
@@ -214,7 +215,7 @@ class RobotManager:
 
         """ Delete program """
         @app.route('/DeleteProgram', methods=['POST'])
-        @access.check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user", loger_module=self.loger_module)
         def DeleteProgram():
             info = request.form
             robots = URMSystem().get_robots()
@@ -228,7 +229,7 @@ class RobotManager:
 
         """ Get XYZ from angle robot position """
         @app.route('/angle_to_xyz', methods=['POST'])
-        @access.check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user", loger_module=self.loger_module)
         def angle_to_xyz():
             info = request.form
             kinematics:dict = KinematicsManager().get_kinematics()
@@ -249,7 +250,7 @@ class RobotManager:
 
         """ Get angle from XYZ robot position """
         @app.route('/XYZ_to_angle', methods=['POST'])
-        @access.check_robot_user(user_role="user")
+        @access.check_robot_user(user_role="user", loger_module=self.loger_module)
         def XYZ_to_angle():
             info = request.form
             robots = URMSystem().get_robots()
@@ -309,7 +310,7 @@ class RobotManager:
 
         ''' Set minimal angle of rotation '''
         @app.route('/MinAngles', methods=['POST'])
-        @access.check_robot_user_prog(user_role="administrator")
+        @access.check_robot_user_prog(user_role="administrator", loger_module=self.loger_module)
         def MinAngles():
             info = request.form
             robots = URMSystem().get_robots()
@@ -328,7 +329,7 @@ class RobotManager:
 
         ''' Set maximum angle of rotation '''
         @app.route('/MaxAngles', methods=['POST'])
-        @access.check_robot_user_prog(user_role="administrator")
+        @access.check_robot_user_prog(user_role="administrator", loger_module=self.loger_module)
         def MaxAngles():
             info = request.form
             robots = URMSystem().get_robots()
@@ -346,7 +347,7 @@ class RobotManager:
 
         ''' Set program is running '''
         @app.route('/SetProgramRun', methods=['POST'])
-        @access.check_user(user_role="System")
+        @access.check_user(user_role="System", loger_module=self.loger_module)
         def SetProgramRun():
             info = request.form
             robots = URMSystem().get_robots()

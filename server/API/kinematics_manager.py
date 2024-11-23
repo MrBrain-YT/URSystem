@@ -9,6 +9,7 @@ from utils.loger import Loger
 class KinematicsManager:
     
     def __init__(self, kinematics:dict=None):
+        self.loger_module = "URKinematics"
         if kinematics is not None:
             globals()["kinematics"] = kinematics
     
@@ -22,7 +23,7 @@ class KinematicsManager:
         
         """ Add kinematics to system """
         @app.route("/AddKinematics", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def AddKinematics():
             zip_path = f"./kinematics/{request.files.get('file').filename}"
             request.files.get("file").save(zip_path)
@@ -34,7 +35,7 @@ class KinematicsManager:
 
         """ Bind kinematics to robot """
         @app.route("/BindKinematics", methods=['POST'])
-        @access.check_user_and_robot_data(user_role="administrator")
+        @access.check_user_and_robot_data(user_role="administrator", loger_module=self.loger_module)
         def BindKinematics():
             info = request.form
             robots = URMSystem().get_robots()

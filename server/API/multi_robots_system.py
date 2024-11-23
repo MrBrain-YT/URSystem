@@ -10,6 +10,7 @@ from utils.loger import Loger
 class URMSystem:
     
     def __init__(self, robots:dict=None):
+        self.loger_module = "URMSystem"
         if robots is not None:
             globals()["robots"] = robots
             
@@ -32,7 +33,7 @@ class URMSystem:
         
         # add robot
         @app.route("/CreateRobot", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def CreateRobot():
             info = request.form
             robots = globals()["robots"]
@@ -69,7 +70,7 @@ class URMSystem:
 
         # Import robot cache
         @app.route("/ImportCache", methods=['POST'])
-        @access.check_user(user_role="SuperAdmin")
+        @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def ImportCache():
             info = request.form
             frames:dict = FramesManager().get_frames()
@@ -123,7 +124,7 @@ class URMSystem:
             
         # Export robot cache
         @app.route("/ExportCache", methods=['POST'])
-        @access.check_user(user_role="SuperAdmin")
+        @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def ExportCache():
             with open("./configuration/robots_cache.py", "r") as file:
                 cache = file.read()
@@ -133,7 +134,7 @@ class URMSystem:
 
         # get robot
         @app.route("/GetRobot", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def GetRobot():
             info = request.form
             robots = globals()["robots"]
@@ -144,7 +145,7 @@ class URMSystem:
             
         # get robots
         @app.route("/GetRobots", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def GetRobots():
             robots = globals()["robots"]
             User().update_token()
@@ -153,7 +154,7 @@ class URMSystem:
 
         # delete robot
         @app.route("/DelRobot", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def DelRobot():
             info = request.form
             robots = globals()["robots"]

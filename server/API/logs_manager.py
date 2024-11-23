@@ -2,6 +2,9 @@ from flask import Flask, request
 
 class LogsManager:
     
+    def __init__(self):
+        self.loger_module = "URLogs"
+    
     def __call__(self, app:Flask, loger) -> Flask:
         from server_functions import User
         from utils.loger import Robot_loger
@@ -12,7 +15,7 @@ class LogsManager:
 
         # get log
         @app.route("/URLog", methods=['POST'])
-        @access.check_user("user")
+        @access.check_user("user", loger_module=self.loger_module)
         def URLog():
             robots:dict = URMSystem().get_robots()
             User().update_token()
@@ -20,7 +23,7 @@ class LogsManager:
 
         # add new log
         @app.route("/URLogs", methods=['POST'])
-        @access.check_user("user")
+        @access.check_user("user", loger_module=self.loger_module)
         def URLogs():
             info = request.form
             Robot_loger(info.get("Robot")).debug(info.get("Text"))

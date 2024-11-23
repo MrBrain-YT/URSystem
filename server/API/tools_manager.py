@@ -4,6 +4,7 @@ from utils.loger import Loger
 class ToolsManager:
     
     def __init__(self, tools:dict=None):
+        self.loger_module = "URTools"
         if tools is not None:
             globals()["tools"] = tools
             
@@ -23,7 +24,7 @@ class ToolsManager:
         
         # get tools
         @app.route("/URTools", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def Tools():
             tools = globals()["tools"]
             User().update_token()
@@ -32,7 +33,7 @@ class ToolsManager:
 
         # get and set tool configuration
         @app.route("/URTool", methods=['POST'])
-        @access.check_user(user_role="user")
+        @access.check_user(user_role="user", loger_module=self.loger_module)
         def Tool():
             info = request.form
             tools = globals()["tools"]
@@ -51,7 +52,7 @@ class ToolsManager:
 
         # creating tool 
         @app.route("/URTC", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def URTC():
             info = request.form
             tools = globals()["tools"]
@@ -68,7 +69,7 @@ class ToolsManager:
             
         # delete tool
         @app.route("/URTD", methods=['POST'])
-        @access.check_user(user_role="administrator")
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def URTD():
             info = request.form
             tools = globals()["tools"]

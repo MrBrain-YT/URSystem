@@ -1,5 +1,6 @@
 import time
 import secrets
+import ast
 
 from flask import Flask, request
 
@@ -114,32 +115,56 @@ class RobotManager:
                         if robots[info.get("Robot")]["RobotReady"] == "False":
                             continue
                         else:
-                            if Robot.check_angles(info, robots) == False:
-                                Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
-                                return "Values ​​are not validated"
+                            if info.get("angles_data") is None:
+                                if Robot.check_angles(info, robots) == False:
+                                    Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
+                                    return "Values ​​are not validated"
+                                else:
+                                    robots[info.get("Robot")]["RobotReady"] = "False"
+                                
+                                
+                                    for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
+                                        robots[info.get("Robot")]["Position"][f"J{i}"] = float(info.get(f'J{i}'))
+                                    
+                                    if robots[info.get("Robot")]["Kinematic"] != "None":
+                                        modul = kinematics[info.get("Robot")]
+                                        result_forward = modul.Forward(float(info.get("J1")), float(info.get("J2")), float(info.get("J3")), float(info.get("J4")))
+                                        robots[info.get("Robot")]["XYZposition"]["X"] = result_forward[0]
+                                        robots[info.get("Robot")]["XYZposition"]["Y"] = result_forward[1]
+                                        robots[info.get("Robot")]["XYZposition"]["Z"] = result_forward[2]
+                                        
+                                    Robot_loger(info.get("Robot")).info(f"""Was setted robot current position: {
+                                        info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
                             else:
-                                robots[info.get("Robot")]["RobotReady"] = "False"
-                                
-                                for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                                    robots[info.get("Robot")]["Position"][f"J{i}"] = float(info.get(f'J{i}'))   
-                                
-                                if robots[info.get("Robot")]["Kinematic"] != "None":
-                                    modul = kinematics[info.get("Robot")]
-                                    result_forward = modul.Forward(float(info.get("J1")), float(info.get("J2")), float(info.get("J3")), float(info.get("J4")))
-                                    robots[info.get("Robot")]["XYZposition"]["X"] = result_forward[0]
-                                    robots[info.get("Robot")]["XYZposition"]["Y"] = result_forward[1]
-                                    robots[info.get("Robot")]["XYZposition"]["Z"] = result_forward[2]
+                                # If getted not one point
+                                new_pos = ast.literal_eval(info.get("angles_data"))
+                                if isinstance(new_pos, list):
+                                    robots[info.get("Robot")]["Position"] = new_pos
+                                else:
+                                    return "Multi points data is not valid"
                                     
                                 self.is_robot_ready_setted_false = False
                                 
-                                System().SaveToCache(robots=robots)
-                                User().update_token()
-                                Robot_loger(info.get("Robot")).info(f"""Was setted robot current position: {
-                                    info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                                
-                                time.sleep(2)
-                                return "True"
+                            System().SaveToCache(robots=robots)
+                            User().update_token()
+                            return "True"
                             
+        """ Curent robot position"""
+        @app.route('/RemoveCurentPointPosition', methods=['POST'])
+        @access.check_robot_user_prog_token(user_role="user")
+        def RemoveCurentPointPosition():
+            info = request.form
+            robots = URMSystem().get_robots()
+            if isinstance(robots[info.get("Robot")]["Position"], list):
+                if len(robots[info.get("Robot")]["Position"]) > 1:
+                    robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][1::]
+                else:
+                    robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][0]
+                System().SaveToCache(robots=robots)
+                User().update_token()
+                return "True"
+            elif isinstance(robots[info.get("Robot")]["Position"], dict):
+                return "Position is not multi point"
 
             
         """ Curent home position"""
@@ -171,13 +196,40 @@ class RobotManager:
                 Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
                 return "The robot is currently in emergency stop"
             else:
-                for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                    robots[info.get("Robot")]["MotorsSpeed"][f"J{i}"] = float(info.get(f'J{i}'))
+                if info.get("angles_data") is None:
+                    for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
+                        robots[info.get("Robot")]["MotorsSpeed"][f"J{i}"] = float(info.get(f'J{i}'))
+                    
+                    Robot_loger(info.get("Robot")).info(f"""Was setted robot current speed: {
+                        info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+                else:
+                    # If getted not one point
+                    new_pos = ast.literal_eval(info.get("angles_data"))
+                    if isinstance(new_pos, list):
+                        robots[info.get("Robot")]["MotorsSpeed"] = new_pos
+                    else:
+                        return "Multi points data is not valid"
+                    
                 System().SaveToCache(robots=robots)
                 User().update_token()
-                Robot_loger(info.get("Robot")).info(f"""Was setted robot current speed: {
-                    info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
                 return "True"
+                    
+        """ Curent robot position"""
+        @app.route('/RemoveCurentPointSpeed', methods=['POST'])
+        @access.check_robot_user_prog_token(user_role="user")
+        def RemoveCurentPointSpeed():
+            info = request.form
+            robots = URMSystem().get_robots()
+            if isinstance(robots[info.get("Robot")]["MotorsSpeed"], list):
+                if len(robots[info.get("Robot")]["MotorsSpeed"]) > 1:
+                    robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][1::]
+                else:
+                    robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][0]
+                System().SaveToCache(robots=robots)
+                User().update_token()
+                return "True"
+            elif isinstance(robots[info.get("Robot")]["MotorsSpeed"], dict):
+                return "MotorsSpeed is not multi point"
 
 
         """ Standart robot speed"""

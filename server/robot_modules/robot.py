@@ -192,6 +192,13 @@ class Robot(tools.Tools):
             return "True"
         else:
             return "The robot is currently in emergency stop"
+        
+        
+    def calculate_lin(self, start_angles:list, target_angles:list, step_count:int=100) -> list:
+        """Return speed list"""
+        # calk speed lin robot moving
+        speeds = self.calculate_speed(start_angles, target_angles, step_count)
+        return speeds
 
     @staticmethod
     def __interpolate_points(start_point, intermediate_point, end_point, num_points):
@@ -220,14 +227,54 @@ class Robot(tools.Tools):
                 points[1],
                 points[2],
                 count_points)
-            points = []
+            
+            points:list = []
             for line in coords:
                 points.append(self.xyz_to_angle(line))
-            for point in points:
-                self.lin(point, lin_step_count)
-            return True
-        else:
-            return "The robot is currently in emergency stop"
+                
+            new_speeds:list = []
+            for index, point in enumerate(points):
+                old_point:list = []
+                if index == 0:
+                    url = f"https://{self.__host}:{str(self.__port)}/GetCurentPosition"
+                    data = {
+                        "Robot": self.__name,
+                        "token": self.__token
+                        }
+                    resp = requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
+                    speed_angles = json.loads(resp.replace("'", '"'))
+                    old_point = [speed_angles["J1"],
+                                speed_angles["J2"],
+                                speed_angles["J3"],
+                                speed_angles["J4"],]
+                else:
+                    old_point = points[index-1]
+                new_speeds.append(self.calculate_lin(old_point, point, lin_step_count))
+                
+                # send current position
+                url = f"https://{self.__host}:{str(self.__port)}/CurentPosition"
+                data = {
+                    "Robot": self.__name,
+                    "token": self.__token,
+                    "Code" : self.__code,
+                    "program_token": self.__program_token,
+                    "angles_data": str(points)
+                    }
+                requests.post(url,  verify=True ,data=data)
+                
+                # send current speed
+                url = f"https://{self.__host}:{str(self.__port)}/CurentSpeed"
+                data = {
+                    "Robot": self.__name,
+                    "token": self.__token,
+                    "Code" : self.__code,
+                    "program_token": self.__program_token,
+                    "angles_data": str(new_speeds)
+                    }
+                requests.post(url, verify=True, data=data)
+                return True
+            else:
+                return "The robot is currently in emergency stop"
 
     def get_log(self) -> str:
         url = f"https://{self.__host}:{str(self.__port)}/URLog"

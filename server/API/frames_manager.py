@@ -14,7 +14,7 @@ class FramesManager:
         globals()["frames"] = frames
     
     def __call__(self, app:Flask, loger) -> Flask:
-        from server_functions import Robot, System, User
+        from server_functions import System, User
         from API.access_checker import Access
 
         access = Access(Loger=loger)

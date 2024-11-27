@@ -127,7 +127,7 @@ class Access:
                 robots:dict = URMSystem().get_robots()
                 if ((User.role_access(info.get("token"), user_role) and \
                 Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")))\
-                and Robot().check_program_token(info.get("Robot"), info.get("program_token")):
+                and Robot().check_program_token(info.get("Robot"), info.get("program_token")) if robots[info.get("Robot")]["Program"] != "" else True:
                     return func(*args, **kwargs)
                 else:
                     return "You are not on the users list or program token is not valid"

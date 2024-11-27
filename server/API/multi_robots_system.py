@@ -6,6 +6,7 @@ import os
 from flask import Flask, request
 
 from utils.loger import Loger
+from server_functions import System
 
 class URMSystem:
     
@@ -13,6 +14,7 @@ class URMSystem:
         self.loger_module = "URMSystem"
         if robots is not None:
             globals()["robots"] = robots
+            System.SaveToCache(robots=robots)
             
     @staticmethod
     def set_robots(robots: dict):

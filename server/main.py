@@ -5,7 +5,7 @@ from flask import Flask
 from threading import Thread
 
 import configuration.robots_cache as robots_cache
-from server_functions import User
+from server_functions import User, System
 import utils.programs_starter as programs_starter
 from utils.loger import Loger
 from API.frames_manager import FramesManager
@@ -25,7 +25,10 @@ for robot in robots:
     robots_list[robot]["RobotReady"] = "True"
     robots_list[robot]["Emergency"] = "False"
     robots_list[robot]["MotorsSpeed"] = robots_list[robot]['StandartSpeed'].copy()
-    robots_list[robot]["Position"] = robots_list[robot]["MotorsPosition"].copy()
+    if isinstance(robots_list[robot]["Position"], dict):
+        robots_list[robot]["Position"] = robots_list[robot]["MotorsPosition"].copy()
+    elif isinstance(robots_list[robot]["Position"], list):
+        robots_list[robot]["Position"] = robots_list[robot]["Position"][0].copy()
     
 # importing all kinematics
 kinematics = {}
@@ -54,6 +57,9 @@ app = Flask(__name__)
 """ Init server functions"""
 app = FramesManager(frames)(app, loger)
 
+""" URS tool system """
+app = ToolsManager(tools)(app, loger)
+
 """ URMSystem """ # URMS - United Robotics Multi System
 app = URMSystem(Robots)(app, loger)
 
@@ -62,9 +68,6 @@ app = AccountManager(users)(app, loger)
 
 """ URLogs """
 app = LogsManager()(app, frames)
-
-""" URS tool system """
-app = ToolsManager(tools)(app, loger)
 
 """ Kinematics manager """
 app = KinematicsManager(kinematics)(app, loger)

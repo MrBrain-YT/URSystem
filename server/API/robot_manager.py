@@ -156,10 +156,10 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             if isinstance(robots[info.get("Robot")]["Position"], list):
-                if len(robots[info.get("Robot")]["Position"]) > 1:
+                if len(robots[info.get("Robot")]["Position"]) > 2:
                     robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][1::]
                 else:
-                    robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][0]
+                    robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return "True"
@@ -221,10 +221,10 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             if isinstance(robots[info.get("Robot")]["MotorsSpeed"], list):
-                if len(robots[info.get("Robot")]["MotorsSpeed"]) > 1:
+                if len(robots[info.get("Robot")]["MotorsSpeed"]) > 2:
                     robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][1::]
                 else:
-                    robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][0]
+                    robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return "True"

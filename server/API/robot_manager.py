@@ -149,7 +149,7 @@ class RobotManager:
                             User().update_token()
                             return "True"
                             
-        """ Curent robot position"""
+        """ Remove curent robot point position """
         @app.route('/RemoveCurentPointPosition', methods=['POST'])
         @access.check_robot_user_prog_token(user_role="user")
         def RemoveCurentPointPosition():
@@ -160,6 +160,20 @@ class RobotManager:
                     robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][1::]
                 else:
                     robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][-1]
+                System().SaveToCache(robots=robots)
+                User().update_token()
+                return "True"
+            elif isinstance(robots[info.get("Robot")]["Position"], dict):
+                return "Position is not multi point"
+            
+        """ Remove all robot point positions """
+        @app.route('/RemoveAllPointPosition', methods=['POST'])
+        @access.check_robot_user_prog_token(user_role="user")
+        def RemoveAllPointPosition():
+            info = request.form
+            robots = URMSystem().get_robots()
+            if isinstance(robots[info.get("Robot")]["Position"], list):
+                robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return "True"
@@ -214,7 +228,7 @@ class RobotManager:
                 User().update_token()
                 return "True"
                     
-        """ Curent robot position"""
+        """ Remove curent robot point speed """
         @app.route('/RemoveCurentPointSpeed', methods=['POST'])
         @access.check_robot_user_prog_token(user_role="user")
         def RemoveCurentPointSpeed():
@@ -225,6 +239,20 @@ class RobotManager:
                     robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][1::]
                 else:
                     robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][-1]
+                System().SaveToCache(robots=robots)
+                User().update_token()
+                return "True"
+            elif isinstance(robots[info.get("Robot")]["MotorsSpeed"], dict):
+                return "MotorsSpeed is not multi point"
+            
+        """ Remove all robot point speeds """
+        @app.route('/RemoveAllPointSpeed', methods=['POST'])
+        @access.check_robot_user_prog_token(user_role="user")
+        def RemoveAllPointSpeed():
+            info = request.form
+            robots = URMSystem().get_robots()
+            if isinstance(robots[info.get("Robot")]["MotorsSpeed"], list):
+                robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return "True"

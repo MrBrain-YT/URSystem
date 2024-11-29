@@ -64,10 +64,16 @@ class RobotManager:
         def SetRobotReady():
             info = request.form
             robots = URMSystem().get_robots()
-            robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
+            if info.get('RobotReady') == "True" and not self.is_robot_ready_setted_false:
+                return "False"
+            else:
+                if not isinstance(robots[info.get("Robot")]["Position"], list):
+                    robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
+                else:
+                    return "False"
+                
             if info.get('RobotReady') == "False":
                 self.is_robot_ready_setted_false = True
-                print("test")
             System().SaveToCache(robots=robots)
             User().update_token()
             return "True"
@@ -102,6 +108,7 @@ class RobotManager:
         @access.check_robot_user_prog_token(user_role="user")
         def CurentPosition():
             info = request.form
+            time.sleep(2)
             robots = URMSystem().get_robots()
             kinematics:dict = KinematicsManager().get_kinematics()
             while True:
@@ -120,9 +127,6 @@ class RobotManager:
                                     Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
                                     return "Values ​​are not validated"
                                 else:
-                                    robots[info.get("Robot")]["RobotReady"] = "False"
-                                
-                                
                                     for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
                                         robots[info.get("Robot")]["Position"][f"J{i}"] = float(info.get(f'J{i}'))
                                     
@@ -143,9 +147,9 @@ class RobotManager:
                                 else:
                                     return "Multi points data is not valid"
                                     
-                                self.is_robot_ready_setted_false = False
-                                
+                            robots[info.get("Robot")]["RobotReady"] = "False"
                             System().SaveToCache(robots=robots)
+                            self.is_robot_ready_setted_false = False
                             User().update_token()
                             return "True"
                             

@@ -64,16 +64,20 @@ class RobotManager:
         def SetRobotReady():
             info = request.form
             robots = URMSystem().get_robots()
-            if info.get('RobotReady') == "True" and not self.is_robot_ready_setted_false:
-                return "False"
-            else:
-                if not isinstance(robots[info.get("Robot")]["Position"], list):
-                    robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
-                else:
-                    return "False"
-                
+            
             if info.get('RobotReady') == "False":
                 self.is_robot_ready_setted_false = True
+                robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
+                
+            if info.get('RobotReady') == "True":
+                if not self.is_robot_ready_setted_false:
+                    return "False"
+                else:
+                    if not isinstance(robots[info.get("Robot")]["Position"], list):
+                        robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
+                    else:
+                        return "False"
+
             System().SaveToCache(robots=robots)
             User().update_token()
             return "True"
@@ -108,20 +112,21 @@ class RobotManager:
         @access.check_robot_user_prog_token(user_role="user")
         def CurentPosition():
             info = request.form
-            time.sleep(2)
+            # time.sleep(2)
             robots = URMSystem().get_robots()
+            if robots[info.get("Robot")]["RobotReady"] == "True":
+                self.is_robot_ready_setted_false = False
+                
             kinematics:dict = KinematicsManager().get_kinematics()
             while True:
                 if robots[info.get("Robot")]["Emergency"] == "True":
                     Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
                     return "The robot is currently in emergency stop"
                 else:
-                    if not self.is_robot_ready_setted_false and bool(robots[info.get("Robot")]["RobotReady"]) == False:
+                    if not self.is_robot_ready_setted_false or bool(robots[info.get("Robot")]["RobotReady"]) == False:
                         continue
-                    elif bool(robots[info.get("Robot")]["RobotReady"]) == True or self.is_robot_ready_setted_false:
-                        if robots[info.get("Robot")]["RobotReady"] == "False":
-                            continue
-                        else:
+                    elif bool(robots[info.get("Robot")]["RobotReady"]) == True and self.is_robot_ready_setted_false and\
+                        not isinstance(robots[info.get("Robot")]["Position"], list):
                             if info.get("angles_data") is None:
                                 if Robot.check_angles(info, robots) == False:
                                     Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
@@ -146,7 +151,7 @@ class RobotManager:
                                     robots[info.get("Robot")]["Position"] = new_pos
                                 else:
                                     return "Multi points data is not valid"
-                                    
+                                
                             robots[info.get("Robot")]["RobotReady"] = "False"
                             System().SaveToCache(robots=robots)
                             self.is_robot_ready_setted_false = False
@@ -341,12 +346,29 @@ class RobotManager:
             kinematics:dict = KinematicsManager().get_kinematics()
             if kinematics[info.get("Robot")] != "None":
                 try:
-                    new_angles = {}
-                    modul = kinematics[info.get("Robot")]
-                    result_inverse = modul.Inverse(float(info.get("X")), float(info.get("Y")), float(info.get("Z")))
-                    for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
-                        new_angles[f"J{j}"] = result_inverse[j-1]
-                    return str(new_angles)
+                    if info.get("positions_data") is None:
+                        point_angles = {}
+                        modul = kinematics[info.get("Robot")]
+                        result_inverse = modul.Inverse(float(info.get("X")), float(info.get("Y")), float(info.get("Z")))
+                        for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
+                            point_angles[f"J{j}"] = result_inverse[j-1]
+                        return str(point_angles)
+                    else:
+                        print(info.get("positions_data"))
+                        positions = ast.literal_eval(info.get("positions_data"))
+                        if isinstance(positions, list):
+                            angles = []
+                            for pos in positions:
+                                
+                                point_angles = {}
+                                modul = kinematics[info.get("Robot")]
+                                result_inverse = modul.Inverse(pos[0], pos[1], pos[2])
+                                for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
+                                    point_angles[f"J{j}"] = result_inverse[j-1]
+                                angles.append(point_angles)
+                            return str(angles)
+                        else:
+                            return "Multi points data is not valid"
                 except:
                     return "An error has occurred"
             else:

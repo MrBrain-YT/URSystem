@@ -19,7 +19,7 @@ class KinematicsManager:
         from server_functions import System
         from API.access_checker import Access
 
-        access = Access(Loger=loger)
+        access = Access()
         
         """ Add kinematics to system """
         @app.route("/AddKinematics", methods=['POST'])

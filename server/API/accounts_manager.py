@@ -25,7 +25,7 @@ class AccountManager:
         from configuration import server_token 
         from API.access_checker import Access
 
-        access = Access(Loger=loger)
+        access = Access()
         
         @app.route("/CreateAccount", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)

@@ -5,13 +5,13 @@ class LogsManager:
     def __init__(self):
         self.loger_module = "URLogs"
     
-    def __call__(self, app:Flask, loger) -> Flask:
+    def __call__(self, app:Flask) -> Flask:
         from server_functions import User
         from utils.loger import Robot_loger
         from API.multi_robots_system import URMSystem
         from API.access_checker import Access
 
-        access = Access(Loger=loger)
+        access = Access()
 
         # get log
         @app.route("/URLog", methods=['POST'])

@@ -6,7 +6,7 @@ eng.addpath("./kinematics/First", nargout=0)
 
 def Forward(J1, J2, J3, J4):
     coord = eng.Main_Fwd_Kinematics(float(J1), float(J2), float(J3), float(J4), nargout=1)
-    return [coord[0][-1], coord[1][-1], coord[2][-1]]
+    return {"X": coord[0][-1], "Y": coord[1][-1], "Z": coord[2][-1]}
 
 def Inverse(x,y,z):
     J1 = Math.atan2(0.0 + y, 0.0 + x) * 180.0 / Math.pi
@@ -16,17 +16,17 @@ def Inverse(x,y,z):
     # return [J1, res[0][0], res[0][1], res[0][2]]
     if z-67.117 > 0:
         if 195 > (0 + (90 - (res[0][0]))) > -15:
-            return [J1, -(0 + (90 - (res[0][0]))), -res[0][1], res[0][2]]
+            return {"J1": J1, "J2": -(0 + (90 - (res[0][0]))), "J3": -res[0][1], "J4": res[0][2]}
         else:
             if (-(0 + (90 - (res[0][0])))+270)+90 < 360:
-                return [J1, -(-(0 + (90 - (res[0][0])))+270)+90, res[0][1], -res[0][2]]
+                return {"J1": J1, "J2": -(-(0 + (90 - (res[0][0])))+270)+90, "J3": res[0][1], "J4": -res[0][2]}
             else:
-                return [J1, -((-(0 + (90 - (res[0][0])))+270)+90)-360, res[0][1], -res[0][2]]
+                return {"J1": J1, "J2": -((-(0 + (90 - (res[0][0])))+270)+90)-360, "J3": res[0][1], "J4": -res[0][2]}
     else:
         if 195 > (0 + (90 - (res[0][0]))) > -15:
-            return [J1, 0 + (90 - (res[0][0])), res[0][1], -res[0][2]]
+            return {"J1": J1, "J2": 0 + (90 - (res[0][0])), "J3": res[0][1], "J4": -res[0][2]}
         else:
             if (-(0 + (90 - (res[0][0])))+270)+90 < 360:
-                return [J1, (-(0 + (90 - (res[0][0])))+270)+90, -res[0][1], res[0][2]]
+                return {"J1": J1, "J2": (-(0 + (90 - (res[0][0])))+270)+90, "J3": -res[0][1], "J4": res[0][2]}
             else:
-                return [J1, ((-(0 + (90 - (res[0][0])))+270)+90)-360, -res[0][1], res[0][2]]
+                return {"J1": J1, "J2": ((-(0 + (90 - (res[0][0])))+270)+90)-360, "J3": -res[0][1], "J4": res[0][2]}

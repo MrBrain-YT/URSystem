@@ -31,7 +31,7 @@ class URMSystem:
         from API.accounts_manager import AccountManager
         from API.access_checker import Access
 
-        access = Access(Loger=loger)
+        access = Access()
         
         # add robot
         @app.route("/CreateRobot", methods=['POST'])
@@ -59,6 +59,7 @@ class URMSystem:
                     "RobotReady" : "True",
                     "Emergency":"False",
                     "SecureCode":  info.get("Code") if info.get("Code") != None else "None",
+                    "is_robot_ready_setted_false": "True",
                     "XYZposition" : {
                         "X": 0.0,
                         "Y": 0.0,

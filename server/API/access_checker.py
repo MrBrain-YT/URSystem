@@ -3,10 +3,12 @@ from functools import wraps
 
 from flask import request
 
+from utils.loger import Loger
+
 class Access:
     
-    def __init__(self, Loger):
-        self.loger = Loger
+    def __init__(self):
+        self.loger = Loger()
 
     @staticmethod
     def check_robot(func:Callable):

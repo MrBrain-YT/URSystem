@@ -13,11 +13,11 @@ class FramesManager:
     def set_frame(self, frames: dict) -> None:
         globals()["frames"] = frames
     
-    def __call__(self, app:Flask, loger) -> Flask:
+    def __call__(self, app:Flask) -> Flask:
         from server_functions import System, User
         from API.access_checker import Access
 
-        access = Access(Loger=loger)
+        access = Access()
         
         """ URFrames """
         @app.route("/GetFrames", methods=['POST'])

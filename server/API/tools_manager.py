@@ -20,7 +20,7 @@ class ToolsManager:
         from server_functions import System, User
         from API.access_checker import Access
 
-        access = Access(Loger=loger)
+        access = Access()
         
         # get tools
         @app.route("/URTools", methods=['POST'])

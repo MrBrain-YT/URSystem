@@ -55,7 +55,7 @@ loger = Loger()
 app = Flask(__name__)
 
 """ Init server functions"""
-app = FramesManager(frames)(app, loger)
+app = FramesManager(frames)(app)
 
 """ URS tool system """
 app = ToolsManager(tools)(app, loger)
@@ -67,13 +67,13 @@ app = URMSystem(Robots)(app, loger)
 app = AccountManager(users)(app, loger)
 
 """ URLogs """
-app = LogsManager()(app, frames)
+app = LogsManager()(app)
 
 """ Kinematics manager """
 app = KinematicsManager(kinematics)(app, loger)
 
 """ Robot manager """
-app = RobotManager()(app, loger)
+app = RobotManager()(app)
 
 
 """ hello message """

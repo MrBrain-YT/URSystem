@@ -6,17 +6,27 @@ from flask import Flask, request
 class RobotManager:
     
     def __init__(self):
-        self.is_robot_ready_setted_false = True
+        from API.multi_robots_system import URMSystem
+        robots = URMSystem().get_robots()
+        globals()["is_robot_ready_setted_false"] = {}
+        for robot_name in robots.keys():
+            globals()["is_robot_ready_setted_false"][robot_name] = True
         self.loger_module = "URManager"
+        
+    def add_new_robot_ready(self, robot_name:str):
+        globals()["is_robot_ready_setted_false"][robot_name] = True
     
-    def __call__(self, app: Flask, loger) -> Flask:
+    def remove_new_robot_ready(self, robot_name:str):
+        del globals()["is_robot_ready_setted_false"][robot_name]
+    
+    def __call__(self, app: Flask) -> Flask:
         from server_functions import System, User, Robot
         from utils.loger import Robot_loger
         from API.multi_robots_system import URMSystem
         from API.kinematics_manager import KinematicsManager
         from API.access_checker import Access
 
-        access = Access(Loger=loger)
+        access = Access()
         
         """ Get curent robot position """
         @app.route('/GetCurentPosition', methods=['POST'])
@@ -27,18 +37,26 @@ class RobotManager:
             return str(robots[info.get("Robot")]["Position"])
             
         """ Set curent robot motor position """
-        @app.route('/SetCurentMotorPosition', methods=['POST'])
+        @app.route('/SetCurentMotorsPosition', methods=['POST'])
         @access.check_robot
         def SetCurentMotorPosition():
             info = request.form
             robots = URMSystem().get_robots()
+            kinematics:dict = KinematicsManager().get_kinematics()
             for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
                 robots[info.get("Robot")]["MotorsPosition"][f"J{i}"] = float(info.get(f'J{i}').replace(",", "."))
                 if robots[info.get("Robot")]["Emergency"] == "True":
                     robots[info.get("Robot")]["Position"][f"J{i}"] = float(info.get(f'J{i}').replace(",", "."))
+            
+            if robots[info.get("Robot")]["Kinematic"] != "None":
+                modul = kinematics[info.get("Robot")]
+                result_forward:dict = modul.Forward(float(info.get("J1").replace(",", ".")), float(info.get("J2").replace(",", ".")), float(info.get("J3").replace(",", ".")), float(info.get("J4").replace(",", ".")))
+                robots[info.get("Robot")]["XYZposition"]["X"] = result_forward.get("X")
+                robots[info.get("Robot")]["XYZposition"]["Y"] = result_forward.get("Y")
+                robots[info.get("Robot")]["XYZposition"]["Z"] = result_forward.get("Z")        
+            
             System().SaveToCache(robots=robots)
             return "True"
-
             
         """ Get curent robot speed """
         @app.route('/GetCurentSpeed', methods=['POST'])
@@ -47,7 +65,6 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             return str(robots[info.get("Robot")]["MotorsSpeed"])
-
             
         """ Get robot ready parametr """
         @app.route('/GetRobotReady', methods=['POST'])
@@ -65,11 +82,11 @@ class RobotManager:
             robots = URMSystem().get_robots()
             
             if info.get('RobotReady') == "False":
-                self.is_robot_ready_setted_false = True
+                globals()["is_robot_ready_setted_false"][info.get("Robot")] = True
                 robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
                 
             if info.get('RobotReady') == "True":
-                if not self.is_robot_ready_setted_false:
+                if not globals()["is_robot_ready_setted_false"][info.get("Robot")]:
                     return "False"
                 else:
                     if not isinstance(robots[info.get("Robot")]["Position"], list):
@@ -87,12 +104,22 @@ class RobotManager:
         def SetRobotEmergency():
             info = request.form
             robots = URMSystem().get_robots()
+            kinematics:dict = KinematicsManager().get_kinematics()
             robots[info.get("Robot")]["Emergency"] = "True" if info.get("State") == "True" else "False"
             if robots[info.get("Robot")]["Emergency"] == "True":
                 robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["MotorsPosition"].copy()
                 robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["StandartSpeed"].copy()
                 robots[info.get("Robot")]["RobotReady"] = "False"
                 robots[info.get("Robot")]["Program"] = ""
+                
+            if robots[info.get("Robot")]["Kinematic"] != "None":
+                modul = kinematics[info.get("Robot")]
+                pos = robots[info.get("Robot")]["Position"]
+                result_forward:dict = modul.Forward(pos[0], pos[1], pos[2], pos[3])
+                robots[info.get("Robot")]["XYZposition"]["X"] = result_forward.get("X")
+                robots[info.get("Robot")]["XYZposition"]["Y"] = result_forward.get("Y")
+                robots[info.get("Robot")]["XYZposition"]["Z"] = result_forward.get("Z")   
+            
             System().SaveToCache(robots=robots)
             User().update_token()
             Robot_loger(info.get("Robot")).info(f"Emergency stop button activated")
@@ -115,16 +142,16 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             if robots[info.get("Robot")]["RobotReady"] == "True":
-                self.is_robot_ready_setted_false = False
+                globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
             kinematics:dict = KinematicsManager().get_kinematics()
             while True:
                 if robots[info.get("Robot")]["Emergency"] == "True":
                     Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
                     return "The robot is currently in emergency stop"
                 else:
-                    if not self.is_robot_ready_setted_false or bool(robots[info.get("Robot")]["RobotReady"]) == False:
+                    if not globals()["is_robot_ready_setted_false"][info.get("Robot")] or bool(robots[info.get("Robot")]["RobotReady"]) == False:
                         continue
-                    elif bool(robots[info.get("Robot")]["RobotReady"]) == True and self.is_robot_ready_setted_false and\
+                    elif bool(robots[info.get("Robot")]["RobotReady"]) == True and globals()["is_robot_ready_setted_false"][info.get("Robot")] and\
                         not isinstance(robots[info.get("Robot")]["Position"], list):
                             if info.get("angles_data") is None:
                                 if Robot.check_angles(info, robots) == False:
@@ -153,7 +180,7 @@ class RobotManager:
                                 
                             robots[info.get("Robot")]["RobotReady"] = "False"
                             System().SaveToCache(robots=robots)
-                            self.is_robot_ready_setted_false = False
+                            globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
                             User().update_token()
                             return "True"
                             
@@ -397,7 +424,7 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             if robots[info.get("Robot")]["RobotReady"] == "True":
-                self.is_robot_ready_setted_false = False
+                globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
             kinematics:dict = KinematicsManager().get_kinematics()
             if kinematics[info.get("Robot")] != "None":
                 while True:
@@ -405,9 +432,9 @@ class RobotManager:
                         Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
                         return "The robot is currently in emergency stop"
                     else:
-                        if not self.is_robot_ready_setted_false or bool(robots[info.get("Robot")]["RobotReady"]) == False:
+                        if not globals()["is_robot_ready_setted_false"][info.get("Robot")] or bool(robots[info.get("Robot")]["RobotReady"]) == False:
                             continue
-                        elif bool(robots[info.get("Robot")]["RobotReady"]) == True and self.is_robot_ready_setted_false and\
+                        elif bool(robots[info.get("Robot")]["RobotReady"]) == True and globals()["is_robot_ready_setted_false"][info.get("Robot")] and\
                         not isinstance(robots[info.get("Robot")]["Position"], list):
                             try:
                                 if info.get("points_data") is None:
@@ -438,7 +465,7 @@ class RobotManager:
                                     
                                 robots[info.get("Robot")]["RobotReady"] = "False"
                                 System().SaveToCache(robots=robots)
-                                self.is_robot_ready_setted_false = False
+                                globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
                                 User().update_token()
                                 return "True"
                             except:

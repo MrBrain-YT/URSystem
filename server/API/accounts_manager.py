@@ -145,11 +145,10 @@ class AccountManager:
                     break
             con = sqlite3.connect("Databases\\Users.sqlite")
             cur = con.cursor()
-            cur.execute(f"UPDATE users SET token = '{token}' WHERE name = '{info.get('name')}' and password = '{info.get('password')}'")
+            cur.execute(f"UPDATE users SET token = '{token}' WHERE name = '{info.get('name')}' and password = '{info.get('password')}' WHERE role != 'System' and role != 'robot'")
             con.commit()
             con.close()
             loger.info("URAccount", f"Token was changed for account with name: {info.get('name')}")
             return token
 
-            
         return app

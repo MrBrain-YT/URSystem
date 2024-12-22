@@ -21,7 +21,7 @@ class URMSystem:
         globals()["robots"] = robots
         
     @staticmethod
-    def get_robots():
+    def get_robots() -> dict:
             return globals()["robots"]
     
     def __call__(self, app:Flask, loger:Loger) -> Flask:
@@ -30,7 +30,8 @@ class URMSystem:
         from API.tools_manager import ToolsManager
         from API.accounts_manager import AccountManager
         from API.access_checker import Access
-
+        from API.robot_manager import RobotManager
+        
         access = Access()
         
         # add robot
@@ -68,6 +69,7 @@ class URMSystem:
                     }
             System().SaveToCache(robots=robots)
             User().update_token()
+            RobotManager.add_new_robot_ready(info.get("Robot"))
             loger.info("URMS", f"Robot named {info.get('Robot')} was created")
             return "True"
 
@@ -78,7 +80,7 @@ class URMSystem:
             info = request.form
             frames:dict = FramesManager().get_frames()
             users:dict = AccountManager().get_users()
-            robots = globals()["robots"]
+            robots:dict = globals()["robots"]
             tools:dict = ToolsManager().get_tools()
             new_robots:dict = ast.literal_eval(info.get("robots"))
             new_tools:dict = ast.literal_eval(info.get("tools"))
@@ -106,6 +108,7 @@ class URMSystem:
                         pass
             con.commit()
             con.close()
+            RobotManager.add_new_robot_ready(robot_name)
             # import tools
             for tool_name in new_tools.keys():
                 if tool_name in tools:
@@ -140,7 +143,7 @@ class URMSystem:
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def GetRobot():
             info = request.form
-            robots = globals()["robots"]
+            robots:dict = globals()["robots"]
             User().update_token()
             result = str(robots[info.get("Robot")]) if info.get("Robot") in robots.keys() else "Robot not found"
             return result
@@ -150,7 +153,7 @@ class URMSystem:
         @app.route("/GetRobots", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def GetRobots():
-            robots = globals()["robots"]
+            robots:dict = globals()["robots"]
             User().update_token()
             return robots
 
@@ -160,9 +163,10 @@ class URMSystem:
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def DelRobot():
             info = request.form
-            robots = globals()["robots"]
+            robots:dict = globals()["robots"]
             if info.get("Robot") in robots.keys():
                 del robots[info.get("Robot")]
+                RobotManager.remove_new_robot_ready(info.get("Robot"))
                 User().update_token()
                 loger.info("URSystem", f"Robot was deleted user with token: {info.get('token')}")
                 return "True"

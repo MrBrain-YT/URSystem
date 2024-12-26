@@ -15,6 +15,7 @@ from API.logs_manager import LogsManager
 from API.tools_manager import ToolsManager
 from API.kinematics_manager import KinematicsManager
 from API.robot_manager import RobotManager
+from utils.public_loader.loader import Loader
 
 # Importing robots from cache
 robots_list = robots_cache.robots
@@ -75,6 +76,8 @@ app = KinematicsManager(kinematics)(app, loger)
 """ Robot manager """
 app = RobotManager()(app)
 
+""" Public loader """
+app = Loader(app)()
 
 """ hello message """
 @app.route("/")

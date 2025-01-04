@@ -35,6 +35,14 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             return str(robots[info.get("Robot")]["Position"])
+        
+        """ Get robot angles count """
+        @app.route('/GetRobotAnglesCount', methods=['POST'])
+        @access.check_robot_or_user(user_role="user")
+        def GetRobotAnglesCount():
+            info = request.form
+            robots = URMSystem().get_robots()
+            return str(robots[info.get("Robot")]["AngleCount"])
             
         """ Set curent robot motor position """
         @app.route('/SetCurentMotorsPosition', methods=['POST'])
@@ -401,7 +409,6 @@ class RobotManager:
                         if isinstance(positions, list):
                             angles = []
                             for pos in positions:
-                                
                                 point_angles = {}
                                 modul = kinematics[info.get("Robot")]
                                 result_inverse:dict = modul.Inverse(pos[0], pos[1], pos[2])

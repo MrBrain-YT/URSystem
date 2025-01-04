@@ -115,7 +115,6 @@ class AccountManager:
             loger.info("URAccount", f"Password was changed for account with name: {info.get('name')}")
             return "True"
 
-            
         # get user token
         @app.route("/GetToken", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
@@ -129,7 +128,6 @@ class AccountManager:
             con.close()
             return token
 
-            
         # change user token
         @app.route("/ChangeToken", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)

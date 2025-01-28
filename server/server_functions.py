@@ -118,13 +118,15 @@ class User:
     
     def update_token(self) -> dict:
         users = self.update_user_info()
+        tokens = []
+        for i in [i for i in users]:
+            tokens.append(users.get(i)["token"])
+            
         while True:
             token = secrets.token_hex(32)
-            tokens = []
-            for i in [i for i in users]:
-                tokens.append(users.get(i)["token"])
             if token not in tokens:
                 break
+            
         con = sqlite3.connect("databases\\Users.sqlite")
         cur = con.cursor()
         cur.execute(f"UPDATE users SET token = '{token}' WHERE role = 'System' and name = '' and password = ''")

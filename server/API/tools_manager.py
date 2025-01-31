@@ -1,4 +1,7 @@
+import json
+
 from flask import Flask, request
+
 from utils.loger import Loger
 
 class ToolsManager:
@@ -28,7 +31,7 @@ class ToolsManager:
         def Tools():
             tools = globals()["tools"]
             User().update_token()
-            return str(tools)
+            return json.dumps({"status": True, "info": "All tools data", "data": tools}), 200
 
 
         # get and set tool configuration
@@ -37,18 +40,18 @@ class ToolsManager:
         def Tool():
             info = request.form
             tools = globals()["tools"]
-            if info.get("type") == "write":
-                if info.get("id") in [i for i in tools.values()]:
+            if tools.get(info.get("id")) is not None:
+                if info.get("type") == "write":
                     tools[info.get("id")] = info.get("config")
                     System().SaveToCache(tools=tools)
                     User().update_token()
-                    return "True"
+                    return json.dumps({"status": True, "info": "New tool value has been setted", "request_type": "write"}), 200
                 else:
-                    loger.error("URTools", f"The tool {info.get('id')} has not been created and cannot be modified")
-                    return "The tool has not been created"
+                    return json.dumps({"status": True, "info": "Tool value", "data": tools[info.get("id")], "request_type": "read"}), 200
             else:
-                return tools[info.get("id")]
-
+                log_message = f"The tool {info.get('id')} has not been created and cannot be modified"
+                loger.error("URTools", log_message)
+                return json.dumps({"status": False, "info": log_message}), 400
 
         # creating tool 
         @app.route("/URTC", methods=['POST'])
@@ -60,11 +63,13 @@ class ToolsManager:
                 tools[info.get("id")] = ""
                 System().SaveToCache(tools=tools)
                 User().update_token()
-                loger.info("URTools", f"Tool {info.get('id')} was created")
-                return "True"
+                log_message = f"Tool {info.get('id')} was created"
+                loger.info("URTools", log_message)
+                return json.dumps({"status": True, "info": log_message}), 200
             else:
-                loger.error("URTools", f"The tool {info.get('id')} already exists")
-                return "The tool already exists"
+                log_message = f"The tool {info.get('id')} already exists"
+                loger.error("URTools", log_message)
+                return json.dumps({"status": True, "info": log_message}), 400
 
             
         # delete tool
@@ -76,7 +81,8 @@ class ToolsManager:
             del tools[info.get("id")]
             System().SaveToCache(tools=tools)
             User().update_token()
-            loger.info("URTools", f"Tool {info.get('id')} was deleted")
-            return "True"
+            log_message = f"Tool {info.get('id')} was deleted"
+            loger.info("URTools", log_message)
+            return json.dumps({"status": True, "info": log_message}), 200
             
         return app

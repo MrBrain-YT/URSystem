@@ -1,6 +1,7 @@
 import shutil
 import os
 import importlib
+import json
 
 from flask import Flask, request
 
@@ -29,8 +30,9 @@ class KinematicsManager:
             request.files.get("file").save(zip_path)
             shutil.unpack_archive(filename=zip_path, extract_dir=zip_path.replace(".zip", ""), format="zip")
             os.remove(zip_path)
-            loger.info("URSystem", f"Added new kinematic with work name: {request.files.get('file')}")
-            return "True"
+            log_message = f"Added new kinematic with work name: {request.files.get('file')}"
+            loger.info("URSystem", log_message)
+            return json.dumps({"status": True, "info": log_message}), 200
 
 
         """ Bind kinematics to robot """
@@ -44,11 +46,13 @@ class KinematicsManager:
             System().SaveToCache(robots=robots)
             
             if robots[info.get("Robot")]["Kinematic"] == info.get('Kinematics'):
-                loger.info("URSystem", f"Was created associate kinematics-{info.get('Kinematics')} and robot-{info.get('Robot')}")
-                return "True"
+                log_message = f"Was created associate kinematics-{info.get('Kinematics')} and robot-{info.get('Robot')}"
+                loger.info("URSystem", log_message)
+                return json.dumps({"status": True, "info": log_message}), 200
             else:
-                loger.error("URSystem", f"Not created associate kinematics-{info.get('Kinematics')} and robot-{info.get('Robot')}")
-                return "It was not possible to associate kinematics with the robot because it is missing"
+                log_message = f"Not created associate kinematics-{info.get('Kinematics')} and robot-{info.get('Robot')}"
+                loger.error("URSystem", log_message)
+                return json.dumps({"status": True, "info": log_message}), 400
 
         return app
             

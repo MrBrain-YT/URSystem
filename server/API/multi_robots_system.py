@@ -2,6 +2,7 @@ import sqlite3
 import ast
 import secrets
 import os
+import json
 
 from flask import Flask, request
 
@@ -70,8 +71,9 @@ class URMSystem:
             System().SaveToCache(robots=robots)
             User().update_token()
             RobotManager.add_new_robot_ready(info.get("Robot"))
-            loger.info("URMS", f"Robot named {info.get('Robot')} was created")
-            return "True"
+            log_message = f"Robot named {info.get('Robot')} was created"
+            loger.info("URMS", log_message)
+            return json.dumps({"status": True, "info": log_message}), 200
 
         # Import robot cache
         @app.route("/ImportCache", methods=['POST'])
@@ -124,19 +126,40 @@ class URMSystem:
                     frames[frames_name] = new_frames[frames_name]
                     
             System().SaveToCache(robots=robots, tools=tools, frames=frames)
-            loger.info("URSystem", f"Cache was imorted")
-            return "True"
-
+            log_message = "Cache was imorted"
+            loger.info("URSystem", log_message)
+            return json.dumps({"status": True, "info": log_message}), 200
             
-        # Export robot cache
-        @app.route("/ExportCache", methods=['POST'])
+        # Export robot cache from cache file
+        @app.route("/ExportFileCache", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def ExportCache():
             with open("./configuration/robots_cache.py", "r") as file:
                 cache = file.read()
-            loger.info("URSystem", f"Cache was exported")
-            return cache
-
+                
+            loger.info("URSystem", "Current cache from cache file was exported")
+            new_cache = {
+                "robots": ast.literal_eval(cache.split("\n")[0].lstrip("robots = ")),
+                "tools": ast.literal_eval(cache.split("\n")[1].lstrip("robots = ")),
+                "frames": ast.literal_eval(cache.split("\n")[2].lstrip("robots = ")),
+            }
+            return json.dumps({"status": True, "info": "Current cache from cache file", "data": new_cache}), 200
+        
+        # Export robot cache from RAM
+        @app.route("/ExportCache", methods=['POST'])
+        @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
+        def ExportCache():
+            frames:dict = FramesManager().get_frames()
+            robots:dict = globals()["robots"]
+            tools:dict = ToolsManager().get_tools()
+            
+            loger.info("URSystem", "Current cache from RAM was exported")
+            new_cache = {
+                "robots": robots,
+                "tools": tools,
+                "frames": frames,
+            }
+            return json.dumps({"status": True, "info": "Current cache from RAM", "data": new_cache}), 200
 
         # get robot
         @app.route("/GetRobot", methods=['POST'])
@@ -145,9 +168,11 @@ class URMSystem:
             info = request.form
             robots:dict = globals()["robots"]
             User().update_token()
-            result = str(robots[info.get("Robot")]) if info.get("Robot") in robots.keys() else "Robot not found"
-            return result
-
+            result = robots[info.get("Robot")] if info.get("Robot") in robots.keys() else None
+            if result is not None:
+                return json.dumps({"status": True, "info": "Get robot data", "data": result}), 200
+            else:
+                return json.dumps({"status": False, "info": "Robot not found"}), 400
             
         # get robots
         @app.route("/GetRobots", methods=['POST'])
@@ -155,8 +180,7 @@ class URMSystem:
         def GetRobots():
             robots:dict = globals()["robots"]
             User().update_token()
-            return robots
-
+            return json.dumps({"status": True, "info": "All robots data", "data": robots}), 200
 
         # delete robot
         @app.route("/DelRobot", methods=['POST'])
@@ -169,11 +193,10 @@ class URMSystem:
                 RobotManager.remove_new_robot_ready(info.get("Robot"))
                 User().update_token()
                 loger.info("URSystem", f"Robot was deleted user with token: {info.get('token')}")
-                return "True"
+                return json.dumps({"status": True, "info": f"Robot '{info.get('Robot')}' was deleted"}), 200
             else:
                 User().update_token()
                 loger.info("URSystem", f"Robot did not deleted user with token: {info.get('token')}")
-                return "Robot not found"
-
+                return json.dumps({"status": False, "info": "Robot not found"}), 400
             
         return app

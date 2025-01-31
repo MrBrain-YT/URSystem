@@ -1,5 +1,6 @@
 import secrets
 import ast
+import json
 
 from flask import Flask, request
 
@@ -34,7 +35,7 @@ class RobotManager:
         def GetCurentPosition():
             info = request.form
             robots = URMSystem().get_robots()
-            return str(robots[info.get("Robot")]["Position"])
+            return json.dumps({"status": True, "info": f"Current robot '{info.get('Robot')}' angles position", "data": robots[info.get("Robot")]["Position"]}), 200
         
         """ Get curent robot position """
         @app.route('/GetXYZPosition', methods=['POST'])
@@ -42,7 +43,7 @@ class RobotManager:
         def GetXYZPosition():
             info = request.form
             robots = URMSystem().get_robots()
-            return str(robots[info.get("Robot")]["XYZposition"])
+            return json.dumps({"status": True, "info": f"Current robot '{info.get('Robot')}' cartesian position", "data": robots[info.get("Robot")]["XYZposition"]}), 200
         
         """ Get robot angles count """
         @app.route('/GetRobotAnglesCount', methods=['POST'])
@@ -50,7 +51,7 @@ class RobotManager:
         def GetRobotAnglesCount():
             info = request.form
             robots = URMSystem().get_robots()
-            return str(robots[info.get("Robot")]["AngleCount"])
+            return json.dumps({"status": True, "info": f"Current robot '{info.get('Robot')}' angles count", "data": robots[info.get("Robot")]["AngleCount"]}), 200
             
         """ Set curent robot motor position """
         @app.route('/SetCurentMotorsPosition', methods=['POST'])
@@ -72,7 +73,7 @@ class RobotManager:
                 robots[info.get("Robot")]["XYZposition"]["z"] = result_forward.get("Z")        
             
             System().SaveToCache(robots=robots)
-            return "True"
+            return json.dumps({"status": True, "info": f"Motors position for robot '{info.get('Robot')}' has been setted"}), 200
             
         """ Get curent robot speed """
         @app.route('/GetCurentSpeed', methods=['POST'])
@@ -80,7 +81,7 @@ class RobotManager:
         def GetCurentSpeed():
             info = request.form
             robots = URMSystem().get_robots()
-            return str(robots[info.get("Robot")]["MotorsSpeed"])
+            return json.dumps({"status": True, "info": f"Current robot '{info.get('Robot')}' angles speed", "data": robots[info.get("Robot")]["MotorsSpeed"]}), 200
             
         """ Get robot ready parametr """
         @app.route('/GetRobotReady', methods=['POST'])
@@ -88,7 +89,15 @@ class RobotManager:
         def GetRobotReady():
             info = request.form
             robots = URMSystem().get_robots()
-            return str(robots[info.get("Robot")]["RobotReady"])
+            return json.dumps({"status": True, "info": f"Current robot '{info.get('Robot')}' RobotReady parameter", "data": robots[info.get("Robot")]["RobotReady"]}), 200
+        
+        ''' Get emergency stop '''
+        @app.route('/GetRobotEmergency', methods=['POST'])
+        @access.check_robot
+        def GetRobotEmergency():
+            info = request.form
+            robots = URMSystem().get_robots()
+            return json.dumps({"status": True, "info": f"Current robot '{info.get('Robot')}' Emergency parameter", "data": robots[info.get("Robot")]["Emergency"]}), 200
             
         """ Set robot ready parametr """
         @app.route('/SetRobotReady', methods=['POST'])
@@ -103,16 +112,16 @@ class RobotManager:
                 
             if info.get('RobotReady') == "True":
                 if not globals()["is_robot_ready_setted_false"][info.get("Robot")]:
-                    return "False"
+                    return json.dumps({"status": False, "info": "The RobotReady parameter was not been seted"}), 400
                 else:
                     if not isinstance(robots[info.get("Robot")]["Position"], list):
                         robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
                     else:
-                        return "False"
+                        return json.dumps({"status": False, "info": "The RobotReady parameter was not been seted"}), 400
 
             System().SaveToCache(robots=robots)
             User().update_token()
-            return "True"
+            return json.dumps({"status": True, "info": "The RobotReady parameter was been seted"}), 200
             
         ''' Activate and deativate emergency stop '''
         @app.route('/SetRobotEmergency', methods=['POST'])
@@ -139,17 +148,7 @@ class RobotManager:
             System().SaveToCache(robots=robots)
             User().update_token()
             Robot_loger(info.get("Robot")).info(f"Emergency stop button activated")
-            return "True"
-
-            
-        ''' Get emergency stop '''
-        @app.route('/GetRobotEmergency', methods=['POST'])
-        @access.check_robot
-        def GetRobotEmergency():
-            info = request.form
-            robots = URMSystem().get_robots()
-            return robots[info.get("Robot")]["Emergency"]
-
+            return json.dumps({"status": True, "info": "The Emergency parameter was been seted"}), 200
 
         """ Curent robot position"""
         @app.route('/CurentPosition', methods=['POST'])
@@ -162,8 +161,9 @@ class RobotManager:
             kinematics:dict = KinematicsManager().get_kinematics()
             while True:
                 if robots[info.get("Robot")]["Emergency"] == "True":
-                    Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
-                    return "The robot is currently in emergency stop"
+                    log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
+                    Robot_loger(info.get("Robot")).error(log_message)
+                    return json.dumps({"status": False, "info": log_message}), 400
                 else:
                     if not globals()["is_robot_ready_setted_false"][info.get("Robot")] or bool(robots[info.get("Robot")]["RobotReady"]) == False:
                         continue
@@ -171,8 +171,9 @@ class RobotManager:
                         not isinstance(robots[info.get("Robot")]["Position"], list):
                             if info.get("angles_data") is None:
                                 if Robot.check_angles(info, robots) == False:
-                                    Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
-                                    return "Values ​​are not validated"
+                                    log_message = "Angles values ​​are not correct"
+                                    Robot_loger(info.get("Robot")).error(log_message)
+                                    return json.dumps({"status": False, "info": log_message}), 400
                                 else:
                                     for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
                                         robots[info.get("Robot")]["Position"][f"J{i}"] = float(info.get(f'J{i}'))
@@ -192,13 +193,13 @@ class RobotManager:
                                 if isinstance(new_pos, list):
                                     robots[info.get("Robot")]["Position"] = new_pos
                                 else:
-                                    return "Multi points data is not valid"
+                                    return json.dumps({"status": False, "info": "Multi points data is not valid"}), 400
                                 
                             robots[info.get("Robot")]["RobotReady"] = "False"
                             System().SaveToCache(robots=robots)
                             globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
                             User().update_token()
-                            return "True"
+                            return json.dumps({"status": True, "info": f"Current robot '{info.get('Robot')}' position was been seted"}), 200
                             
         """ Remove curent robot point position """
         @app.route('/RemoveCurentPointPosition', methods=['POST'])
@@ -213,9 +214,9 @@ class RobotManager:
                     robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
-                return "True"
+                return json.dumps({"status": True, "info": "Curent robot point position was been removed"}), 200
             elif isinstance(robots[info.get("Robot")]["Position"], dict):
-                return "Position is not multi point"
+                return json.dumps({"status": False, "info": "Curent robot point position is not multi point"}), 400
             
         """ Remove all robot point positions """
         @app.route('/RemoveAllPointPosition', methods=['POST'])
@@ -227,10 +228,9 @@ class RobotManager:
                 robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
-                return "True"
+                return json.dumps({"status": True, "info": "All robot points from multi point position was been removed"}), 200
             elif isinstance(robots[info.get("Robot")]["Position"], dict):
-                return "Position is not multi point"
-
+                return json.dumps({"status": False, "info": "Curent robot point position is not multi point"}), 400
             
         """ Curent home position"""
         @app.route('/HomePosition', methods=['POST'])
@@ -239,8 +239,9 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             if Robot.check_angles(info, robots) == False:
-                Robot_loger(info.get("Robot")).error(f"Values ​​are not validated")
-                return "Values ​​are not validated"
+                log_message = "Angles values ​​are not correct"
+                Robot_loger(info.get("Robot")).error(log_message)
+                return json.dumps({"status": False, "info": log_message}), 400
             else:
                 for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
                     robots[info.get("Robot")]["HomePosition"][f"J{i}"] = float(info.get(f'J{i}'))
@@ -249,7 +250,7 @@ class RobotManager:
                 
                 Robot_loger(info.get("Robot")).info(f"""Was setted robot home position: {
                     info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                return "True"
+                return json.dumps({"status": True, "info": f"Was setted robot '{info.get('Robot')}' home position"}), 200
 
         """ Curent robot speed """
         @app.route('/CurentSpeed', methods=['POST'])
@@ -258,8 +259,9 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             if robots[info.get("Robot")]["Emergency"] == "True":
-                Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
-                return "The robot is currently in emergency stop"
+                log_message = f"The robot is currently in emergency stop"
+                Robot_loger(info.get("Robot")).error(log_message)
+                return json.dumps({"status": False, "info": log_message}), 400
             else:
                 if info.get("angles_data") is None:
                     for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
@@ -273,11 +275,11 @@ class RobotManager:
                     if isinstance(new_pos, list):
                         robots[info.get("Robot")]["MotorsSpeed"] = new_pos
                     else:
-                        return "Multi points data is not valid"
+                        return json.dumps({"status": False, "info": "Multi points agle speed data is not valid"}), 400
                     
                 System().SaveToCache(robots=robots)
                 User().update_token()
-                return "True"
+                return json.dumps({"status": True, "info": "The robot speed parameter was been seted"}), 200
                     
         """ Remove curent robot point speed """
         @app.route('/RemoveCurentPointSpeed', methods=['POST'])
@@ -292,9 +294,9 @@ class RobotManager:
                     robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
-                return "True"
+                return json.dumps({"status": True, "info": "Curent robot point speed was been removed"}), 200
             elif isinstance(robots[info.get("Robot")]["MotorsSpeed"], dict):
-                return "MotorsSpeed is not multi point"
+                return json.dumps({"status": False, "info": "Curent robot point speed is not multi point"}), 400
             
         """ Remove all robot point speeds """
         @app.route('/RemoveAllPointSpeed', methods=['POST'])
@@ -306,10 +308,9 @@ class RobotManager:
                 robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
-                return "True"
-            elif isinstance(robots[info.get("Robot")]["MotorsSpeed"], dict):
-                return "MotorsSpeed is not multi point"
-
+                return json.dumps({"status": True, "info": "All robot points from multi point speed was been removed"}), 200
+            elif isinstance(robots[info.get("Robot")]["Position"], dict):
+                return json.dumps({"status": False, "info": "Curent robot point speed is not multi point"}), 400
 
         """ Standart robot speed"""
         @app.route('/StandartSpeed', methods=['POST'])
@@ -323,8 +324,7 @@ class RobotManager:
             User().update_token()
             Robot_loger(info.get("Robot")).info(f"""Was setted robot standart speed: {
                     info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-            return "True"
-
+            return json.dumps({"status": True, "info": "The robot default speed parameter was been seted"}), 200
             
         """ Set program """
         @app.route('/SetProgram', methods=['POST'])
@@ -333,16 +333,17 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             if robots[info.get("Robot")]["Emergency"] == "True":
-                Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
-                return "The robot is currently in emergency stop"
+                log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
+                Robot_loger(info.get("Robot")).error(log_message)
+                return json.dumps({"status": False, "info": log_message}), 400
             else:
                 robots[info.get("Robot")]["Program"] = info.get('Program')
                 robots[info.get("Robot")]["ProgramToken"] = secrets.token_hex(16)
                 System().SaveToCache(robots=robots)
                 User().update_token()
-                Robot_loger(info.get("Robot")).info(f"Was setted robot programm")
-                return "True"
-
+                log_message = "Was setted robot programm"
+                Robot_loger(info.get("Robot")).info(log_message)
+                return json.dumps({"status": True, "info": log_message}), 200
 
         """ Delete program """
         @app.route('/DeleteProgram', methods=['POST'])
@@ -354,8 +355,9 @@ class RobotManager:
             robots[info.get("Robot")]["ProgramToken"] = ""
             System().SaveToCache(robots=robots)
             User().update_token()
-            Robot_loger(info.get("Robot")).info(f"Was deleted robot programm")
-            return "True"
+            log_message = "Was deleted robot programm"
+            Robot_loger(info.get("Robot")).info(log_message)
+            return json.dumps({"status": True, "info": log_message}), 200
 
 
         """ Get XYZ from angle robot position """
@@ -373,7 +375,7 @@ class RobotManager:
                         new_coord["x"] = result_forward.get("x")
                         new_coord["y"] = result_forward.get("y")
                         new_coord["z"] = result_forward.get("z")
-                        return str(new_coord)
+                        return json.dumps({"status": True, "info": "Angles to cartesian point converter", "data": new_coord}), 200
                     else:
                         angles = ast.literal_eval(info.get("angles_data"))
                         if isinstance(angles, list):
@@ -387,14 +389,13 @@ class RobotManager:
                                 new_coord["y"] = result_forward.get("y")
                                 new_coord["z"] = result_forward.get("z")
                                 points.append(point_coords)
-                            return str(points)
+                            return json.dumps({"status": True, "info": "(multi) angles to cartesian points converter", "data": points}), 200
                         else:
-                            return "Multi points data is not valid"
+                            return json.dumps({"status": False, "info": "Multi points data is not valid"}), 400
                 except:
-                    return "An error has occurred"
+                    return json.dumps({"status": False, "info": "An error has occurred"}), 400
             else:
-                return "This command does not work if you are not using kinematics"
-
+                return json.dumps({"status": False, "info": "This command does not work if you are not using kinematics"}), 400
 
         """ Get angle from XYZ robot position """
         @app.route('/XYZ_to_angle', methods=['POST'])
@@ -411,7 +412,7 @@ class RobotManager:
                         result_inverse:dict = modul.Inverse(float(info.get("x")), float(info.get("y")), float(info.get("z")))
                         for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
                             point_angles[f"J{j}"] = result_inverse.get(f"J{j}")
-                        return str(point_angles)
+                        return json.dumps({"status": True, "info": "Cartesian point to angles converter", "data": point_angles}), 200
                     else:
                         positions = ast.literal_eval(info.get("positions_data"))
                         if isinstance(positions, list):
@@ -423,15 +424,13 @@ class RobotManager:
                                 for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
                                     point_angles[f"J{j}"] = result_inverse.get(f"J{j}")
                                 angles.append(point_angles)
-                            print(str(angles))
-                            return str(angles)
+                            return json.dumps({"status": True, "info": "(multi) cartesian point to angles converter", "data": angles}), 200
                         else:
-                            return "Multi points data is not valid"
+                            return json.dumps({"status": False, "info": "Multi points data is not valid"}), 400
                 except:
-                    return "An error has occurred"
+                    return json.dumps({"status": False, "info": "An error has occurred"}), 400
             else:
-                return "This command does not work if you are not using kinematics"
-
+                return json.dumps({"status": False, "info": "This command does not work if you are not using kinematics"}), 400
             
         """ Set curent robot XYZ position """
         @app.route('/Move_XYZ', methods=['POST'])
@@ -445,8 +444,9 @@ class RobotManager:
             if kinematics[info.get("Robot")] != "None":
                 while True:
                     if robots[info.get("Robot")]["Emergency"] == "True":
-                        Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
-                        return "The robot is currently in emergency stop"
+                        log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
+                        Robot_loger(info.get("Robot")).error(log_message)
+                        return json.dumps({"status": False, "info": log_message}), 400
                     else:
                         if not globals()["is_robot_ready_setted_false"][info.get("Robot")] or bool(robots[info.get("Robot")]["RobotReady"]) == False:
                             continue
@@ -465,7 +465,6 @@ class RobotManager:
                                     
                                     Robot_loger(info.get("Robot")).info(f"""The robot has been moved to coordinates: X-{
                                         info.get("X")},Y-{info.get("Y")},Z-{info.get("Z")}""")
-
                                 else:
                                     # If getted not one point
                                     new_positions = ast.literal_eval(info.get("points_data"))
@@ -477,18 +476,17 @@ class RobotManager:
                                             angles.append(result_inverse)
                                         robots[info.get("Robot")]["Position"] = angles
                                     else:
-                                        return "Multi points data is not valid"
+                                        return json.dumps({"status": False, "info": "Multi points data is not valid"}), 400
                                     
                                 robots[info.get("Robot")]["RobotReady"] = "False"
                                 System().SaveToCache(robots=robots)
                                 globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
                                 User().update_token()
-                                return "True"
+                                return json.dumps({"status": True, "info": f"Current robot '{info.get('Robot')}' cartesian position was been seted"}), 200
                             except:
-                                return "An error has occurred"       
+                                return json.dumps({"status": False, "info": "An error has occurred"}), 400    
             else:
-                return "This command does not work if you are not using kinematics"
-
+                return json.dumps({"status": False, "info": "This command does not work if you are not using kinematics"}), 400
 
         ''' Set minimal angle of rotation '''
         @app.route('/MinAngles', methods=['POST'])
@@ -497,8 +495,9 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             if robots[info.get("Robot")]["Emergency"] == "True":
-                Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
-                return "The robot is currently in emergency stop"
+                log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
+                Robot_loger(info.get("Robot")).error(log_message)
+                return json.dumps({"status": False, "info": log_message}), 400
             else:
                 for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
                     robots[info.get("Robot")]["MinAngles"][f"J{i}"] = float(info.get(f'J{i}'))
@@ -506,7 +505,7 @@ class RobotManager:
                 User().update_token()
                 Robot_loger(info.get("Robot")).info(f"""Was setted robot minimal angles: {
                     info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                return robots[info.get("Robot")]["MinAngles"]
+                return json.dumps({"status": True, "info": f"Robot '{info.get('Robot')}' minimal angles data was been seted"}), 200
                 
 
         ''' Set maximum angle of rotation '''
@@ -516,8 +515,9 @@ class RobotManager:
             info = request.form
             robots = URMSystem().get_robots()
             if robots[info.get("Robot")]["Emergency"] == "True":
-                Robot_loger(info.get("Robot")).error(f"The robot is currently in emergency stop")
-                return "The robot is currently in emergency stop"
+                log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
+                Robot_loger(info.get("Robot")).error(log_message)
+                return json.dumps({"status": False, "info": log_message}), 400
             else:
                 for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
                     robots[info.get("Robot")]["MaxAngles"][f"J{i}"] = float(info.get(f'J{i}'))
@@ -525,7 +525,7 @@ class RobotManager:
                 User().update_token()
                 Robot_loger(info.get("Robot")).info(f"""Was setted robot maximal angles: {
                     info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                return robots[info.get("Robot")]["MaxAngles"]
+                return json.dumps({"status": True, "info": f"Robot '{info.get('Robot')}' maximal angles data was been seted"}), 200
 
         ''' Set program is running '''
         @app.route('/SetProgramRun', methods=['POST'])
@@ -536,7 +536,6 @@ class RobotManager:
             robots[info.get("Robot")]["ProgramRunning"] = info.get("State")
             System().SaveToCache(robots=robots)
             User().update_token()
-            return robots[info.get("Robot")]["ProgramRunning"]
-        
+            return json.dumps({"status": True, "info": f"Robot '{info.get('Robot')}' ProgramRun parameter was been seted"}), 200
         
         return app

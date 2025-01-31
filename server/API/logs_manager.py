@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, request
 
 class LogsManager:
@@ -19,7 +21,7 @@ class LogsManager:
         def URLog():
             robots:dict = URMSystem().get_robots()
             User().update_token()
-            return robots[request.form.get("Robot")]["Logs"] 
+            return json.dumps({"status": True, "info": f"The {request.form.get('Robot')} robot logs", "data": robots[request.form.get("Robot")]["Logs"]}), 200
 
         # add new log
         @app.route("/URLogs", methods=['POST'])
@@ -28,6 +30,6 @@ class LogsManager:
             info = request.form
             Robot_loger(info.get("Robot")).debug(info.get("Text"))
             User().update_token()
-            return "True"
+            return json.dumps({"status": True, "info": "Log added"}), 200
 
         return app

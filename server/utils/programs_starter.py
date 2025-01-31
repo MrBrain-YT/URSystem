@@ -18,7 +18,7 @@ def UPS():
             url = "https://localhost:5000/GetRobots"
             data = {"token":os.environ.get("SYSTEM_API_TOKEN")}
             resp = requests.post(url, data=json.loads(json.dumps(data, ensure_ascii=False))).text
-            for robot_name in json.loads(resp.replace("'", '"')).keys():
+            for robot_name in json.loads(resp)["data"].keys():
                 url = "https://localhost:5000/GetRobot"
                 data = {'Robot':robot_name, "token":os.environ.get("SYSTEM_API_TOKEN")}
                 resp = requests.post(url, data=json.loads(json.dumps(data, ensure_ascii=False))).text

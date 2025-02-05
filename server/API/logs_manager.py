@@ -21,13 +21,13 @@ class LogsManager:
         def URLog():
             robots:dict = URMSystem().get_robots()
             User().update_token()
-            return json.dumps({"status": True, "info": f"The {request.form.get('Robot')} robot logs", "data": robots[request.form.get("Robot")]["Logs"]}), 200
+            return json.dumps({"status": True, "info": f"The {request.json.get('Robot')} robot logs", "data": robots[request.json.get("Robot")]["Logs"]}), 200
 
         # add new log
         @app.route("/URLogs", methods=['POST'])
         @access.check_user("user", loger_module=self.loger_module)
         def URLogs():
-            info = request.form
+            info = request.json
             Robot_loger(info.get("Robot")).debug(info.get("Text"))
             User().update_token()
             return json.dumps({"status": True, "info": "Log added"}), 200

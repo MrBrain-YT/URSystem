@@ -39,7 +39,7 @@ class KinematicsManager:
         @app.route("/BindKinematics", methods=['POST'])
         @access.check_user_and_robot_data(user_role="administrator", loger_module=self.loger_module)
         def BindKinematics():
-            info = request.form
+            info = request.json
             robots = URMSystem().get_robots()
             robots[info.get("Robot")]["Kinematic"] = info.get('Kinematics') if \
                 os.path.exists(f"./kinematics/{info.get('Kinematics')}") else robots[info.get("Robot")]["Kinematic"]

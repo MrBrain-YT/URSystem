@@ -39,7 +39,7 @@ class URMSystem:
         @app.route("/CreateRobot", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def CreateRobot():
-            info = request.form
+            info = request.json
             robots = globals()["robots"]
             angles = {}
             for i in range(1, int(info.get("Angle"))+1):
@@ -79,7 +79,7 @@ class URMSystem:
         @app.route("/ImportCache", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def ImportCache():
-            info = request.form
+            info = request.json
             frames:dict = FramesManager().get_frames()
             users:dict = AccountManager().get_users()
             robots:dict = globals()["robots"]
@@ -133,7 +133,7 @@ class URMSystem:
         # Export robot cache from cache file
         @app.route("/ExportFileCache", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
-        def ExportCache():
+        def ExportFileCache():
             with open("./configuration/robots_cache.py", "r") as file:
                 cache = file.read()
                 
@@ -165,7 +165,7 @@ class URMSystem:
         @app.route("/GetRobot", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def GetRobot():
-            info = request.form
+            info = request.json
             robots:dict = globals()["robots"]
             User().update_token()
             result = robots[info.get("Robot")] if info.get("Robot") in robots.keys() else None
@@ -186,7 +186,7 @@ class URMSystem:
         @app.route("/DelRobot", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def DelRobot():
-            info = request.form
+            info = request.json
             robots:dict = globals()["robots"]
             if info.get("Robot") in robots.keys():
                 del robots[info.get("Robot")]

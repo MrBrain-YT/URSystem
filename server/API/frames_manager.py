@@ -31,7 +31,7 @@ class FramesManager:
         @app.route("/GetFrame", methods=['POST'])
         @access.check_robot_or_user(user_role="user")
         def GetFrame():
-            info = request.form
+            info = request.json
             if globals()["frames"].get(info.get("id")) is not None:
                 return json.dumps({"status": True, "info": f"Value from frame with id {info.get('id')}", "data": globals()["frames"].get(info.get("id"))}), 200
             else:
@@ -40,7 +40,7 @@ class FramesManager:
         @app.route("/SetFrame", methods=['POST'])
         @access.check_robot_or_user(user_role="administrator")
         def SetFrame():
-            info = request.form
+            info = request.json
             globals()["frames"][info.get("id")] = info.get("config")
             System().SaveToCache(frames=globals()["frames"])
             User().update_token()
@@ -50,7 +50,7 @@ class FramesManager:
         @app.route("/DelFrame", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def DelFrame():
-            info = request.form
+            info = request.json
             del globals()["frames"][info.get("id")]
             System().SaveToCache(frames=globals()["frames"])
             User().update_token()

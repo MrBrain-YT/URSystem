@@ -38,7 +38,7 @@ class ToolsManager:
         @app.route("/URTool", methods=['POST'])
         @access.check_user(user_role="user", loger_module=self.loger_module)
         def Tool():
-            info = request.form
+            info = request.json
             tools = globals()["tools"]
             if tools.get(info.get("id")) is not None:
                 if info.get("type") == "write":
@@ -57,7 +57,7 @@ class ToolsManager:
         @app.route("/URTC", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def URTC():
-            info = request.form
+            info = request.json
             tools = globals()["tools"]
             if info.get("id") not in [i for i in tools.values()]:
                 tools[info.get("id")] = ""
@@ -76,7 +76,7 @@ class ToolsManager:
         @app.route("/URTD", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def URTD():
-            info = request.form
+            info = request.json
             tools = globals()["tools"]
             del tools[info.get("id")]
             System().SaveToCache(tools=tools)

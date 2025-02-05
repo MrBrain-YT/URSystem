@@ -23,8 +23,8 @@ robots = robots_cache.robots.keys()
 for robot in robots:
     robots_list[robot]["Program"] = ""
     robots_list[robot]["ProgramRunning"] = "False"
-    robots_list[robot]["RobotReady"] = "True"
-    robots_list[robot]["Emergency"] = "False"
+    robots_list[robot]["RobotReady"] = True
+    robots_list[robot]["Emergency"] = False
     robots_list[robot]["MotorsSpeed"] = robots_list[robot]['StandartSpeed'].copy()
     if isinstance(robots_list[robot]["Position"], dict):
         robots_list[robot]["Position"] = robots_list[robot]["MotorsPosition"].copy()

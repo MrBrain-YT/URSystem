@@ -31,7 +31,7 @@ class AccountManager:
         @app.route("/CreateAccount", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def CreateAccount():
-            info = request.form
+            info = request.json
             users:dict = globals()["users"]
 
             if info.get("name") not in users:
@@ -59,7 +59,7 @@ class AccountManager:
         @app.route("/DeleteAccount", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def DeleteAccount():
-            info = request.form
+            info = request.json
             users:dict = globals()["users"]
             if info.get("name") in users:
                 con = sqlite3.connect("Databases\\Users.sqlite")
@@ -88,7 +88,7 @@ class AccountManager:
         # get role account
         @app.route("/GetRoleAccount", methods=['POST'])
         def GetRoleAccount():
-            info = request.form
+            info = request.json
             users:dict = globals()["users"]
             if info.get("server_token") == server_token.reg_token:
                 User().update_token()
@@ -111,7 +111,7 @@ class AccountManager:
         @app.route("/ChangePass", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def change_password():
-            info = request.form
+            info = request.json
             con = sqlite3.connect("Databases\\Users.sqlite")
             cur = con.cursor()
             cur.execute(f"UPDATE users SET password = '{info.get('password')}' WHERE name = '{info.get('name')}'")
@@ -126,7 +126,7 @@ class AccountManager:
         @app.route("/GetToken", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def get_user_token():
-            info = request.form
+            info = request.json
             con = sqlite3.connect("Databases\\Users.sqlite")
             cur = con.cursor()
             cur.execute(f"SELECT token FROM users WHERE name = '{info.get('name')}, password = '{info.get('password')}'")
@@ -139,7 +139,7 @@ class AccountManager:
         @app.route("/ChangeToken", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
         def changedoken():
-            info = request.form
+            info = request.json
             users:dict = globals()["users"]
             while True:
                 token = secrets.token_hex(32)

@@ -18,7 +18,7 @@ class Access:
         from server_functions import Robot
         @wraps(func)
         def wrapper(*args, **kwargs):
-            info = request.form
+            info = request.json
             if Robot.is_robot(info.get("token")):
                 return func(*args, **kwargs)
             else:
@@ -37,7 +37,7 @@ class Access:
         def check_robot_or_user_wrapper(func:Callable):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                info = request.form
+                info = request.json
                 if User.role_access(info.get("token"), user_role) or Robot.is_robot(info.get("token")):
                     return func(*args, **kwargs)
                 else:
@@ -57,7 +57,7 @@ class Access:
         def check_user_wrapper(func:Callable):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                info = request.form
+                info = request.json
                 if User.role_access(info.get("token"), user_role):
                     return func(*args, **kwargs)
                 else:
@@ -80,7 +80,7 @@ class Access:
         def check_user_wrapper(func:Callable):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                info = request.form
+                info = request.json
                 if User.role_access(info.get("token"), user_role) and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
                     return func(*args, **kwargs)
                 else:
@@ -101,7 +101,7 @@ class Access:
         def check_robot_user_wrapper(func:Callable):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                info = request.form
+                info = request.json
                 robots:dict = URMSystem().get_robots()
                 if (User.role_access(info.get("token"), user_role) and \
                 Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")):
@@ -125,7 +125,7 @@ class Access:
         def check_robot_user_prog_token_wrapper(func:Callable):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                info = request.form
+                info = request.json
                 robots:dict = URMSystem().get_robots()
                 if ((User.role_access(info.get("token"), user_role) and \
                 Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")))\
@@ -150,13 +150,13 @@ class Access:
         def check_robot_user_prog_wrapper(func:Callable):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                info = request.form
+                info = request.json
                 robots:dict = URMSystem().get_robots()
                 if robots[info.get("Robot")]["Program"] == "":
                     if User.role_access(info.get("token"), user_role) and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
                         return func(*args, **kwargs)
                     else:
-                        self.loger.warning(loger_module, f"User access denied to set robot {info.get('Robot')} minimal angles. User with token: {request.form.get('token')}")
+                        self.loger.warning(loger_module, f"User access denied to set robot {info.get('Robot')} minimal angles. User with token: {request.json.get('token')}")
                         return "You don't have enough rights"
                 else:
                     self.loger.warning(loger_module, f"The robot executes an automatic program. It is currently not possible to change the MinAngles parameter. User with token: {info.get('token')}")

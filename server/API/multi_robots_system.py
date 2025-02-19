@@ -2,9 +2,8 @@ import sqlite3
 import ast
 import secrets
 import os
-import json
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 from utils.loger import Loger
 from server_functions import System
@@ -73,7 +72,7 @@ class URMSystem:
             RobotManager.add_new_robot_ready(info.get("Robot"))
             log_message = f"Robot named {info.get('Robot')} was created"
             loger.info("URMS", log_message)
-            return json.dumps({"status": True, "info": log_message}), 200
+            return jsonify({"status": True, "info": log_message}), 200
 
         # Import robot cache
         @app.route("/ImportCache", methods=['POST'])
@@ -128,7 +127,7 @@ class URMSystem:
             System().SaveToCache(robots=robots, tools=tools, frames=frames)
             log_message = "Cache was imorted"
             loger.info("URSystem", log_message)
-            return json.dumps({"status": True, "info": log_message}), 200
+            return jsonify({"status": True, "info": log_message}), 200
             
         # Export robot cache from cache file
         @app.route("/ExportFileCache", methods=['POST'])
@@ -143,7 +142,7 @@ class URMSystem:
                 "tools": ast.literal_eval(cache.split("\n")[1].lstrip("robots = ")),
                 "frames": ast.literal_eval(cache.split("\n")[2].lstrip("robots = ")),
             }
-            return json.dumps({"status": True, "info": "Current cache from cache file", "data": new_cache}), 200
+            return jsonify({"status": True, "info": "Current cache from cache file", "data": new_cache}), 200
         
         # Export robot cache from RAM
         @app.route("/ExportCache", methods=['POST'])
@@ -159,7 +158,7 @@ class URMSystem:
                 "tools": tools,
                 "frames": frames,
             }
-            return json.dumps({"status": True, "info": "Current cache from RAM", "data": new_cache}), 200
+            return jsonify({"status": True, "info": "Current cache from RAM", "data": new_cache}), 200
 
         # get robot
         @app.route("/GetRobot", methods=['POST'])
@@ -170,9 +169,9 @@ class URMSystem:
             User().update_token()
             result = robots[info.get("Robot")] if info.get("Robot") in robots.keys() else None
             if result is not None:
-                return json.dumps({"status": True, "info": "Get robot data", "data": result}), 200
+                return jsonify({"status": True, "info": "Get robot data", "data": result}), 200
             else:
-                return json.dumps({"status": False, "info": "Robot not found"}), 400
+                return jsonify({"status": False, "info": "Robot not found"}), 400
             
         # get robots
         @app.route("/GetRobots", methods=['POST'])
@@ -180,7 +179,7 @@ class URMSystem:
         def GetRobots():
             robots:dict = globals()["robots"]
             User().update_token()
-            return json.dumps({"status": True, "info": "All robots data", "data": robots}), 200
+            return jsonify({"status": True, "info": "All robots data", "data": robots}), 200
 
         # delete robot
         @app.route("/DelRobot", methods=['POST'])
@@ -193,10 +192,10 @@ class URMSystem:
                 RobotManager.remove_new_robot_ready(info.get("Robot"))
                 User().update_token()
                 loger.info("URSystem", f"Robot was deleted user with token: {info.get('token')}")
-                return json.dumps({"status": True, "info": f"Robot '{info.get('Robot')}' was deleted"}), 200
+                return jsonify({"status": True, "info": f"Robot '{info.get('Robot')}' was deleted"}), 200
             else:
                 User().update_token()
                 loger.info("URSystem", f"Robot did not deleted user with token: {info.get('token')}")
-                return json.dumps({"status": False, "info": "Robot not found"}), 400
+                return jsonify({"status": False, "info": "Robot not found"}), 400
             
         return app

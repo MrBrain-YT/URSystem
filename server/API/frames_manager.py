@@ -1,6 +1,4 @@
-import json
-
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 class FramesManager:
     
@@ -25,7 +23,7 @@ class FramesManager:
         @app.route("/GetFrames", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def GetFrames():
-            return json.dumps({"status": True, "info": f"All frames", "data": globals()["frames"]}), 200
+            return jsonify({"status": True, "info": f"All frames", "data": globals()["frames"]}), 200
 
             
         @app.route("/GetFrame", methods=['POST'])
@@ -33,9 +31,9 @@ class FramesManager:
         def GetFrame():
             info = request.json
             if globals()["frames"].get(info.get("id")) is not None:
-                return json.dumps({"status": True, "info": f"Value from frame with id {info.get('id')}", "data": globals()["frames"].get(info.get("id"))}), 200
+                return jsonify({"status": True, "info": f"Value from frame with id {info.get('id')}", "data": globals()["frames"].get(info.get("id"))}), 200
             else:
-                return json.dumps({"status": False, "info": f"Frame '{info.get('id')}' not found"}), 400
+                return jsonify({"status": False, "info": f"Frame '{info.get('id')}' not found"}), 400
             
         @app.route("/SetFrame", methods=['POST'])
         @access.check_robot_or_user(user_role="administrator")
@@ -44,7 +42,7 @@ class FramesManager:
             globals()["frames"][info.get("id")] = info.get("config")
             System().SaveToCache(frames=globals()["frames"])
             User().update_token()
-            return json.dumps({"status": True, "info": f"The value has been changed in frame with id {info.get('id')}"}), 200
+            return jsonify({"status": True, "info": f"The value has been changed in frame with id {info.get('id')}"}), 200
 
             
         @app.route("/DelFrame", methods=['POST'])
@@ -54,7 +52,7 @@ class FramesManager:
             del globals()["frames"][info.get("id")]
             System().SaveToCache(frames=globals()["frames"])
             User().update_token()
-            return json.dumps({"status": True, "info": f"Frame with id {info.get('id')} has ben deleted"}), 200
+            return jsonify({"status": True, "info": f"Frame with id {info.get('id')} has ben deleted"}), 200
 
         
         return app

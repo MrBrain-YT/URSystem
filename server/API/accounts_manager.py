@@ -2,7 +2,7 @@ import secrets
 import sqlite3
 import json
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 from utils.loger import Loger
 
@@ -50,11 +50,11 @@ class AccountManager:
                     User().update_token()
                     log_message = f"Account with name: {info.get('name')} was created"
                     loger.info("URAccount", log_message)
-                    return json.dumps({"status": True, "info": log_message, "token": token}), 200
+                    return jsonify({"status": True, "info": log_message, "token": token}), 200
             else:
                 log_message = f"The account has already been created"
                 loger.info("URAccount", log_message)
-                return json.dumps({"status": False, "info": log_message}), 400
+                return jsonify({"status": False, "info": log_message}), 400
             
         @app.route("/DeleteAccount", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
@@ -69,9 +69,9 @@ class AccountManager:
                 User().update_token()
                 log_message = f"Фccount with name: {info.get('name')} was deleted"
                 loger.info("URAccount", log_message)
-                return json.dumps({"status": True, "info": log_message}), 200
+                return jsonify({"status": True, "info": log_message}), 200
             else:
-                return json.dumps({"status": False, "info": "No such account exists"}), 400
+                return jsonify({"status": False, "info": "No such account exists"}), 400
             
         # get account
         @app.route("/GetAccounts", methods=['POST'])
@@ -83,7 +83,7 @@ class AccountManager:
                 if users[info]["role"] not in {"SuperAdmin", "System"}:
                     user[info] = users.get(info)
             User().update_token()
-            return json.dumps({"status": True, "info": "Found users", "users": json.dumps(user)}), 200
+            return jsonify({"status": True, "info": "Found users", "users": json.dumps(user)}), 200
             
         # get role account
         @app.route("/GetRoleAccount", methods=['POST'])
@@ -96,16 +96,16 @@ class AccountManager:
                     if users[info.get("name")]["password"] == info.get("password"):
                         role = users[info.get('name')]['role']
                         token = users[info.get('name')]['token']
-                        return json.dumps({"status": True, "info": "User found", "role": role, "token": token}), 200
+                        return jsonify({"status": True, "info": "User found", "role": role, "token": token}), 200
                     else:
                         loger.error("URAccount", f"Password incorrect")
-                        return json.dumps({"status": False, "info": "Password incorrect"}), 400
+                        return jsonify({"status": False, "info": "Password incorrect"}), 400
                 else:
                     loger.error("URAccount", f"Name not in users")
-                    return json.dumps({"status": False, "info": "Name not in users"}), 400
+                    return jsonify({"status": False, "info": "Name not in users"}), 400
             else:
                 loger.error("URAccount", f"Server token incorrect")
-                return json.dumps({"status": False, "info": "Server token incorrect"}), 400
+                return jsonify({"status": False, "info": "Server token incorrect"}), 400
 
         # change password
         @app.route("/ChangePass", methods=['POST'])
@@ -120,7 +120,7 @@ class AccountManager:
             User().update_token()
             log_message = f"Password was changed for account with name: {info.get('name')}"
             loger.info("URAccount", )
-            return json.dumps({"status": True, "info": log_message}), 200
+            return jsonify({"status": True, "info": log_message}), 200
 
         # get user token
         @app.route("/GetToken", methods=['POST'])
@@ -133,7 +133,7 @@ class AccountManager:
             token = cur.fetchone()
             con.commit()
             con.close()
-            return json.dumps({"status": True, "info": "", "token": token}), 200
+            return jsonify({"status": True, "info": "", "token": token}), 200
 
         # change user token
         @app.route("/ChangeToken", methods=['POST'])
@@ -155,6 +155,6 @@ class AccountManager:
             con.close()
             log_message = f"Token was changed for account with name: {info.get('name')}"
             loger.info("URAccount", log_message)
-            return json.dumps({"status": True, "info": log_message, "token": token}), 200
+            return jsonify({"status": True, "info": log_message, "token": token}), 200
 
         return app

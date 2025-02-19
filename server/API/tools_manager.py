@@ -1,6 +1,4 @@
-import json
-
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 from utils.loger import Loger
 
@@ -31,7 +29,7 @@ class ToolsManager:
         def Tools():
             tools = globals()["tools"]
             User().update_token()
-            return json.dumps({"status": True, "info": "All tools data", "data": tools}), 200
+            return jsonify({"status": True, "info": "All tools data", "data": tools}), 200
 
 
         # get and set tool configuration
@@ -45,13 +43,13 @@ class ToolsManager:
                     tools[info.get("id")] = info.get("config")
                     System().SaveToCache(tools=tools)
                     User().update_token()
-                    return json.dumps({"status": True, "info": "New tool value has been setted", "request_type": "write"}), 200
+                    return jsonify({"status": True, "info": "New tool value has been setted", "request_type": "write"}), 200
                 else:
-                    return json.dumps({"status": True, "info": "Tool value", "data": tools[info.get("id")], "request_type": "read"}), 200
+                    return jsonify({"status": True, "info": "Tool value", "data": tools[info.get("id")], "request_type": "read"}), 200
             else:
                 log_message = f"The tool {info.get('id')} has not been created and cannot be modified"
                 loger.error("URTools", log_message)
-                return json.dumps({"status": False, "info": log_message}), 400
+                return jsonify({"status": False, "info": log_message}), 400
 
         # creating tool 
         @app.route("/URTC", methods=['POST'])
@@ -65,11 +63,11 @@ class ToolsManager:
                 User().update_token()
                 log_message = f"Tool {info.get('id')} was created"
                 loger.info("URTools", log_message)
-                return json.dumps({"status": True, "info": log_message}), 200
+                return jsonify({"status": True, "info": log_message}), 200
             else:
                 log_message = f"The tool {info.get('id')} already exists"
                 loger.error("URTools", log_message)
-                return json.dumps({"status": True, "info": log_message}), 400
+                return jsonify({"status": True, "info": log_message}), 400
 
             
         # delete tool
@@ -83,6 +81,6 @@ class ToolsManager:
             User().update_token()
             log_message = f"Tool {info.get('id')} was deleted"
             loger.info("URTools", log_message)
-            return json.dumps({"status": True, "info": log_message}), 200
+            return jsonify({"status": True, "info": log_message}), 200
             
         return app

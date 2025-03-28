@@ -2,13 +2,14 @@ import shutil
 import os
 import importlib
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 from utils.loger import Loger
 
 class KinematicsManager:
     
     def __init__(self, kinematics:dict=None):
+        self.loger_module = "URKinematics"
         if kinematics is not None:
             globals()["kinematics"] = kinematics
     
@@ -16,42 +17,42 @@ class KinematicsManager:
         from server_functions import User, Robot
         from API.multi_robots_system import URMSystem
         from server_functions import System
+        from API.access_checker import Access
+
+        access = Access()
         
         """ Add kinematics to system """
         @app.route("/AddKinematics", methods=['POST'])
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def AddKinematics():
-            info = request.form
-            if User.role_access(info.get("token"), "administrator"):
-                zip_path = f"./kinematics/{request.files.get('file').filename}"
-                request.files.get("file").save(zip_path)
-                shutil.unpack_archive(filename=zip_path, extract_dir=zip_path.replace(".zip", ""), format="zip")
-                os.remove(zip_path)
-                loger.info("URSystem", f"Added new kinematic with work name: {request.files.get('file')}")
-                return "True"
-            else:
-                loger.warning("URSystem", f"User access denied to add kinematic. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
+            zip_path = f"./kinematics/{request.files.get('file').filename}"
+            request.files.get("file").save(zip_path)
+            shutil.unpack_archive(filename=zip_path, extract_dir=zip_path.replace(".zip", ""), format="zip")
+            os.remove(zip_path)
+            log_message = f"Added new kinematic with id: {request.files.get('file')}"
+            loger.info("URSystem", log_message)
+            return jsonify({"status": True, "info": log_message}), 200
+
 
         """ Bind kinematics to robot """
         @app.route("/BindKinematics", methods=['POST'])
+        @access.check_user_and_robot_data(user_role="administrator", loger_module=self.loger_module)
         def BindKinematics():
-            info = request.form
+            info = request.json
             robots = URMSystem().get_robots()
-            if User.role_access(info.get("token"), "administrator") and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
-                robots[info.get("Robot")]["Kinematic"] = info.get('Kinematics') if \
-                    os.path.exists(f"./kinematics/{info.get('Kinematics')}") else robots[info.get("Robot")]["Kinematic"]
-                System().SaveToCache(robots=robots)
-                
-                if robots[info.get("Robot")]["Kinematic"] == info.get('Kinematics'):
-                    loger.info("URSystem", f"Was created associate kinematics-{info.get('Kinematics')} and robot-{info.get('Robot')}")
-                    return "True"
-                else:
-                    loger.error("URSystem", f"Not created associate kinematics-{info.get('Kinematics')} and robot-{info.get('Robot')}")
-                    return "It was not possible to associate kinematics with the robot because it is missing"
-            else:
-                loger.warning("URSystem", f"User access denied to bind kinematic. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
+            robots[info.get("robot")]["Kinematic"] = info.get('id') if \
+                os.path.exists(f"./kinematics/{info.get('id')}") else robots[info.get("robot")]["Kinematic"]
+            System().SaveToCache(robots=robots)
             
+            if robots[info.get("robot")]["Kinematic"] == info.get('id'):
+                log_message = f"Was created associate kinematics-{info.get('id')} and robot-{info.get('Robot')}"
+                loger.info("URSystem", log_message)
+                return jsonify({"status": True, "info": log_message}), 200
+            else:
+                log_message = f"Not created associate kinematics-{info.get('id')} and robot-{info.get('Robot')}"
+                loger.error("URSystem", log_message)
+                return jsonify({"status": True, "info": log_message}), 400
+
         return app
             
     @staticmethod

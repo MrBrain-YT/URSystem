@@ -30,6 +30,17 @@ class Robot:
             else: return False
         else:
             raise ValueError("Token incorrect")
+        
+    @staticmethod
+    def check_program_token(robot_name:str, _program_token:str) -> bool:
+        from API.multi_robots_system import URMSystem
+        robots:dict = URMSystem.get_robots()
+        program_token = robots[robot_name]["ProgramToken"]
+        if program_token == _program_token or program_token == "":
+            return True
+        else:
+            return False
+        
     
     
 class System:   
@@ -39,8 +50,10 @@ class System:
         from API.multi_robots_system import URMSystem
         from API.frames_manager import FramesManager
         from API.tools_manager import ToolsManager
-        print(ToolsManager().get_tools())
-        os.remove("./configuration/robots_cache.py")
+        try:
+            os.remove("./configuration/robots_cache.py")
+        except:
+            return None
         with open("./configuration/robots_cache.py", "w") as file:
             file.write(f"robots = {robots if robots is not None else URMSystem().get_robots()}")
             file.write(f"\ntools = {tools if tools is not None else ToolsManager().get_tools()}")
@@ -108,13 +121,15 @@ class User:
     
     def update_token(self) -> dict:
         users = self.update_user_info()
+        tokens = []
+        for i in [i for i in users]:
+            tokens.append(users.get(i)["token"])
+            
         while True:
             token = secrets.token_hex(32)
-            tokens = []
-            for i in [i for i in users]:
-                tokens.append(users.get(i)["token"])
             if token not in tokens:
                 break
+            
         con = sqlite3.connect("databases\\Users.sqlite")
         cur = con.cursor()
         cur.execute(f"UPDATE users SET token = '{token}' WHERE role = 'System' and name = '' and password = ''")

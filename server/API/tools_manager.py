@@ -1,9 +1,11 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
+
 from utils.loger import Loger
 
 class ToolsManager:
     
     def __init__(self, tools:dict=None):
+        self.loger_module = "URTools"
         if tools is not None:
             globals()["tools"] = tools
             
@@ -17,70 +19,68 @@ class ToolsManager:
     
     def __call__(self, app:Flask, loger: Loger) -> Flask:
         from server_functions import System, User
+        from API.access_checker import Access
+
+        access = Access()
         
         # get tools
-        @app.route("/URTools", methods=['POST'])
+        @app.route("/GetTools", methods=['POST'])
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def Tools():
             tools = globals()["tools"]
-            if User.role_access(request.form.get("token"), "administrator"):
-                User().update_token()
-                return str(tools)
-            else:
-                loger.warning("URTools", f"User access denied to get tools. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
+            User().update_token()
+            return jsonify({"status": True, "info": "All tools data", "data": tools}), 200
+
 
         # get and set tool configuration
-        @app.route("/URTool", methods=['POST'])
+        @app.route("/GetTool", methods=['POST'])
+        @access.check_user(user_role="user", loger_module=self.loger_module)
         def Tool():
-            info = request.form
+            info = request.json
             tools = globals()["tools"]
-            if User.role_access(info.get("token"), "user"):
+            if tools.get(info.get("id")) is not None:
                 if info.get("type") == "write":
-                    if info.get("id") in [i for i in tools.values()]:
-                        tools[info.get("id")] = info.get("config")
-                        System().SaveToCache(tools=tools)
-                        User().update_token()
-                        return "True"
-                    else:
-                        loger.error("URTools", f"The tool {info.get('id')} has not been created and cannot be modified")
-                        return "The tool has not been created"
-                else:
-                    return tools[info.get("id")]
-            else:
-                return "You are not on the users list"
-
-        # creating tool 
-        @app.route("/URTC", methods=['POST'])
-        def URTC():
-            info = request.form
-            tools = globals()["tools"]
-            if User.role_access(info.get("token"), "administrator"):
-                if info.get("id") not in [i for i in tools.values()]:
-                    tools[info.get("id")] = ""
+                    tools[info.get("id")] = info.get("config")
                     System().SaveToCache(tools=tools)
                     User().update_token()
-                    loger.info("URTools", f"Tool {info.get('id')} was created")
-                    return "True"
+                    return jsonify({"status": True, "info": "New tool value has been setted", "request_type": "write"}), 200
                 else:
-                    loger.error("URTools", f"The tool {info.get('id')} already exists")
-                    return "The tool already exists"
+                    return jsonify({"status": True, "info": "Tool value", "data": tools[info.get("id")], "request_type": "read"}), 200
             else:
-                loger.warning("URTools", f"User access denied to create tool. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
-            
-        # delete tool
-        @app.route("/URTD", methods=['POST'])
-        def URTD():
-            info = request.form
+                log_message = f"The tool {info.get('id')} has not been created and cannot be modified"
+                loger.error("URTools", log_message)
+                return jsonify({"status": False, "info": log_message}), 400
+
+        # creating tool 
+        @app.route("/CreateTool", methods=['POST'])
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
+        def URTC():
+            info = request.json
             tools = globals()["tools"]
-            if User.role_access(info.get("token"), "administrator"):
-                del tools[info.get("id")]
+            if info.get("id") not in [i for i in tools.values()]:
+                tools[info.get("id")] = ""
                 System().SaveToCache(tools=tools)
                 User().update_token()
-                loger.info("URTools", f"Tool {info.get('id')} was deleted")
-                return "True"
+                log_message = f"Tool {info.get('id')} was created"
+                loger.info("URTools", log_message)
+                return jsonify({"status": True, "info": log_message}), 200
             else:
-                loger.warning("URTools", f"User access denied to delete tool. User with token: {request.form.get('token')}")
-                return "You don't have enough rights"
+                log_message = f"The tool {info.get('id')} already exists"
+                loger.error("URTools", log_message)
+                return jsonify({"status": True, "info": log_message}), 400
+
+            
+        # delete tool
+        @app.route("/DeleteTool", methods=['POST'])
+        @access.check_user(user_role="administrator", loger_module=self.loger_module)
+        def URTD():
+            info = request.json
+            tools = globals()["tools"]
+            del tools[info.get("id")]
+            System().SaveToCache(tools=tools)
+            User().update_token()
+            log_message = f"Tool {info.get('id')} was deleted"
+            loger.info("URTools", log_message)
+            return jsonify({"status": True, "info": log_message}), 200
             
         return app

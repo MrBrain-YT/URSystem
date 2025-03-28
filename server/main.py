@@ -5,7 +5,7 @@ from flask import Flask
 from threading import Thread
 
 import configuration.robots_cache as robots_cache
-from server_functions import User
+from server_functions import User, System
 import utils.programs_starter as programs_starter
 from utils.loger import Loger
 from API.frames_manager import FramesManager
@@ -15,6 +15,7 @@ from API.logs_manager import LogsManager
 from API.tools_manager import ToolsManager
 from API.kinematics_manager import KinematicsManager
 from API.robot_manager import RobotManager
+from utils.public_loader.loader import Loader
 
 # Importing robots from cache
 robots_list = robots_cache.robots
@@ -22,10 +23,13 @@ robots = robots_cache.robots.keys()
 for robot in robots:
     robots_list[robot]["Program"] = ""
     robots_list[robot]["ProgramRunning"] = "False"
-    robots_list[robot]["RobotReady"] = "True"
-    robots_list[robot]["Emergency"] = "False"
+    robots_list[robot]["RobotReady"] = True
+    robots_list[robot]["Emergency"] = False
     robots_list[robot]["MotorsSpeed"] = robots_list[robot]['StandartSpeed'].copy()
-    robots_list[robot]["Position"] = robots_list[robot]["MotorsPosition"].copy()
+    if isinstance(robots_list[robot]["Position"], dict):
+        robots_list[robot]["Position"] = robots_list[robot]["MotorsPosition"].copy()
+    elif isinstance(robots_list[robot]["Position"], list):
+        robots_list[robot]["Position"] = robots_list[robot]["Position"][0].copy()
     
 # importing all kinematics
 kinematics = {}
@@ -54,6 +58,9 @@ app = Flask(__name__)
 """ Init server functions"""
 app = FramesManager(frames)(app)
 
+""" URS tool system """
+app = ToolsManager(tools)(app, loger)
+
 """ URMSystem """ # URMS - United Robotics Multi System
 app = URMSystem(Robots)(app, loger)
 
@@ -61,17 +68,16 @@ app = URMSystem(Robots)(app, loger)
 app = AccountManager(users)(app, loger)
 
 """ URLogs """
-app = LogsManager()(app, frames)
-
-""" URS tool system """
-app = ToolsManager(tools)(app, loger)
+app = LogsManager()(app)
 
 """ Kinematics manager """
 app = KinematicsManager(kinematics)(app, loger)
 
 """ Robot manager """
-app = RobotManager()(app, loger)
+app = RobotManager()(app)
 
+""" Public loader """
+app = Loader(app)()
 
 """ hello message """
 @app.route("/")

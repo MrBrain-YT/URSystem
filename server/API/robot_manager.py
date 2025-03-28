@@ -36,7 +36,7 @@ class RobotManager:
             info = request.json
             time.sleep(0.2)
             robots = URMSystem().get_robots()
-            return jsonify({"status": True, "info": f"Curent robot '{info.get('Robot')}' angles position", "data": robots[info.get("Robot")]["Position"]}), 200
+            return jsonify({"status": True, "info": f"Curent robot '{info.get('robot')}' angles position", "data": robots[info.get("robot")]["Position"]}), 200
         
         """ Get curent robot speed """
         @app.route('/GetCurentSpeed', methods=['POST'])
@@ -45,7 +45,7 @@ class RobotManager:
             info = request.json
             time.sleep(0.2)
             robots = URMSystem().get_robots()
-            return jsonify({"status": True, "info": f"Curent robot '{info.get('Robot')}' angles speed", "data": robots[info.get("Robot")]["MotorsSpeed"]}), 200
+            return jsonify({"status": True, "info": f"Curent robot '{info.get('robot')}' angles speed", "data": robots[info.get("robot")]["MotorsSpeed"]}), 200
         
         """ Get curent robot position """
         @app.route('/GetXYZPosition', methods=['POST'])
@@ -53,7 +53,7 @@ class RobotManager:
         def GetXYZPosition():
             info = request.json
             robots = URMSystem().get_robots()
-            return jsonify({"status": True, "info": f"Curent robot '{info.get('Robot')}' cartesian position", "data": robots[info.get("Robot")]["XYZposition"]}), 200
+            return jsonify({"status": True, "info": f"Curent robot '{info.get('robot')}' cartesian position", "data": robots[info.get("robot")]["XYZposition"]}), 200
         
         """ Get robot angles count """
         @app.route('/GetRobotAnglesCount', methods=['POST'])
@@ -61,7 +61,7 @@ class RobotManager:
         def GetRobotAnglesCount():
             info = request.json
             robots = URMSystem().get_robots()
-            return jsonify({"status": True, "info": f"Curent robot '{info.get('Robot')}' angles count", "data": robots[info.get("Robot")]["AngleCount"]}), 200
+            return jsonify({"status": True, "info": f"Curent robot '{info.get('robot')}' angles count", "data": robots[info.get("robot")]["AngleCount"]}), 200
             
         """ Set curent robot motor position """
         @app.route('/SetCurentMotorsPosition', methods=['POST'])
@@ -70,20 +70,20 @@ class RobotManager:
             info = request.json
             robots = URMSystem().get_robots()
             kinematics:dict = KinematicsManager().get_kinematics()
-            for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                robots[info.get("Robot")]["MotorsPosition"][f"J{i}"] = info.get(f'J{i}')
-                if robots[info.get("Robot")]["Emergency"] == True:
-                    robots[info.get("Robot")]["Position"][f"J{i}"] = info.get(f'J{i}')
+            for i in range(1, int(robots[info.get("robot")]["AngleCount"])+1):
+                robots[info.get("robot")]["MotorsPosition"][f"J{i}"] = info.get("angles").get(f'J{i}')
+                if robots[info.get("robot")]["Emergency"] == True:
+                    robots[info.get("robot")]["Position"][f"J{i}"] = info.get("angles").get(f'J{i}')
             
-            if robots[info.get("Robot")]["Kinematic"] != "None":
-                modul = kinematics[info.get("Robot")]
-                result_forward:dict = modul.Forward(info.get("J1"), info.get("J2"), info.get("J3"), info.get("J4"))
-                robots[info.get("Robot")]["XYZposition"]["x"] = result_forward.get("X")
-                robots[info.get("Robot")]["XYZposition"]["y"] = result_forward.get("Y")
-                robots[info.get("Robot")]["XYZposition"]["z"] = result_forward.get("Z")        
+            if robots[info.get("robot")]["Kinematic"] != "None":
+                modul = kinematics[info.get("robot")]
+                result_forward:dict = modul.Forward(info.get("angles").get("J1"), info.get("angles").get("J2"), info.get("angles").get("J3"), info.get("angles").get("J4"))
+                robots[info.get("robot")]["XYZposition"]["x"] = result_forward.get("x")
+                robots[info.get("robot")]["XYZposition"]["y"] = result_forward.get("y")
+                robots[info.get("robot")]["XYZposition"]["z"] = result_forward.get("z")        
             
             System().SaveToCache(robots=robots)
-            return jsonify({"status": True, "info": f"Motors position for robot '{info.get('Robot')}' has been setted"}), 200
+            return jsonify({"status": True, "info": f"Motors position for robot '{info.get('robot')}' has been setted"}), 200
             
         """ Get robot ready parametr """
         @app.route('/GetRobotReady', methods=['POST'])
@@ -91,7 +91,7 @@ class RobotManager:
         def GetRobotReady():
             info = request.json
             robots = URMSystem().get_robots()
-            return jsonify({"status": True, "info": f"Curent robot '{info.get('Robot')}' RobotReady parameter", "data": robots[info.get("Robot")]["RobotReady"]}), 200
+            return jsonify({"status": True, "info": f"Curent robot '{info.get('robot')}' RobotReady parameter", "data": robots[info.get("robot")]["RobotReady"]}), 200
         
         ''' Get emergency stop '''
         @app.route('/GetRobotEmergency', methods=['POST'])
@@ -99,7 +99,7 @@ class RobotManager:
         def GetRobotEmergency():
             info = request.json
             robots = URMSystem().get_robots()
-            return jsonify({"status": True, "info": f"Curent robot '{info.get('Robot')}' Emergency parameter", "data": robots[info.get("Robot")]["Emergency"]}), 200
+            return jsonify({"status": True, "info": f"Curent robot '{info.get('robot')}' Emergency parameter", "data": robots[info.get("robot")]["Emergency"]}), 200
             
         """ Set robot ready parametr """
         @app.route('/SetRobotReady', methods=['POST'])
@@ -107,18 +107,16 @@ class RobotManager:
         def SetRobotReady():
             info = request.json
             robots = URMSystem().get_robots()
-            
-            print(info.get('RobotReady'))
-            if info.get('RobotReady') == False:
-                globals()["is_robot_ready_setted_false"][info.get("Robot")] = True
-                robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
+            if info.get('state') == False:
+                globals()["is_robot_ready_setted_false"][info.get("robot")] = True
+                robots[info.get("robot")]["RobotReady"] = info.get('state')
                 
-            if info.get('RobotReady') == True:
-                if not globals()["is_robot_ready_setted_false"][info.get("Robot")]: 
+            if info.get('state') == True:
+                if not globals()["is_robot_ready_setted_false"][info.get("robot")]: 
                     return jsonify({"status": False, "info": "The RobotReady parameter was not been seted"}), 400
                 else:
-                    if not isinstance(robots[info.get("Robot")]["Position"], list):
-                        robots[info.get("Robot")]["RobotReady"] = info.get('RobotReady')
+                    if not isinstance(robots[info.get("robot")]["Position"], list):
+                        robots[info.get("robot")]["RobotReady"] = info.get('state')
                     else:
                         return jsonify({"status": False, "info": "The RobotReady parameter was not been seted"}), 400
 
@@ -133,24 +131,24 @@ class RobotManager:
             info = request.json
             robots = URMSystem().get_robots()
             kinematics:dict = KinematicsManager().get_kinematics()
-            robots[info.get("Robot")]["Emergency"] = True if info.get("State") == True else False
-            if robots[info.get("Robot")]["Emergency"] == True:
-                robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["MotorsPosition"].copy()
-                robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["StandartSpeed"].copy()
-                robots[info.get("Robot")]["RobotReady"] = False
-                robots[info.get("Robot")]["Program"] = ""
+            robots[info.get("robot")]["Emergency"] = True if info.get("state") == True else False
+            if robots[info.get("robot")]["Emergency"] == True:
+                robots[info.get("robot")]["Position"] = robots[info.get("robot")]["MotorsPosition"].copy()
+                robots[info.get("robot")]["MotorsSpeed"] = robots[info.get("robot")]["StandartSpeed"].copy()
+                robots[info.get("robot")]["RobotReady"] = False
+                robots[info.get("robot")]["Program"] = ""
                 
-            if robots[info.get("Robot")]["Kinematic"] != "None":
-                modul = kinematics[info.get("Robot")]
-                pos = robots[info.get("Robot")]["Position"]
+            if robots[info.get("robot")]["Kinematic"] != "None":
+                modul = kinematics[info.get("robot")]
+                pos = robots[info.get("robot")]["Position"]
                 result_forward:dict = modul.Forward(pos["J1"], pos["J2"], pos["J3"], pos["J4"])
-                robots[info.get("Robot")]["XYZposition"]["x"] = result_forward.get("X")
-                robots[info.get("Robot")]["XYZposition"]["y"] = result_forward.get("Y")
-                robots[info.get("Robot")]["XYZposition"]["z"] = result_forward.get("Z")   
+                robots[info.get("robot")]["XYZposition"]["x"] = result_forward.get("x")
+                robots[info.get("robot")]["XYZposition"]["y"] = result_forward.get("y")
+                robots[info.get("robot")]["XYZposition"]["z"] = result_forward.get("z")   
             
             System().SaveToCache(robots=robots)
             User().update_token()
-            Robot_loger(info.get("Robot")).info(f"Emergency stop button activated")
+            Robot_loger(info.get("robot")).info(f"Emergency stop button activated")
             return jsonify({"status": True, "info": "The Emergency parameter was been seted"}), 200
 
         """ Curent robot position"""
@@ -160,50 +158,50 @@ class RobotManager:
             info = request.json
             print(info)
             robots = URMSystem().get_robots()
-            if robots[info.get("Robot")]["RobotReady"] == True:
-                globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
+            if robots[info.get("robot")]["RobotReady"] == True:
+                globals()["is_robot_ready_setted_false"][info.get("robot")] = False
             kinematics:dict = KinematicsManager().get_kinematics()
             while True:
-                if robots[info.get("Robot")]["Emergency"] == True:
-                    log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
-                    Robot_loger(info.get("Robot")).error(log_message)
+                if robots[info.get("robot")]["Emergency"] == True:
+                    log_message = f"The robot '{info.get('robot')}' is currently in emergency stop"
+                    Robot_loger(info.get("robot")).error(log_message)
                     return jsonify({"status": False, "info": log_message}), 400
                 else:
-                    if not globals()["is_robot_ready_setted_false"][info.get("Robot")] or bool(robots[info.get("Robot")]["RobotReady"]) == False:
+                    if not globals()["is_robot_ready_setted_false"][info.get("robot")] or bool(robots[info.get("robot")]["RobotReady"]) == False:
                         continue
-                    elif robots[info.get("Robot")]["RobotReady"] == True and globals()["is_robot_ready_setted_false"][info.get("Robot")] and\
-                        not isinstance(robots[info.get("Robot")]["Position"], list):
+                    elif robots[info.get("robot")]["RobotReady"] == True and globals()["is_robot_ready_setted_false"][info.get("robot")] and\
+                        not isinstance(robots[info.get("robot")]["Position"], list):
                             if info.get("angles_data") is None:
                                 if Robot.check_angles(info, robots) == False:
                                     log_message = "Angles values ​​are not correct"
-                                    Robot_loger(info.get("Robot")).error(log_message)
+                                    Robot_loger(info.get("robot")).error(log_message)
                                     return jsonify({"status": False, "info": log_message}), 400
                                 else:
-                                    for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                                        robots[info.get("Robot")]["Position"][f"J{i}"] = info.get(f'J{i}')
+                                    for i in range(1, int(robots[info.get("robot")]["AngleCount"])+1):
+                                        robots[info.get("robot")]["Position"][f"J{i}"] = info.get("angles").get(f'J{i}')
                                     
-                                    if robots[info.get("Robot")]["Kinematic"] != "None":
-                                        modul = kinematics[info.get("Robot")]
-                                        result_forward:dict = modul.Forward(info.get("J1"), info.get("J2"), info.get("J3"), info.get("J4"))
-                                        robots[info.get("Robot")]["XYZposition"]["x"] = result_forward.get("X")
-                                        robots[info.get("Robot")]["XYZposition"]["y"] = result_forward.get("Y")
-                                        robots[info.get("Robot")]["XYZposition"]["z"] = result_forward.get("Z")
+                                    if robots[info.get("robot")]["Kinematic"] != "None":
+                                        modul = kinematics[info.get("robot")]
+                                        result_forward:dict = modul.Forward(info.get("angles").get("J1"), info.get("angles").get("J2"), info.get("angles").get("J3"), info.get("angles").get("J4"))
+                                        robots[info.get("robot")]["XYZposition"]["x"] = result_forward.get("x")
+                                        robots[info.get("robot")]["XYZposition"]["y"] = result_forward.get("y")
+                                        robots[info.get("robot")]["XYZposition"]["z"] = result_forward.get("z")
                                         
-                                    Robot_loger(info.get("Robot")).info(f"""Was setted robot current position: {
-                                        info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+                                    Robot_loger(info.get("robot")).info(f"""Was setted robot current position: {
+                                        info.get("angles").get('J1')},{info.get("angles").get('J2')},{info.get("angles").get('J3')},{info.get("angles").get('J4')}""")
                             else:
                                 # If getted not one point
                                 new_pos = ast.literal_eval(info.get("angles_data"))
                                 if isinstance(new_pos, list):
-                                    robots[info.get("Robot")]["Position"] = new_pos
+                                    robots[info.get("robot")]["Position"] = new_pos
                                 else:
                                     return jsonify({"status": False, "info": "Multi points data is not valid"}), 400
                                 
-                            robots[info.get("Robot")]["RobotReady"] = False
+                            robots[info.get("robot")]["RobotReady"] = False
                             System().SaveToCache(robots=robots)
-                            globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
+                            globals()["is_robot_ready_setted_false"][info.get("robot")] = False
                             User().update_token()
-                            return jsonify({"status": True, "info": f"Curent robot '{info.get('Robot')}' position was been seted"}), 200
+                            return jsonify({"status": True, "info": f"Curent robot '{info.get('robot')}' position was been seted"}), 200
                             
         """ Remove curent robot point position """
         @app.route('/RemoveCurentPointPosition', methods=['POST'])
@@ -211,15 +209,15 @@ class RobotManager:
         def RemoveCurentPointPosition():
             info = request.json
             robots = URMSystem().get_robots()
-            if isinstance(robots[info.get("Robot")]["Position"], list):
-                if len(robots[info.get("Robot")]["Position"]) > 2:
-                    robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][1::]
+            if isinstance(robots[info.get("robot")]["Position"], list):
+                if len(robots[info.get("robot")]["Position"]) > 2:
+                    robots[info.get("robot")]["Position"] = robots[info.get("robot")]["Position"][1::]
                 else:
-                    robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][-1]
+                    robots[info.get("robot")]["Position"] = robots[info.get("robot")]["Position"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return jsonify({"status": True, "info": "Curent robot point position was been removed"}), 200
-            elif isinstance(robots[info.get("Robot")]["Position"], dict):
+            elif isinstance(robots[info.get("robot")]["Position"], dict):
                 return jsonify({"status": False, "info": "Curent robot point position is not multi point"}), 400
             
         """ Remove all robot point positions """
@@ -228,12 +226,12 @@ class RobotManager:
         def RemoveAllPointPosition():
             info = request.json
             robots = URMSystem().get_robots()
-            if isinstance(robots[info.get("Robot")]["Position"], list):
-                robots[info.get("Robot")]["Position"] = robots[info.get("Robot")]["Position"][-1]
+            if isinstance(robots[info.get("robot")]["Position"], list):
+                robots[info.get("robot")]["Position"] = robots[info.get("robot")]["Position"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return jsonify({"status": True, "info": "All robot points from multi point position was been removed"}), 200
-            elif isinstance(robots[info.get("Robot")]["Position"], dict):
+            elif isinstance(robots[info.get("robot")]["Position"], dict):
                 return jsonify({"status": False, "info": "Curent robot point position is not multi point"}), 400
 
         """ Curent home position"""
@@ -244,17 +242,17 @@ class RobotManager:
             robots = URMSystem().get_robots()
             if Robot.check_angles(info, robots) == False:
                 log_message = "Angles values ​​are not correct"
-                Robot_loger(info.get("Robot")).error(log_message)
+                Robot_loger(info.get("robot")).error(log_message)
                 return jsonify({"status": False, "info": log_message}), 400
             else:
-                for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                    robots[info.get("Robot")]["HomePosition"][f"J{i}"] = float(info.get(f'J{i}'))
+                for i in range(1, int(robots[info.get("robot")]["AngleCount"])+1):
+                    robots[info.get("robot")]["HomePosition"][f"J{i}"] = float(info.get("angles").get(f'J{i}'))
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 
-                Robot_loger(info.get("Robot")).info(f"""Was setted robot home position: {
-                    info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                return jsonify({"status": True, "info": f"Was setted robot '{info.get('Robot')}' home position"}), 200
+                Robot_loger(info.get("robot")).info(f"""Was setted robot home position: {
+                    info.get("angles").get('J1')},{info.get("angles").get('J2')},{info.get("angles").get('J3')},{info.get("angles").get('J4')}""")
+                return jsonify({"status": True, "info": f"Was setted robot '{info.get('robot')}' home position"}), 200
 
         """ Curent robot speed """
         @app.route('/CurentSpeed', methods=['POST'])
@@ -263,22 +261,22 @@ class RobotManager:
             info = request.json
             print(info)
             robots = URMSystem().get_robots()
-            if robots[info.get("Robot")]["Emergency"] == True:
+            if robots[info.get("robot")]["Emergency"] == True:
                 log_message = f"The robot is currently in emergency stop"
-                Robot_loger(info.get("Robot")).error(log_message)
+                Robot_loger(info.get("robot")).error(log_message)
                 return jsonify({"status": False, "info": log_message}), 400
             else:
                 if info.get("angles_data") is None:
-                    for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                        robots[info.get("Robot")]["MotorsSpeed"][f"J{i}"] = float(info.get(f'J{i}'))
+                    for i in range(1, int(robots[info.get("robot")]["AngleCount"])+1):
+                        robots[info.get("robot")]["MotorsSpeed"][f"J{i}"] = float(info.get("angles").get(f'J{i}'))
                     
-                    Robot_loger(info.get("Robot")).info(f"""Was setted robot current speed: {
-                        info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+                    Robot_loger(info.get("robot")).info(f"""Was setted robot current speed: {
+                        info.get("angles").get('J1')},{info.get("angles").get('J2')},{info.get("angles").get('J3')},{info.get("angles").get('J4')}""")
                 else:
                     # If getted not one point
                     new_pos = ast.literal_eval(info.get("angles_data"))
                     if isinstance(new_pos, list):
-                        robots[info.get("Robot")]["MotorsSpeed"] = new_pos
+                        robots[info.get("robot")]["MotorsSpeed"] = new_pos
                     else:
                         return jsonify({"status": False, "info": "Multi points agle speed data is not valid"}), 400
                     
@@ -292,15 +290,15 @@ class RobotManager:
         def RemoveCurentPointSpeed():
             info = request.json
             robots = URMSystem().get_robots()
-            if isinstance(robots[info.get("Robot")]["MotorsSpeed"], list):
-                if len(robots[info.get("Robot")]["MotorsSpeed"]) > 2:
-                    robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][1::]
+            if isinstance(robots[info.get("robot")]["MotorsSpeed"], list):
+                if len(robots[info.get("robot")]["MotorsSpeed"]) > 2:
+                    robots[info.get("robot")]["MotorsSpeed"] = robots[info.get("robot")]["MotorsSpeed"][1::]
                 else:
-                    robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][-1]
+                    robots[info.get("robot")]["MotorsSpeed"] = robots[info.get("robot")]["MotorsSpeed"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return jsonify({"status": True, "info": "Curent robot point speed was been removed"}), 200
-            elif isinstance(robots[info.get("Robot")]["MotorsSpeed"], dict):
+            elif isinstance(robots[info.get("robot")]["MotorsSpeed"], dict):
                 return jsonify({"status": False, "info": "Curent robot point speed is not multi point"}), 400
             
         """ Remove all robot point speeds """
@@ -309,12 +307,12 @@ class RobotManager:
         def RemoveAllPointSpeed():
             info = request.json
             robots = URMSystem().get_robots()
-            if isinstance(robots[info.get("Robot")]["MotorsSpeed"], list):
-                robots[info.get("Robot")]["MotorsSpeed"] = robots[info.get("Robot")]["MotorsSpeed"][-1]
+            if isinstance(robots[info.get("robot")]["MotorsSpeed"], list):
+                robots[info.get("robot")]["MotorsSpeed"] = robots[info.get("robot")]["MotorsSpeed"][-1]
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 return jsonify({"status": True, "info": "All robot points from multi point speed was been removed"}), 200
-            elif isinstance(robots[info.get("Robot")]["Position"], dict):
+            elif isinstance(robots[info.get("robot")]["Position"], dict):
                 return jsonify({"status": False, "info": "Curent robot point speed is not multi point"}), 400
 
         """ Standart robot speed"""
@@ -323,12 +321,12 @@ class RobotManager:
         def StandartSpeed():
             info = request.json
             robots = URMSystem().get_robots()
-            for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                robots["First"]["StandartSpeed"][f"J{i}"] = float(info.get(f'J{i}'))
+            for i in range(1, int(robots[info.get("robot")]["AngleCount"])+1):
+                robots["First"]["StandartSpeed"][f"J{i}"] = float(info.get("angles").get(f'J{i}'))
             System().SaveToCache(robots=robots)
             User().update_token()
-            Robot_loger(info.get("Robot")).info(f"""Was setted robot standart speed: {
-                    info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
+            Robot_loger(info.get("robot")).info(f"""Was setted robot standart speed: {
+                    info.get("angles").get('J1')},{info.get("angles").get('J2')},{info.get("angles").get('J3')},{info.get("angles").get('J4')}""")
             return jsonify({"status": True, "info": "The robot default speed parameter was been seted"}), 200
             
         """ Set program """
@@ -337,17 +335,17 @@ class RobotManager:
         def Program():
             info = request.json
             robots = URMSystem().get_robots()
-            if robots[info.get("Robot")]["Emergency"] == True:
-                log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
-                Robot_loger(info.get("Robot")).error(log_message)
+            if robots[info.get("robot")]["Emergency"] == True:
+                log_message = f"The robot '{info.get('robot')}' is currently in emergency stop"
+                Robot_loger(info.get("robot")).error(log_message)
                 return jsonify({"status": False, "info": log_message}), 400
             else:
-                robots[info.get("Robot")]["Program"] = info.get('Program')
-                robots[info.get("Robot")]["ProgramToken"] = secrets.token_hex(16)
+                robots[info.get("robot")]["Program"] = info.get('program')
+                robots[info.get("robot")]["ProgramToken"] = secrets.token_hex(16)
                 System().SaveToCache(robots=robots)
                 User().update_token()
                 log_message = "Was setted robot programm"
-                Robot_loger(info.get("Robot")).info(log_message)
+                Robot_loger(info.get("robot")).info(log_message)
                 return jsonify({"status": True, "info": log_message}), 200
 
         """ Delete program """
@@ -356,12 +354,12 @@ class RobotManager:
         def DeleteProgram():
             info = request.json
             robots = URMSystem().get_robots()
-            robots[info.get("Robot")]["Program"] = ""
-            robots[info.get("Robot")]["ProgramToken"] = ""
+            robots[info.get("robot")]["Program"] = ""
+            robots[info.get("robot")]["ProgramToken"] = ""
             System().SaveToCache(robots=robots)
             User().update_token()
             log_message = "Was deleted robot programm"
-            Robot_loger(info.get("Robot")).info(log_message)
+            Robot_loger(info.get("robot")).info(log_message)
             return jsonify({"status": True, "info": log_message}), 200
 
 
@@ -371,12 +369,12 @@ class RobotManager:
         def angle_to_xyz():
             info = request.json
             kinematics:dict = KinematicsManager().get_kinematics()
-            if kinematics[info.get("Robot")] != "None":
+            if kinematics[info.get("robot")] != "None":
                 try:
                     if info.get("positions_data") is None:
                         new_coord = {}
-                        modul = kinematics[info.get("Robot")]
-                        result_forward:dict = modul.Forward(info.get("J1"), info.get("J2"), info.get("J3"), info.get("J4"))
+                        modul = kinematics[info.get("robot")]
+                        result_forward:dict = modul.Forward(info.get("angles").get("J1"), info.get("angles").get("J2"), info.get("angles").get("J3"), info.get("angles").get("J4"))
                         new_coord["x"] = result_forward.get("x")
                         new_coord["y"] = result_forward.get("y")
                         new_coord["z"] = result_forward.get("z")
@@ -387,7 +385,7 @@ class RobotManager:
                             points = []
                             for pos in angles:
                                 point_coords = {}
-                                modul = kinematics[info.get("Robot")]
+                                modul = kinematics[info.get("robot")]
                                 # set coords
                                 result_forward:dict = modul.Forward(pos[0], pos[1], pos[2])
                                 new_coord["x"] = result_forward.get("x")
@@ -409,13 +407,13 @@ class RobotManager:
             info = request.json
             robots = URMSystem().get_robots()
             kinematics:dict = KinematicsManager().get_kinematics()
-            if kinematics[info.get("Robot")] != "None":
+            if kinematics[info.get("robot")] != "None":
                 try:
                     if info.get("positions_data") is None:
                         point_angles = {}
-                        modul = kinematics[info.get("Robot")]
-                        result_inverse:dict = modul.Inverse(info.get("x"), info.get("y"), info.get("z"))
-                        for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
+                        modul = kinematics[info.get("robot")]
+                        result_inverse:dict = modul.Inverse(info.get("position").get("x"), info.get("position").get("y"), info.get("position").get("z"))
+                        for j in range(1, int(robots[info.get("robot")]["AngleCount"]) + 1):
                             point_angles[f"J{j}"] = result_inverse.get(f"J{j}")
                         return jsonify({"status": True, "info": "Cartesian point to angles converter", "data": point_angles}), 200
                     else:
@@ -424,9 +422,9 @@ class RobotManager:
                             angles = []
                             for pos in positions:
                                 point_angles = {}
-                                modul = kinematics[info.get("Robot")]
-                                result_inverse:dict = modul.Inverse(pos[0], pos[1], pos[2])
-                                for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
+                                modul = kinematics[info.get("robot")]
+                                result_inverse:dict = modul.Inverse(pos["x"], pos["y"], pos["z"])
+                                for j in range(1, int(robots[info.get("robot")]["AngleCount"]) + 1):
                                     point_angles[f"J{j}"] = result_inverse.get(f"J{j}")
                                 angles.append(point_angles)
                             return jsonify({"status": True, "info": "(multi) cartesian point to angles converter", "data": angles}), 200
@@ -443,51 +441,51 @@ class RobotManager:
         def Move_XYZ():
             info = request.json
             robots = URMSystem().get_robots()
-            if robots[info.get("Robot")]["RobotReady"] == True:
-                globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
+            if robots[info.get("robot")]["RobotReady"] == True:
+                globals()["is_robot_ready_setted_false"][info.get("robot")] = False
             kinematics:dict = KinematicsManager().get_kinematics()
-            if kinematics[info.get("Robot")] != "None":
+            if kinematics[info.get("robot")] != "None":
                 while True:
-                    if robots[info.get("Robot")]["Emergency"] == True:
-                        log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
-                        Robot_loger(info.get("Robot")).error(log_message)
+                    if robots[info.get("robot")]["Emergency"] == True:
+                        log_message = f"The robot '{info.get('robot')}' is currently in emergency stop"
+                        Robot_loger(info.get("robot")).error(log_message)
                         return jsonify({"status": False, "info": log_message}), 400
                     else:
-                        if not globals()["is_robot_ready_setted_false"][info.get("Robot")] or bool(robots[info.get("Robot")]["RobotReady"]) == False:
+                        if not globals()["is_robot_ready_setted_false"][info.get("robot")] or bool(robots[info.get("robot")]["RobotReady"]) == False:
                             continue
-                        elif bool(robots[info.get("Robot")]["RobotReady"]) == True and globals()["is_robot_ready_setted_false"][info.get("Robot")] and\
-                        not isinstance(robots[info.get("Robot")]["Position"], list):
+                        elif bool(robots[info.get("robot")]["RobotReady"]) == True and globals()["is_robot_ready_setted_false"][info.get("robot")] and\
+                        not isinstance(robots[info.get("robot")]["Position"], list):
                             try:
-                                if info.get("points_data") is None:
-                                    modul = kinematics[info.get("Robot")]
-                                    result_inverse:dict = modul.Inverse(info.get("x"), info.get("y"), info.get("z"))
-                                    for j in range(1, int(robots[info.get("Robot")]["AngleCount"]) + 1):
-                                        robots[info.get("Robot")]["Position"][f"J{j}"] = result_inverse.get(f"J{j}")
+                                if info.get("positions_data") is None:
+                                    modul = kinematics[info.get("robot")]
+                                    result_inverse:dict = modul.Inverse(info.get("position").get("x"), info.get("position").get("y"), info.get("position").get("z"))
+                                    for j in range(1, int(robots[info.get("robot")]["AngleCount"]) + 1):
+                                        robots[info.get("robot")]["Position"][f"J{j}"] = result_inverse.get(f"J{j}")
                                         
-                                    robots[info.get("Robot")]["XYZposition"]["x"] = info.get("x")
-                                    robots[info.get("Robot")]["XYZposition"]["y"] = info.get("y")
-                                    robots[info.get("Robot")]["XYZposition"]["z"] = info.get("z")
+                                    robots[info.get("robot")]["XYZposition"]["x"] = info.get("position").get("x")
+                                    robots[info.get("robot")]["XYZposition"]["y"] = info.get("position").get("y")
+                                    robots[info.get("robot")]["XYZposition"]["z"] = info.get("position").get("z")
                                     
-                                    Robot_loger(info.get("Robot")).info(f"""The robot has been moved to coordinates: X-{
+                                    Robot_loger(info.get("robot")).info(f"""The robot has been moved to coordinates: X-{
                                         info.get("X")},Y-{info.get("Y")},Z-{info.get("Z")}""")
                                 else:
                                     # If getted not one point
-                                    new_positions = ast.literal_eval(info.get("points_data"))
+                                    new_positions = ast.literal_eval(info.get("positions_data"))
                                     if isinstance(new_positions, list):
                                         angles = []
                                         for pos in new_positions:
-                                            modul = kinematics[info.get("Robot")]
-                                            result_inverse:dict = modul.Inverse(info.get("x"), info.get("y"), info.get("z"))
+                                            modul = kinematics[info.get("robot")]
+                                            result_inverse:dict = modul.Inverse(pos.get("x"), pos.get("y"), pos.get("z"))
                                             angles.append(result_inverse)
-                                        robots[info.get("Robot")]["Position"] = angles
+                                        robots[info.get("robot")]["Position"] = angles
                                     else:
                                         return jsonify({"status": False, "info": "Multi points data is not valid"}), 400
                                     
-                                robots[info.get("Robot")]["RobotReady"] = False
+                                robots[info.get("robot")]["RobotReady"] = False
                                 System().SaveToCache(robots=robots)
-                                globals()["is_robot_ready_setted_false"][info.get("Robot")] = False
+                                globals()["is_robot_ready_setted_false"][info.get("robot")] = False
                                 User().update_token()
-                                return jsonify({"status": True, "info": f"Curent robot '{info.get('Robot')}' cartesian position was been seted"}), 200
+                                return jsonify({"status": True, "info": f"Curent robot '{info.get('robot')}' cartesian position was been seted"}), 200
                             except:
                                 return jsonify({"status": False, "info": "An error has occurred"}), 400    
             else:
@@ -499,18 +497,18 @@ class RobotManager:
         def MinAngles():
             info = request.json
             robots = URMSystem().get_robots()
-            if robots[info.get("Robot")]["Emergency"] == True:
-                log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
-                Robot_loger(info.get("Robot")).error(log_message)
+            if robots[info.get("robot")]["Emergency"] == True:
+                log_message = f"The robot '{info.get('robot')}' is currently in emergency stop"
+                Robot_loger(info.get("robot")).error(log_message)
                 return jsonify({"status": False, "info": log_message}), 400
             else:
-                for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                    robots[info.get("Robot")]["MinAngles"][f"J{i}"] = float(info.get(f'J{i}'))
+                for i in range(1, int(robots[info.get("robot")]["AngleCount"])+1):
+                    robots[info.get("robot")]["MinAngles"][f"J{i}"] = float(info.get("angles").get(f'J{i}'))
                 System().SaveToCache(robots=robots)
                 User().update_token()
-                Robot_loger(info.get("Robot")).info(f"""Was setted robot minimal angles: {
-                    info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                return jsonify({"status": True, "info": f"Robot '{info.get('Robot')}' minimal angles data was been seted"}), 200
+                Robot_loger(info.get("robot")).info(f"""Was setted robot minimal angles: {
+                    info.get("angles").get('J1')},{info.get("angles").get('J2')},{info.get("angles").get('J3')},{info.get("angles").get('J4')}""")
+                return jsonify({"status": True, "info": f"Robot '{info.get('robot')}' minimal angles data was been seted"}), 200
                 
 
         ''' Set maximum angle of rotation '''
@@ -519,18 +517,18 @@ class RobotManager:
         def MaxAngles():
             info = request.json
             robots = URMSystem().get_robots()
-            if robots[info.get("Robot")]["Emergency"] == True:
-                log_message = f"The robot '{info.get('Robot')}' is currently in emergency stop"
-                Robot_loger(info.get("Robot")).error(log_message)
+            if robots[info.get("robot")]["Emergency"] == True:
+                log_message = f"The robot '{info.get('robot')}' is currently in emergency stop"
+                Robot_loger(info.get("robot")).error(log_message)
                 return jsonify({"status": False, "info": log_message}), 400
             else:
-                for i in range(1, int(robots[info.get("Robot")]["AngleCount"])+1):
-                    robots[info.get("Robot")]["MaxAngles"][f"J{i}"] = float(info.get(f'J{i}'))
+                for i in range(1, int(robots[info.get("robot")]["AngleCount"])+1):
+                    robots[info.get("robot")]["MaxAngles"][f"J{i}"] = float(info.get("angles").get(f'J{i}'))
                 System().SaveToCache(robots=robots)
                 User().update_token()
-                Robot_loger(info.get("Robot")).info(f"""Was setted robot maximal angles: {
-                    info.get('J1')},{info.get('J2')},{info.get('J3')},{info.get('J4')}""")
-                return jsonify({"status": True, "info": f"Robot '{info.get('Robot')}' maximal angles data was been seted"}), 200
+                Robot_loger(info.get("robot")).info(f"""Was setted robot maximal angles: {
+                    info.get("angles").get('J1')},{info.get("angles").get('J2')},{info.get("angles").get('J3')},{info.get("angles").get('J4')}""")
+                return jsonify({"status": True, "info": f"Robot '{info.get('robot')}' maximal angles data was been seted"}), 200
 
         ''' Set program is running '''
         @app.route('/SetProgramRun', methods=['POST'])
@@ -538,9 +536,9 @@ class RobotManager:
         def SetProgramRun():
             info = request.json
             robots = URMSystem().get_robots()
-            robots[info.get("Robot")]["ProgramRunning"] = info.get("State")
+            robots[info.get("robot")]["ProgramRunning"] = info.get("state")
             System().SaveToCache(robots=robots)
             User().update_token()
-            return jsonify({"status": True, "info": f"Robot '{info.get('Robot')}' ProgramRun parameter was been seted"}), 200
+            return jsonify({"status": True, "info": f"Robot '{info.get('robot')}' ProgramRun parameter was been seted"}), 200
         
         return app

@@ -47,7 +47,7 @@ class Access:
        
     def check_user(self, user_role:str, loger_module:str):
         """Checker for only user account\n
-        Using @user_role(user_role="user", loger_module="URAccounts")
+        Using @check_user(user_role="user", loger_module="URAccounts")
 
         Args:
             user_role (str): User role ("user", "administrator", "SuperAdmin", "System")
@@ -91,7 +91,7 @@ class Access:
        
     def check_robot_user(self, user_role:str, loger_module:str):
         """Checker for user or robot account, if you need checking robot data (secure code)\n
-        Using @check_user_and_robot_data(user_role="user")
+        Using @check_robot_user(user_role="user", loger_module="URSystem")
 
         Args:
             user_role (str): User role ("user", "administrator", "SuperAdmin", "System")
@@ -115,7 +115,7 @@ class Access:
     @staticmethod
     def check_robot_user_prog_token(user_role:str):
         """Checker for user or robot account, if you need checking robot data (secure code), program token and robot or user account\n
-        Using @check_user_and_robot_data(user_role="user")
+        Using @check_robot_user_prog_token(user_role="user")
 
         Args:
             user_role (str): User role ("user", "administrator", "SuperAdmin", "System")
@@ -139,7 +139,7 @@ class Access:
     
     def check_robot_user_prog(self, user_role:str, loger_module:str):
         """Checker for program robot and user account, if you need checking robot data (secure code) and value program in robot\n
-        Using @check_user_and_robot_data(user_role="user", loger_module="URSystem")
+        Using @check_robot_user_prog(user_role="user", loger_module="URSystem")
 
         Args:
             user_role (str): User role ("user", "administrator", "SuperAdmin", "System")

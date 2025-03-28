@@ -24,7 +24,7 @@ class ToolsManager:
         access = Access()
         
         # get tools
-        @app.route("/URTools", methods=['POST'])
+        @app.route("/GetTools", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def Tools():
             tools = globals()["tools"]
@@ -33,7 +33,7 @@ class ToolsManager:
 
 
         # get and set tool configuration
-        @app.route("/URTool", methods=['POST'])
+        @app.route("/GetTool", methods=['POST'])
         @access.check_user(user_role="user", loger_module=self.loger_module)
         def Tool():
             info = request.json
@@ -52,7 +52,7 @@ class ToolsManager:
                 return jsonify({"status": False, "info": log_message}), 400
 
         # creating tool 
-        @app.route("/URTC", methods=['POST'])
+        @app.route("/CreateTool", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def URTC():
             info = request.json
@@ -71,7 +71,7 @@ class ToolsManager:
 
             
         # delete tool
-        @app.route("/URTD", methods=['POST'])
+        @app.route("/DeleteTool", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def URTD():
             info = request.json

@@ -29,7 +29,7 @@ class KinematicsManager:
             request.files.get("file").save(zip_path)
             shutil.unpack_archive(filename=zip_path, extract_dir=zip_path.replace(".zip", ""), format="zip")
             os.remove(zip_path)
-            log_message = f"Added new kinematic with work name: {request.files.get('file')}"
+            log_message = f"Added new kinematic with id: {request.files.get('file')}"
             loger.info("URSystem", log_message)
             return jsonify({"status": True, "info": log_message}), 200
 
@@ -40,16 +40,16 @@ class KinematicsManager:
         def BindKinematics():
             info = request.json
             robots = URMSystem().get_robots()
-            robots[info.get("Robot")]["Kinematic"] = info.get('Kinematics') if \
-                os.path.exists(f"./kinematics/{info.get('Kinematics')}") else robots[info.get("Robot")]["Kinematic"]
+            robots[info.get("robot")]["Kinematic"] = info.get('id') if \
+                os.path.exists(f"./kinematics/{info.get('id')}") else robots[info.get("robot")]["Kinematic"]
             System().SaveToCache(robots=robots)
             
-            if robots[info.get("Robot")]["Kinematic"] == info.get('Kinematics'):
-                log_message = f"Was created associate kinematics-{info.get('Kinematics')} and robot-{info.get('Robot')}"
+            if robots[info.get("robot")]["Kinematic"] == info.get('id'):
+                log_message = f"Was created associate kinematics-{info.get('id')} and robot-{info.get('Robot')}"
                 loger.info("URSystem", log_message)
                 return jsonify({"status": True, "info": log_message}), 200
             else:
-                log_message = f"Not created associate kinematics-{info.get('Kinematics')} and robot-{info.get('Robot')}"
+                log_message = f"Not created associate kinematics-{info.get('id')} and robot-{info.get('Robot')}"
                 loger.error("URSystem", log_message)
                 return jsonify({"status": True, "info": log_message}), 400
 

@@ -6,7 +6,7 @@ eng.addpath("./kinematics/First", nargout=0)
 
 def Forward(J1, J2, J3, J4):
     coord = eng.Main_Fwd_Kinematics(float(J1), float(J2), float(J3), float(J4), nargout=1)
-    return {"X": coord[0][-1], "Y": coord[1][-1], "Z": coord[2][-1]}
+    return {"x": coord[0][-1], "y": coord[1][-1], "z": coord[2][-1]}
 
 def Inverse(x,y,z):
     J1 = Math.atan2(0.0 + y, 0.0 + x) * 180.0 / Math.pi

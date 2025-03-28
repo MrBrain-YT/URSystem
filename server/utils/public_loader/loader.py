@@ -18,8 +18,8 @@ class Loader:
         if os.path.exists(f"{dir_path}/__init__.py"):
             module_name = f"{dir_path}/__init__".replace("/", ".").replace("\\", ".").lstrip("..")
             module = __import__(module_name)
-            if hasattr(module, "get_app"):
-                globals()["app"] = module.get_app()
+            if hasattr(module, "return_app"):
+                globals()["app"] = module.return_app()
     
     def __call__(self):
         return globals()["app"]

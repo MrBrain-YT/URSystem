@@ -38,13 +38,14 @@ class URMSystem:
         @app.route("/CreateRobot", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def CreateRobot():
+            # TODO: check is creating robot account
             info = request.json
             robots = globals()["robots"]
             angles = {}
-            for i in range(1, int(info.get("Angle"))+1):
+            for i in range(1, int(info.get("angle"))+1):
                 angles[f"J{i}"] = 0.0
-            robots[info.get("Robot")] = {
-                    "AngleCount" : int(info.get("Angle")),
+            robots[info.get("robot")] = {
+                    "AngleCount" : int(info.get("angle")),
                     "Position" : angles.copy(),
                     "HomePosition" : angles.copy(),
                     "MotorsPosition" : angles.copy(),
@@ -55,11 +56,11 @@ class URMSystem:
                     "Program" : "", 
                     "ProgramRunning" : "False",
                     "ProgramToken" : "", 
-                    "Kinematic" : f"./kinematics/{info.get('Kinematics')}" if info.get('Kinematics') != "None" else "None", 
+                    "Kinematic" : f"./kinematics/{info.get('id')}" if info.get('id') != None else "None", 
                     "Logs" : "", 
                     "RobotReady" : "True",
                     "Emergency":"False",
-                    "SecureCode":  info.get("Code") if info.get("Code") != None else "None",
+                    "SecureCode":  info.get("code") if info.get("code") != None else "None",
                     "is_robot_ready_setted_false": "True",
                     "XYZposition" : {
                         "X": 0.0,
@@ -69,8 +70,8 @@ class URMSystem:
                     }
             System().SaveToCache(robots=robots)
             User().update_token()
-            RobotManager.add_new_robot_ready(info.get("Robot"))
-            log_message = f"Robot named {info.get('Robot')} was created"
+            RobotManager.add_new_robot_ready(info.get("robot"))
+            log_message = f"Robot named {info.get('robot')} was created"
             loger.info("URMS", log_message)
             return jsonify({"status": True, "info": log_message}), 200
 
@@ -102,6 +103,7 @@ class URMSystem:
                             tokens.append(users.get(i)["token"])
                         if token not in tokens:
                             break
+                    # TODO: repair password parameter
                     cur.execute(f"INSERT INTO users VALUES ('{robot_name}', '{new_robots[robot_name]['password']}', 'robot', '{token}')")
                     try:
                         os.mkdir(f'Logs/{robot_name}')
@@ -142,6 +144,9 @@ class URMSystem:
                 "tools": ast.literal_eval(cache.split("\n")[1].lstrip("robots = ")),
                 "frames": ast.literal_eval(cache.split("\n")[2].lstrip("robots = ")),
             }
+            for robot_name in new_cache["robots"].keys():
+                del new_cache["robots"][robot_name]["ProgramToken"]
+
             return jsonify({"status": True, "info": "Current cache from cache file", "data": new_cache}), 200
         
         # Export robot cache from RAM
@@ -151,6 +156,8 @@ class URMSystem:
             frames:dict = FramesManager().get_frames()
             robots:dict = globals()["robots"]
             tools:dict = ToolsManager().get_tools()
+            for robot_name in robots.keys():
+                del robots[robot_name]["ProgramToken"]
             
             loger.info("URSystem", "Current cache from RAM was exported")
             new_cache = {
@@ -167,8 +174,9 @@ class URMSystem:
             info = request.json
             robots:dict = globals()["robots"]
             User().update_token()
-            result = robots[info.get("Robot")] if info.get("Robot") in robots.keys() else None
+            result = robots[info.get("robot")] if info.get("robot") in robots.keys() else None
             if result is not None:
+                del result["ProgramToken"]
                 return jsonify({"status": True, "info": "Get robot data", "data": result}), 200
             else:
                 return jsonify({"status": False, "info": "Robot not found"}), 400
@@ -179,17 +187,20 @@ class URMSystem:
         def GetRobots():
             robots:dict = globals()["robots"]
             User().update_token()
+            for robot_name in robots.keys():
+                del robots[robot_name]["ProgramToken"]
             return jsonify({"status": True, "info": "All robots data", "data": robots}), 200
 
         # delete robot
         @app.route("/DelRobot", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def DelRobot():
+            # TODO: check is deleting robot account
             info = request.json
             robots:dict = globals()["robots"]
-            if info.get("Robot") in robots.keys():
-                del robots[info.get("Robot")]
-                RobotManager.remove_new_robot_ready(info.get("Robot"))
+            if info.get("robot") in robots.keys():
+                del robots[info.get("robot")]
+                RobotManager.remove_new_robot_ready(info.get("robot"))
                 User().update_token()
                 loger.info("URSystem", f"Robot was deleted user with token: {info.get('token')}")
                 return jsonify({"status": True, "info": f"Robot '{info.get('Robot')}' was deleted"}), 200

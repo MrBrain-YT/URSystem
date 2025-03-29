@@ -45,11 +45,11 @@ class KinematicsManager:
             System().SaveToCache(robots=robots)
             
             if robots[info.get("robot")]["Kinematic"] == info.get('id'):
-                log_message = f"Was created associate kinematics-{info.get('id')} and robot-{info.get('Robot')}"
+                log_message = f"Was created associate kinematics-{info.get('id')} and robot-{info.get('robot')}"
                 loger.info("URSystem", log_message)
                 return jsonify({"status": True, "info": log_message}), 200
             else:
-                log_message = f"Not created associate kinematics-{info.get('id')} and robot-{info.get('Robot')}"
+                log_message = f"Not created associate kinematics-{info.get('id')} and robot-{info.get('robot')}"
                 loger.error("URSystem", log_message)
                 return jsonify({"status": True, "info": log_message}), 400
 

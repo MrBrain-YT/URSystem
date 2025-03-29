@@ -387,7 +387,7 @@ class RobotManager:
                                 point_coords = {}
                                 modul = kinematics[info.get("robot")]
                                 # set coords
-                                result_forward:dict = modul.Forward(pos[0], pos[1], pos[2])
+                                result_forward:dict = modul.Forward(pos[0], pos[1], pos[2], pos[3])
                                 new_coord["x"] = result_forward.get("x")
                                 new_coord["y"] = result_forward.get("y")
                                 new_coord["z"] = result_forward.get("z")

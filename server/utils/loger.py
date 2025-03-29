@@ -1,6 +1,8 @@
 import time
 import os
 
+# TODO: add select date for get log
+
 class Loger():
     
     def __init__(self) -> None:
@@ -12,14 +14,14 @@ class Loger():
                 text = file.read()
             if text == "":
                 with open(file_path, "a") as file:
-                    file.write(f"[{self.__get_time()}] [INFO] [loger] Logging module started")
+                    file.write(f"[{self.__get_time()}] [INFO] [loger] System logging submodule started")
             else:
                 with open(file_path, "a") as file:
-                    file.write(f"\n[{self.__get_time()}] [INFO] [loger] Logging module started")
+                    file.write(f"\n[{self.__get_time()}] [INFO] [loger] System logging submodule started")
       
         else:
             with open(f'Logs/{file_name}.log', "a") as file:
-                file.write(f"[{self.__get_time()}] [INFO] [loger] Logging module started")
+                file.write(f"[{self.__get_time()}] [INFO] [loger] System logging submodule started")
             
     
     @staticmethod
@@ -50,7 +52,12 @@ class Loger():
         file_name = f"{current_time[2]} {current_time[1]} {current_time[0]}"
         with open(f'Logs/{file_name}.log', 'a') as file:
             file.write(f"\n[{self.__get_time()}] [ERROR] [{module}] {msg}")
-
+            
+    def get_logs(self) -> list:
+        current_time = time.localtime()
+        file_name = f"{current_time[2]} {current_time[1]} {current_time[0]}"
+        with open(f'Logs/{file_name}.log', 'r') as file:
+            return file.readlines()
 
 class Robot_loger():
     def __init__(self, robot_name:str) -> None:
@@ -67,14 +74,14 @@ class Robot_loger():
                 text = file.read()
             if text == "":
                 with open(file_path, "a") as file:
-                    file.write(f"[{self.__get_time()}] [INFO] Logging module started")
+                    file.write(f"[{self.__get_time()}] [INFO] Robot logging submodule started")
             else:
                 with open(file_path, "a") as file:
-                    file.write(f"\n[{self.__get_time()}] [INFO] Logging module started")
+                    file.write(f"\n[{self.__get_time()}] [INFO] Robot logging submodule started")
       
         else:
             with open(file_path, "a") as file:
-                file.write(f"[{self.__get_time()}] [INFO] Logging module started")
+                file.write(f"[{self.__get_time()}] [INFO] Robot logging submodule started")
             
     
     @staticmethod
@@ -109,3 +116,10 @@ class Robot_loger():
         file_path = f'Logs/{self.__name}/{file_name}.log'
         with open(file_path, 'a') as file:
             file.write(f"\n[{self.__get_time()}] [ERROR] {msg}")
+            
+    def get_logs(self) -> list:
+        current_time = time.localtime()
+        file_name = f"{current_time[2]} {current_time[1]} {current_time[0]}"
+        file_path = f'Logs/{self.__name}/{file_name}.log'
+        with open(file_path, 'r') as file:
+            return file.readlines()

@@ -203,7 +203,7 @@ class URMSystem:
                 RobotManager.remove_new_robot_ready(info.get("robot"))
                 User().update_token()
                 loger.info("URSystem", f"Robot was deleted user with token: {info.get('token')}")
-                return jsonify({"status": True, "info": f"Robot '{info.get('Robot')}' was deleted"}), 200
+                return jsonify({"status": True, "info": f"Robot '{info.get('robot')}' was deleted"}), 200
             else:
                 User().update_token()
                 loger.info("URSystem", f"Robot did not deleted user with token: {info.get('token')}")

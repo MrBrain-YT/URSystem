@@ -81,7 +81,7 @@ class Access:
             @wraps(func)
             def wrapper(*args, **kwargs):
                 info = request.json
-                if User.role_access(info.get("token"), user_role) and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
+                if User.role_access(info.get("token"), user_role) and Robot.robot_access(robots, info.get("robot"), info.get("code")):
                     return func(*args, **kwargs)
                 else:
                     self.loger.warning(loger_module, f"User access denied to create account. User with token: {info.get('token')}")
@@ -104,7 +104,7 @@ class Access:
                 info = request.json
                 robots:dict = URMSystem().get_robots()
                 if (User.role_access(info.get("token"), user_role) and \
-                Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")):
+                Robot.robot_access(robots, info.get("robot"), info.get("code"))) or Robot.is_robot(info.get("token")):
                     return func(*args, **kwargs)
                 else:
                     self.loger.warning(loger_module, f"Access denied. User with token: {info.get('token')}")
@@ -128,8 +128,8 @@ class Access:
                 info = request.json
                 robots:dict = URMSystem().get_robots()
                 if ((User.role_access(info.get("token"), user_role) and \
-                Robot.robot_access(robots, info.get("Robot"), info.get("Code"))) or Robot.is_robot(info.get("token")))\
-                and Robot().check_program_token(info.get("Robot"), info.get("program_token")) if robots[info.get("Robot")]["Program"] != "" else True:
+                Robot.robot_access(robots, info.get("robot"), info.get("code"))) or Robot.is_robot(info.get("token")))\
+                and Robot().check_program_token(info.get("robot"), info.get("program_token")) if robots[info.get("robot")]["Program"] != "" else True:
                     return func(*args, **kwargs)
                 else:
                     return "You are not on the users list or program token is not valid"
@@ -152,11 +152,11 @@ class Access:
             def wrapper(*args, **kwargs):
                 info = request.json
                 robots:dict = URMSystem().get_robots()
-                if robots[info.get("Robot")]["Program"] == "":
-                    if User.role_access(info.get("token"), user_role) and Robot.robot_access(robots, info.get("Robot"), info.get("Code")):
+                if robots[info.get("robot")]["Program"] == "":
+                    if User.role_access(info.get("token"), user_role) and Robot.robot_access(robots, info.get("robot"), info.get("code")):
                         return func(*args, **kwargs)
                     else:
-                        self.loger.warning(loger_module, f"User access denied to set robot {info.get('Robot')} minimal angles. User with token: {request.json.get('token')}")
+                        self.loger.warning(loger_module, f"User access denied to set robot {info.get('robot')} minimal angles. User with token: {request.json.get('token')}")
                         return "You don't have enough rights"
                 else:
                     self.loger.warning(loger_module, f"The robot executes an automatic program. It is currently not possible to change the MinAngles parameter. User with token: {info.get('token')}")

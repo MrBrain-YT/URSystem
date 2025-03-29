@@ -14,29 +14,39 @@ class LogsManager:
         access = Access()
 
         # get log
+        # TODO: add select date for get log
         @app.route("/GetRobotLogs", methods=['POST'])
         @access.check_user("user", loger_module=self.loger_module)
         def URLog():
             robots:dict = URMSystem().get_robots()
             User().update_token()
-            return jsonify({"status": True, "info": f"The {request.json.get('Robot')} robot logs", "data": robots[request.json.get("Robot")]["Logs"]}), 200
+            logs = Robot_loger(request.json.get("robot")).get_logs()
+            return jsonify({"status": True, "info": f"The {request.json.get('robot')} robot logs", "data": logs}), 200
 
         # add new robot log
         @app.route("/AddRobotLog", methods=['POST'])
         @access.check_user("user", loger_module=self.loger_module)
         def AddRobotLog():
             info = request.json
-            Robot_loger(info.get("Robot")).debug(info.get("text"))
+            Robot_loger(info.get("robot")).debug(info.get("text"))
             User().update_token()
             return jsonify({"status": True, "info": "Log added"}), 200
         
         # add new system log
-        @app.route("/AddSystemLog", methods=['POST'])
-        @access.check_user("user", loger_module=self.loger_module)
+        # @app.route("/AddSystemLog", methods=['POST'])
+        # @access.check_user("user", loger_module=self.loger_module)
+        # def AddSystemLog():
+        #     info = request.json
+        #     Loger().debug(info.get("module"), info.get("text"))
+        #     User().update_token()
+        #     return jsonify({"status": True, "info": "Log added"}), 200
+        
+        # get system logs
+        # TODO: add select date for get log
+        @app.route("/GetSystemLogs", methods=['POST'])
+        @access.check_user("administrator", loger_module=self.loger_module)
         def AddSystemLog():
-            info = request.json
-            Loger().debug(info.get("module"), info.get("text"))
             User().update_token()
-            return jsonify({"status": True, "info": "Log added"}), 200
+            return jsonify({"status": True, "info": "System logs", "data": Loger().get_logs()}), 200
 
         return app

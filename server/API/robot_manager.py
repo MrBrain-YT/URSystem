@@ -417,13 +417,13 @@ class RobotManager:
                             point_angles[f"J{j}"] = result_inverse.get(f"J{j}")
                         return jsonify({"status": True, "info": "Cartesian point to angles converter", "data": point_angles}), 200
                     else:
-                        positions = ast.literal_eval(info.get("positions_data"))
+                        positions = ast.literal_eval(str(info.get("positions_data")))
                         if isinstance(positions, list):
                             angles = []
                             for pos in positions:
                                 point_angles = {}
                                 modul = kinematics[info.get("robot")]
-                                result_inverse:dict = modul.Inverse(pos["x"], pos["y"], pos["z"])
+                                result_inverse:dict = modul.Inverse(pos[0], pos[1], pos[2])
                                 for j in range(1, int(robots[info.get("robot")]["AngleCount"]) + 1):
                                     point_angles[f"J{j}"] = result_inverse.get(f"J{j}")
                                 angles.append(point_angles)

@@ -4,8 +4,8 @@ import secrets
 
 class Robot:
     def check_angles(info, Robots) -> None: 
-        for i in range(1, int(Robots[info.get("Robot")]["AngleCount"])+1):
-            if float(info.get(f"J{i}")) <= Robots[info.get("Robot")]["MaxAngles"][f"J{i}"] and float(info.get(f"J{i}")) >= Robots[info.get("Robot")]["MinAngles"][f"J{i}"]:
+        for i in range(1, int(Robots[info.get("robot")]["AngleCount"])+1):
+            if float(info.get("angles").get(f"J{i}")) <= Robots[info.get("robot")]["MaxAngles"][f"J{i}"] and float(info.get("angles").get(f"J{i}")) >= Robots[info.get("robot")]["MinAngles"][f"J{i}"]:
                 pass
             else:
                 return False

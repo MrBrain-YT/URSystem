@@ -172,11 +172,11 @@ class URMSystem:
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def GetRobot():
             info = request.json
-            robots:dict = globals()["robots"]
+            robots:dict = globals()["robots"].copy()
             User().update_token()
             result = robots[info.get("robot")] if info.get("robot") in robots.keys() else None
             if result is not None:
-                del result["ProgramToken"]
+                result.pop("ProgramToken", None)
                 return jsonify({"status": True, "info": "Get robot data", "data": result}), 200
             else:
                 return jsonify({"status": False, "info": "Robot not found"}), 400
@@ -185,10 +185,10 @@ class URMSystem:
         @app.route("/GetRobots", methods=['POST'])
         @access.check_user(user_role="administrator", loger_module=self.loger_module)
         def GetRobots():
-            robots:dict = globals()["robots"]
+            robots:dict = globals()["robots"].copy()
             User().update_token()
             for robot_name in robots.keys():
-                del robots[robot_name]["ProgramToken"]
+                robots[robot_name].pop("ProgramToken", None)
             return jsonify({"status": True, "info": "All robots data", "data": robots}), 200
 
         # delete robot

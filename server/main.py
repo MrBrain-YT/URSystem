@@ -1,5 +1,4 @@
 import ssl
-import importlib
 
 from flask import Flask
 from threading import Thread
@@ -38,7 +37,7 @@ for robot in robots:
         kinematics[robot] = "None"
     else:
         try:
-            kinematics[robot] = importlib.import_module(
+            kinematics[robot] = __import__(
                 f'kinematics.{robots_list[robot]["Kinematic"]}.kin')
         except:
             # send to logs!

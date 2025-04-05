@@ -5,6 +5,7 @@ eng = matlab.engine.start_matlab()
 eng.addpath("./kinematics/First", nargout=0)
 
 def Forward(J1, J2, J3, J4):
+    """ MATLAB forward kinematic """
     coord = eng.Main_Fwd_Kinematics(float(J1), float(J2), float(J3), float(J4), nargout=1)
     return {"x": coord[0][-1], "y": coord[1][-1], "z": coord[2][-1]}
 

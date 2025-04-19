@@ -849,7 +849,7 @@
         ```python
         data = {
             "robot": "TestRobot",
-            "position": {"x": 10, "y": 100, "z": 0}, # Передавать либо angles либо angles_data для multipoint position
+            "position": {"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, # Передавать либо point либо points_data для multipoint position
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -857,7 +857,7 @@
         ```python
         data = {
             "robot": "TestRobot",
-            "positions_data": [{"x": 10, "y": 100, "z": 0}, {...}, ...],
+            "positions_data": [{"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, {...}, ...],
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -876,7 +876,7 @@
         ```python
         data = {
             "robot": "TestRobot",
-            "position": {"x": 10, "y": 100, "z": 0}, # Передавать либо angles либо angles_data для multipoint position
+            "position": {"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, # Передавать либо angles либо angles_data для multipoint position
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -884,7 +884,7 @@
         ```python
         data = {
             "robot": "TestRobot",
-            "positions_data": [{"x": 10, "y": 100, "z": 0}, {...}, ...],
+            "positions_data": [{"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, {...}, ...],
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)

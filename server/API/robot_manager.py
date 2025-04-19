@@ -78,9 +78,13 @@ class RobotManager:
             if robots[info.get("robot")]["Kinematic"] != "None":
                 modul = kinematics[info.get("robot")]
                 result_forward:dict = modul.Forward(info.get("angles").get("J1"), info.get("angles").get("J2"), info.get("angles").get("J3"), info.get("angles").get("J4"))
-                robots[info.get("robot")]["XYZposition"]["x"] = result_forward.get("x")
-                robots[info.get("robot")]["XYZposition"]["y"] = result_forward.get("y")
-                robots[info.get("robot")]["XYZposition"]["z"] = result_forward.get("z")        
+                pos = robots[info.get("robot")]["XYZposition"]
+                pos["x"] = result_forward.get("x")
+                pos["y"] = result_forward.get("y")
+                pos["z"] = result_forward.get("z")      
+                pos["a"] = result_forward.get("a")      
+                pos["b"] = result_forward.get("b")      
+                pos["c"] = result_forward.get("c")      
             
             System().SaveToCache(robots=robots)
             return jsonify({"status": True, "info": f"Motors position for robot '{info.get('robot')}' has been setted"}), 200
@@ -119,7 +123,7 @@ class RobotManager:
                         robots[info.get("robot")]["RobotReady"] = info.get('state')
                     else:
                         return jsonify({"status": False, "info": "The RobotReady parameter was not been seted"}), 400
-
+            print(globals()["is_robot_ready_setted_false"][info.get("robot")], info.get('state'))
             System().SaveToCache(robots=robots)
             User().update_token()
             return jsonify({"status": True, "info": "The RobotReady parameter was been seted"}), 200
@@ -142,9 +146,13 @@ class RobotManager:
                 modul = kinematics[info.get("robot")]
                 pos = robots[info.get("robot")]["Position"]
                 result_forward:dict = modul.Forward(pos["J1"], pos["J2"], pos["J3"], pos["J4"])
-                robots[info.get("robot")]["XYZposition"]["x"] = result_forward.get("x")
-                robots[info.get("robot")]["XYZposition"]["y"] = result_forward.get("y")
-                robots[info.get("robot")]["XYZposition"]["z"] = result_forward.get("z")   
+                pos = robots[info.get("robot")]["XYZposition"]
+                pos["x"] = result_forward.get("x")
+                pos["y"] = result_forward.get("y")
+                pos["z"] = result_forward.get("z")      
+                pos["a"] = result_forward.get("a")      
+                pos["b"] = result_forward.get("b")      
+                pos["c"] = result_forward.get("c") 
             
             System().SaveToCache(robots=robots)
             User().update_token()
@@ -171,6 +179,7 @@ class RobotManager:
                         continue
                     elif robots[info.get("robot")]["RobotReady"] == True and globals()["is_robot_ready_setted_false"][info.get("robot")] and\
                         not isinstance(robots[info.get("robot")]["Position"], list):
+                            print("Working")
                             if info.get("angles_data") is None:
                                 if Robot.check_angles(info, robots) == False:
                                     log_message = "Angles values ​​are not correct"
@@ -183,9 +192,13 @@ class RobotManager:
                                     if robots[info.get("robot")]["Kinematic"] != "None":
                                         modul = kinematics[info.get("robot")]
                                         result_forward:dict = modul.Forward(info.get("angles").get("J1"), info.get("angles").get("J2"), info.get("angles").get("J3"), info.get("angles").get("J4"))
-                                        robots[info.get("robot")]["XYZposition"]["x"] = result_forward.get("x")
-                                        robots[info.get("robot")]["XYZposition"]["y"] = result_forward.get("y")
-                                        robots[info.get("robot")]["XYZposition"]["z"] = result_forward.get("z")
+                                        pos = robots[info.get("robot")]["XYZposition"]
+                                        pos["x"] = result_forward.get("x")
+                                        pos["y"] = result_forward.get("y")
+                                        pos["z"] = result_forward.get("z")      
+                                        pos["a"] = result_forward.get("a")      
+                                        pos["b"] = result_forward.get("b")      
+                                        pos["c"] = result_forward.get("c") 
                                         
                                     Robot_loger(info.get("robot")).info(f"""Was setted robot current position: {
                                         info.get("angles").get('J1')},{info.get("angles").get('J2')},{info.get("angles").get('J3')},{info.get("angles").get('J4')}""")
@@ -193,14 +206,20 @@ class RobotManager:
                                 # If getted not one point
                                 new_pos = ast.literal_eval(info.get("angles_data"))
                                 if isinstance(new_pos, list):
+                                    print("seting parametr")
+                                            
                                     robots[info.get("robot")]["Position"] = new_pos
+                                    print("Setted")
                                 else:
                                     return jsonify({"status": False, "info": "Multi points data is not valid"}), 400
                                 
+
                             robots[info.get("robot")]["RobotReady"] = False
                             System().SaveToCache(robots=robots)
                             globals()["is_robot_ready_setted_false"][info.get("robot")] = False
                             User().update_token()
+                            print("EXIT FUNC")
+                            
                             return jsonify({"status": True, "info": f"Curent robot '{info.get('robot')}' position was been seted"}), 200
                             
         """ Remove curent robot point position """
@@ -377,7 +396,10 @@ class RobotManager:
                         result_forward:dict = modul.Forward(info.get("angles").get("J1"), info.get("angles").get("J2"), info.get("angles").get("J3"), info.get("angles").get("J4"))
                         new_coord["x"] = result_forward.get("x")
                         new_coord["y"] = result_forward.get("y")
-                        new_coord["z"] = result_forward.get("z")
+                        new_coord["z"] = result_forward.get("z")      
+                        new_coord["a"] = result_forward.get("a")      
+                        new_coord["b"] = result_forward.get("b")      
+                        new_coord["c"] = result_forward.get("c") 
                         return jsonify({"status": True, "info": "Angles to cartesian point converter", "data": new_coord}), 200
                     else:
                         angles = ast.literal_eval(info.get("angles_data"))
@@ -391,6 +413,9 @@ class RobotManager:
                                 new_coord["x"] = result_forward.get("x")
                                 new_coord["y"] = result_forward.get("y")
                                 new_coord["z"] = result_forward.get("z")
+                                new_coord["a"] = result_forward.get("a")
+                                new_coord["b"] = result_forward.get("b")
+                                new_coord["c"] = result_forward.get("c")
                                 points.append(point_coords)
                             return jsonify({"status": True, "info": "(multi) angles to cartesian points converter", "data": points}), 200
                         else:
@@ -412,7 +437,7 @@ class RobotManager:
                     if info.get("positions_data") is None:
                         point_angles = {}
                         modul = kinematics[info.get("robot")]
-                        result_inverse:dict = modul.Inverse(info.get("position").get("x"), info.get("position").get("y"), info.get("position").get("z"))
+                        result_inverse:dict = modul.Inverse(info.get("position").get("x"), info.get("position").get("y"), info.get("position").get("z"), info.get("position").get("b"), info.get("position").get("a"), info.get("position").get("c"))
                         for j in range(1, int(robots[info.get("robot")]["AngleCount"]) + 1):
                             point_angles[f"J{j}"] = result_inverse.get(f"J{j}")
                         return jsonify({"status": True, "info": "Cartesian point to angles converter", "data": point_angles}), 200
@@ -423,7 +448,7 @@ class RobotManager:
                             for pos in positions:
                                 point_angles = {}
                                 modul = kinematics[info.get("robot")]
-                                result_inverse:dict = modul.Inverse(pos[0], pos[1], pos[2])
+                                result_inverse:dict = modul.Inverse(pos[0], pos[1], pos[2], pos[3], pos[4], pos[5])
                                 for j in range(1, int(robots[info.get("robot")]["AngleCount"]) + 1):
                                     point_angles[f"J{j}"] = result_inverse.get(f"J{j}")
                                 angles.append(point_angles)
@@ -458,16 +483,20 @@ class RobotManager:
                             try:
                                 if info.get("positions_data") is None:
                                     modul = kinematics[info.get("robot")]
-                                    result_inverse:dict = modul.Inverse(info.get("position").get("x"), info.get("position").get("y"), info.get("position").get("z"))
+                                    result_inverse:dict = modul.Inverse(info.get("position").get("x"), info.get("position").get("y"), info.get("position").get("z"), info.get("position").get("a"), info.get("position").get("b"), info.get("position").get("c"))
                                     for j in range(1, int(robots[info.get("robot")]["AngleCount"]) + 1):
                                         robots[info.get("robot")]["Position"][f"J{j}"] = result_inverse.get(f"J{j}")
                                         
-                                    robots[info.get("robot")]["XYZposition"]["x"] = info.get("position").get("x")
-                                    robots[info.get("robot")]["XYZposition"]["y"] = info.get("position").get("y")
-                                    robots[info.get("robot")]["XYZposition"]["z"] = info.get("position").get("z")
+                                    pos = robots[info.get("robot")]["XYZposition"]
+                                    pos["x"] = info.get("position").get("x")
+                                    pos["y"] = info.get("position").get("y")
+                                    pos["z"] = info.get("position").get("z")
+                                    pos["a"] = info.get("position").get("a")
+                                    pos["b"] = info.get("position").get("b")
+                                    pos["c"] = info.get("position").get("c")
                                     
-                                    Robot_loger(info.get("robot")).info(f"""The robot has been moved to coordinates: X-{
-                                        info.get("X")},Y-{info.get("Y")},Z-{info.get("Z")}""")
+                                    Robot_loger(info.get("robot")).info(f"""The robot has been moved to coordinates: x-{
+                                        pos["x"]},y-{pos["y"]},z-{pos["z"]},a-{pos["a"]},b-{pos["b"]},c-{pos["c"]}""")
                                 else:
                                     # If getted not one point
                                     new_positions = ast.literal_eval(info.get("positions_data"))
@@ -475,7 +504,7 @@ class RobotManager:
                                         angles = []
                                         for pos in new_positions:
                                             modul = kinematics[info.get("robot")]
-                                            result_inverse:dict = modul.Inverse(pos.get("x"), pos.get("y"), pos.get("z"))
+                                            result_inverse:dict = modul.Inverse(pos.get("x"), pos.get("y"), pos.get("z"), pos.get("a"), pos.get("b"), pos.get("c"))
                                             angles.append(result_inverse)
                                         robots[info.get("robot")]["Position"] = angles
                                     else:

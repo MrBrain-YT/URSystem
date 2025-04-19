@@ -61,11 +61,13 @@ class URMSystem:
                     "RobotReady" : "True",
                     "Emergency":"False",
                     "SecureCode":  info.get("code") if info.get("code") != None else "None",
-                    "is_robot_ready_setted_false": "True",
                     "XYZposition" : {
-                        "X": 0.0,
-                        "Y": 0.0,
-                        "Z": 0.0,
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "a": 0.0,
+                        "b": 0.0,
+                        "c": 0.0,
                         }
                     }
             System().SaveToCache(robots=robots)

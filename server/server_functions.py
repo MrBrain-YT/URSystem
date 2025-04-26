@@ -77,8 +77,10 @@ class User:
 
         if token in tokens:
             # Get role from token
+            
             con = sqlite3.connect("databases\\Users.sqlite")
             cur = con.cursor()
+            
             res = cur.execute(f"SELECT role, name FROM 'users' WHERE token = '{token}'")
             role, n = res.fetchone()
             con.close()

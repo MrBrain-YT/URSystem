@@ -47,6 +47,7 @@ class URMSystem:
             robots[info.get("robot")] = {
                     "AngleCount" : int(info.get("angle")),
                     "Position" : angles.copy(),
+                    "PositionID" : "",
                     "HomePosition" : angles.copy(),
                     "MotorsPosition" : angles.copy(),
                     "MotorsSpeed" : angles.copy(),

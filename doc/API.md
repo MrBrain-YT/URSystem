@@ -28,6 +28,7 @@
 | `GetRobot` | Получение параметров робота | [Посмотреть здесь](#GetRobot) |
 | `GetRobots` | Получение параметров всех роботов в системе | [Посмотреть здесь](#GetRobots) |
 | `GetCurentPosition` | Получение актуальной позиции робота | [Посмотреть здесь](#GetCurentPosition) |
+| `GetPositionID` | Получение id позиции робота | [Посмотреть здесь](#GetPositionID) |
 | `GetCurentSpeed` | Получение актуальной скорости робота | [Посмотреть здесь](#GetCurentSpeed) |
 | `GetXYZPosition` | Получение актуальной декартовой позиции робота | [Посмотреть здесь](#GetXYZPosition) |
 | `GetRobotAnglesCount` | Получение количество осей робота | [Посмотреть здесь](#GetRobotAnglesCount) |
@@ -36,6 +37,7 @@
 | `GetRobotEmergency` | Получение параметра аварийной ситуации робота | [Посмотреть здесь](#GetRobotEmergency) |
 | `SetRobotReady` | Установка параметра готовности робота к следующей команде перемещения | [Посмотреть здесь](#SetRobotReady) |
 | `SetRobotEmergency` | Установка параметра аварийной ситуации робота | [Посмотреть здесь](#SetRobotEmergency) |
+| `SetPositionID` | Установка id позиции робота | [Посмотреть здесь](#SetPositionID) |
 | `CurentPosition` | Установка актуальной позиции робота | [Посмотреть здесь](#CurentPosition) |
 | `RemoveCurentPointPosition` | Удаление первой целевой позиции в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveCurentPointPosition) |
 | `RemoveAllPointPosition` | Удаление всех целевых позиций в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveAllPointPosition) |
@@ -473,6 +475,22 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
+- <h3 id="GetPositionID"> GetPositionID </h3>
+
+| Метод | Параметр | Тип данных |
+|-|----------|------------|
+|POST| `robot` | **String** |
+|| `token` | **String** |
+
+- ### Пример
+    ```python
+    data = {
+        "robot": "TestRobot",
+        "token": "akjy7wefwjgv6qohg..."
+    }
+    requests.post(url, verify=True, json=data)
+    ```
+    ---
 - <h3 id="GetCurentSpeed"> GetCurentSpeed </h3>
 
     | Метод | Параметр | Тип данных |
@@ -600,6 +618,27 @@
         ```python
         data = {
             "robot": "TestRobot",
+            "state": True,
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="SetPositionID"> SetPositionID </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `robot` | **String** |
+    || `code` | **String** |
+    || `id` | **Int** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "robot": "TestRobot",
+            "code": "123654",
+            "id": 10,
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)

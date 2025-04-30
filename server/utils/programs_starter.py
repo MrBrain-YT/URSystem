@@ -12,39 +12,38 @@ def UPS():
         p = subprocess.Popen(f"python program.py {token}", shell=False)
         process_program[robot_name] = p
 
-
     while True:
         try:
             url = "https://localhost:5000/GetRobots"
             data = {"token":os.environ.get("SYSTEM_API_TOKEN")}
-            resp = requests.post(url, json=json.loads(json.dumps(data, ensure_ascii=False))).text
-            for robot_name in json.loads(resp)["data"].keys():
+            resp = requests.post(url, json=data).json()['data']
+            for robot_name in resp.keys():
                 url = "https://localhost:5000/GetRobot"
                 data = {'robot':robot_name, "token":os.environ.get("SYSTEM_API_TOKEN")}
-                resp = requests.post(url, json=json.loads(json.dumps(data, ensure_ascii=False))).text
-                if json.loads(resp.replace("'", '"'))["ProgramRunning"] == "True" and json.loads(resp.replace("'", '"'))["Program"] != "":
+                resp = requests.post(url, json=data).json()['data']
+                if resp["ProgramRunning"] == "True" and resp["Program"] != "":
                     if process_program[robot_name].poll() is not None:
                         # Set program not running
                         process_program[robot_name] = ""
                         url = "https://localhost:5000/SetProgramRun"
                         data = {'robot':robot_name, "State":"False", "token":os.environ.get("SYSTEM_API_TOKEN")}
-                        requests.post(url, json=json.loads(json.dumps(data, ensure_ascii=False))).text
+                        requests.post(url, json=data).json()['data']
                         # Delete program
                         url = "https://localhost:5000/DeleteProgram"
                         robot_code = json.loads(resp.replace("'", '"'))["SecureCode"]
                         data = {'robot':robot_name, "Code":robot_code, "token":os.environ.get("SYSTEM_API_TOKEN")}
-                        requests.post(url, json=json.loads(json.dumps(data, ensure_ascii=False))).text
-                elif json.loads(resp.replace("'", '"'))["ProgramRunning"] != "True":
-                    if json.loads(resp.replace("'", '"'))["Program"] == "":
+                        requests.post(url, json=data).json()['data']
+                elif resp["ProgramRunning"] != "True":
+                    if resp["Program"] == "":
                         pass
                     else:
-                        program = bytes.fromhex(json.loads(resp.replace("'", '"'))["Program"])
+                        program = bytes.fromhex(resp["Program"])
                         with open("program.py", "w") as file:
                             file.write(program.decode("utf-8"))
                             file.close()
 
                         if program != "":
-                            program_token = json.loads(resp.replace("'", '"'))["ProgramToken"]
+                            program_token = resp["ProgramToken"]
                             Prog(robot_name, program_token)
 
 
@@ -53,14 +52,14 @@ def UPS():
                         
                         url = "https://localhost:5000/SetProgramRun"
                         data = {'robot':robot_name, "State":"True", "token":os.environ.get("SYSTEM_API_TOKEN")}
-                        requests.post(url, json=json.loads(json.dumps(data, ensure_ascii=False))).text
+                        requests.post(url, json=data).json()['data']
                 else:
                     if json.loads(resp.replace("'", '"'))["Program"] == "":
                         process_program.get(f"{robot_name}").kill()
                         process_program[robot_name] = ""
                         url = "https://localhost:5000/SetProgramRun"
                         data = {'robot':robot_name, "State":"False", "token":os.environ.get("SYSTEM_API_TOKEN")}
-                        requests.post(url, json=json.loads(json.dumps(data, ensure_ascii=False))).text
+                        requests.post(url, json=data).json()['data']
         
         except:
             pass

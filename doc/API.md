@@ -20,6 +20,7 @@
 | `BindKinematics` | Привязка файлов кинематики к роботу | [Посмотреть здесь](#AddKinematics) |
 | `GetRobotLogs` | Получение логов робота | [Посмотреть здесь](#GetRobotLogs) |
 | `AddRobotLog` | Добавление логов робота | [Посмотреть здесь](#AddRobotLog) |
+| `GetSystemLogs` | Получение системного лога  | [Посмотреть здесь](#GetSystemLogs) |
 | `AddSystemLog` | Добавление системных логов | [Посмотреть здесь](#AddSystemLog) |
 | `CreateRobot` | Создание нового робота | [Посмотреть здесь](#CreateRobot) |
 | `ImportCache` | Импортирование конфигурации оборудования с другого сервера | [Посмотреть здесь](#ImportCache) |
@@ -28,6 +29,7 @@
 | `GetRobot` | Получение параметров робота | [Посмотреть здесь](#GetRobot) |
 | `GetRobots` | Получение параметров всех роботов в системе | [Посмотреть здесь](#GetRobots) |
 | `GetCurentPosition` | Получение актуальной позиции робота | [Посмотреть здесь](#GetCurentPosition) |
+| `GetPositionID` | Получение id позиции робота | [Посмотреть здесь](#GetPositionID) |
 | `GetCurentSpeed` | Получение актуальной скорости робота | [Посмотреть здесь](#GetCurentSpeed) |
 | `GetXYZPosition` | Получение актуальной декартовой позиции робота | [Посмотреть здесь](#GetXYZPosition) |
 | `GetRobotAnglesCount` | Получение количество осей робота | [Посмотреть здесь](#GetRobotAnglesCount) |
@@ -36,6 +38,7 @@
 | `GetRobotEmergency` | Получение параметра аварийной ситуации робота | [Посмотреть здесь](#GetRobotEmergency) |
 | `SetRobotReady` | Установка параметра готовности робота к следующей команде перемещения | [Посмотреть здесь](#SetRobotReady) |
 | `SetRobotEmergency` | Установка параметра аварийной ситуации робота | [Посмотреть здесь](#SetRobotEmergency) |
+| `SetPositionID` | Установка id позиции робота | [Посмотреть здесь](#SetPositionID) |
 | `CurentPosition` | Установка актуальной позиции робота | [Посмотреть здесь](#CurentPosition) |
 | `RemoveCurentPointPosition` | Удаление первой целевой позиции в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveCurentPointPosition) |
 | `RemoveAllPointPosition` | Удаление всех целевых позиций в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveAllPointPosition) |
@@ -323,7 +326,23 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="AddSystemLog"> AddSystemLog </h3>
+- <h3 id="GetSystemLogs"> GetSystemLogs </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `timestamp` | **Int** |
+    || `token` | **String** |
+
+    - ### Пример
+        ```python
+        data = {
+            "timestamp": 1746013996, # Unix time (Не обязательный параметр)
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+<!-- - <h3 id="AddSystemLog"> AddSystemLog </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -340,7 +359,7 @@
         }
         requests.post(url, verify=True, json=data)
         ```
-    ---
+    --- -->
 - <h3 id="CreateRobot"> CreateRobot </h3>
 
     | Метод | Параметр | Тип данных |
@@ -473,6 +492,22 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
+- <h3 id="GetPositionID"> GetPositionID </h3>
+
+| Метод | Параметр | Тип данных |
+|-|----------|------------|
+|POST| `robot` | **String** |
+|| `token` | **String** |
+
+- ### Пример
+    ```python
+    data = {
+        "robot": "TestRobot",
+        "token": "akjy7wefwjgv6qohg..."
+    }
+    requests.post(url, verify=True, json=data)
+    ```
+    ---
 - <h3 id="GetCurentSpeed"> GetCurentSpeed </h3>
 
     | Метод | Параметр | Тип данных |
@@ -600,6 +635,27 @@
         ```python
         data = {
             "robot": "TestRobot",
+            "state": True,
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="SetPositionID"> SetPositionID </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `robot` | **String** |
+    || `code` | **String** |
+    || `id` | **Int** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "robot": "TestRobot",
+            "code": "123654",
+            "id": 10,
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -849,7 +905,7 @@
         ```python
         data = {
             "robot": "TestRobot",
-            "position": {"x": 10, "y": 100, "z": 0}, # Передавать либо angles либо angles_data для multipoint position
+            "position": {"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, # Передавать либо point либо points_data для multipoint position
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -857,7 +913,7 @@
         ```python
         data = {
             "robot": "TestRobot",
-            "positions_data": [{"x": 10, "y": 100, "z": 0}, {...}, ...],
+            "positions_data": [{"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, {...}, ...],
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -876,7 +932,7 @@
         ```python
         data = {
             "robot": "TestRobot",
-            "position": {"x": 10, "y": 100, "z": 0}, # Передавать либо angles либо angles_data для multipoint position
+            "position": {"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, # Передавать либо angles либо angles_data для multipoint position
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -884,7 +940,7 @@
         ```python
         data = {
             "robot": "TestRobot",
-            "positions_data": [{"x": 10, "y": 100, "z": 0}, {...}, ...],
+            "positions_data": [{"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, {...}, ...],
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)

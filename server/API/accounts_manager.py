@@ -21,11 +21,12 @@ class AccountManager:
     def set_users(users:dict):
         globals()["users"] = users
     
-    def __call__(self, app:Flask, loger:Loger) -> Flask:
+    def __call__(self, app:Flask) -> Flask:
         from server_functions import User
         from configuration import server_token 
         from API.access_checker import Access
 
+        loger = Loger()
         access = Access()
         
         @app.route("/CreateAccount", methods=['POST'])

@@ -24,7 +24,7 @@ class URMSystem:
     def get_robots() -> dict:
             return globals()["robots"]
     
-    def __call__(self, app:Flask, loger:Loger) -> Flask:
+    def __call__(self, app:Flask) -> Flask:
         from server_functions import System, User
         from API.frames_manager import FramesManager
         from API.tools_manager import ToolsManager
@@ -32,6 +32,7 @@ class URMSystem:
         from API.access_checker import Access
         from API.robot_manager import RobotManager
         
+        loger = Loger()
         access = Access()
         
         # add robot
@@ -47,6 +48,7 @@ class URMSystem:
             robots[info.get("robot")] = {
                     "AngleCount" : int(info.get("angle")),
                     "Position" : angles.copy(),
+                    "PositionID" : "",
                     "HomePosition" : angles.copy(),
                     "MotorsPosition" : angles.copy(),
                     "MotorsSpeed" : angles.copy(),
@@ -61,11 +63,13 @@ class URMSystem:
                     "RobotReady" : "True",
                     "Emergency":"False",
                     "SecureCode":  info.get("code") if info.get("code") != None else "None",
-                    "is_robot_ready_setted_false": "True",
                     "XYZposition" : {
-                        "X": 0.0,
-                        "Y": 0.0,
-                        "Z": 0.0,
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "a": 0.0,
+                        "b": 0.0,
+                        "c": 0.0,
                         }
                     }
             System().SaveToCache(robots=robots)

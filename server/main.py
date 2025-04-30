@@ -5,7 +5,7 @@ from flask import Flask
 from threading import Thread
 
 import configuration.robots_cache as robots_cache
-from server_functions import User, System
+from server_functions import User
 import utils.programs_starter as programs_starter
 from utils.loger import Loger
 from API.frames_manager import FramesManager
@@ -24,6 +24,7 @@ for robot in robots:
     robots_list[robot]["Program"] = ""
     robots_list[robot]["ProgramRunning"] = "False"
     robots_list[robot]["RobotReady"] = True
+    robots_list[robot]["PositionID"] = ""
     robots_list[robot]["Emergency"] = False
     robots_list[robot]["MotorsSpeed"] = robots_list[robot]['StandartSpeed'].copy()
     if isinstance(robots_list[robot]["Position"], dict):
@@ -38,6 +39,7 @@ for robot in robots:
         kinematics[robot] = "None"
     else:
         try:
+            # import kinematics.First.kin
             kinematics[robot] = importlib.import_module(
                 f'kinematics.{robots_list[robot]["Kinematic"]}.kin')
         except:
@@ -51,27 +53,26 @@ frames = robots_cache.frames
 users = User().update_token()
 loger = Loger()
 
-
 """ Server """
 app = Flask(__name__)
 
-""" Init server functions"""
+""" Frames manager """
 app = FramesManager(frames)(app)
 
 """ URS tool system """
-app = ToolsManager(tools)(app, loger)
+app = ToolsManager(tools)(app)
 
 """ URMSystem """ # URMS - United Robotics Multi System
-app = URMSystem(Robots)(app, loger)
+app = URMSystem(Robots)(app)
 
 """ URAccount """
-app = AccountManager(users)(app, loger)
+app = AccountManager(users)(app)
 
 """ URLogs """
 app = LogsManager()(app)
 
 """ Kinematics manager """
-app = KinematicsManager(kinematics)(app, loger)
+app = KinematicsManager(kinematics)(app)
 
 """ Robot manager """
 app = RobotManager()(app)
@@ -103,18 +104,13 @@ def URGreetings():
     </style>
 </html>"""
 
-# @app.route("/Robot.gltf")
-# def model():
-#     return open("./Robot.gltf", "rb").read()
-
-
 if __name__ == "__main__":
     # Creating SSL context
     context=ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     context.load_cert_chain('SSL\\URSystem.crt','SSL\\URSystem.key')
     loger.info("URSecurity", "Succes load SSL")
     # Starting server
-    server = Thread(target= lambda: app.run(host="localhost", ssl_context=context))
+    server = Thread(target=lambda: app.run(host="localhost", ssl_context=context))
     server.start()
     loger.info("web components", "Succes starting server")
     # Starting UPStarter
@@ -125,5 +121,3 @@ if __name__ == "__main__":
     loger.info("URSystem", "System started")
     ups.join()
     server.join()
-    
-    

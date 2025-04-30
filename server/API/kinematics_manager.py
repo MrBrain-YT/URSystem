@@ -13,12 +13,12 @@ class KinematicsManager:
         if kinematics is not None:
             globals()["kinematics"] = kinematics
     
-    def __call__(self, app: Flask, loger: Loger) -> Flask:
-        from server_functions import User, Robot
+    def __call__(self, app: Flask) -> Flask:
         from API.multi_robots_system import URMSystem
         from server_functions import System
         from API.access_checker import Access
 
+        loger = Loger()
         access = Access()
         
         """ Add kinematics to system """

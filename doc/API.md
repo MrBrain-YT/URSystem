@@ -20,6 +20,7 @@
 | `BindKinematics` | Привязка файлов кинематики к роботу | [Посмотреть здесь](#AddKinematics) |
 | `GetRobotLogs` | Получение логов робота | [Посмотреть здесь](#GetRobotLogs) |
 | `AddRobotLog` | Добавление логов робота | [Посмотреть здесь](#AddRobotLog) |
+| `GetSystemLogs` | Получение системного лога  | [Посмотреть здесь](#GetSystemLogs) |
 | `AddSystemLog` | Добавление системных логов | [Посмотреть здесь](#AddSystemLog) |
 | `CreateRobot` | Создание нового робота | [Посмотреть здесь](#CreateRobot) |
 | `ImportCache` | Импортирование конфигурации оборудования с другого сервера | [Посмотреть здесь](#ImportCache) |
@@ -325,7 +326,23 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="AddSystemLog"> AddSystemLog </h3>
+- <h3 id="GetSystemLogs"> GetSystemLogs </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `timestamp` | **Int** |
+    || `token` | **String** |
+
+    - ### Пример
+        ```python
+        data = {
+            "timestamp": 1746013996, # Unix time (Не обязательный параметр)
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+<!-- - <h3 id="AddSystemLog"> AddSystemLog </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -342,7 +359,7 @@
         }
         requests.post(url, verify=True, json=data)
         ```
-    ---
+    --- -->
 - <h3 id="CreateRobot"> CreateRobot </h3>
 
     | Метод | Параметр | Тип данных |

@@ -1,7 +1,7 @@
 from typing import Callable
 from functools import wraps
 
-from flask import request
+from flask import request, jsonify
 
 from utils.loger import Loger
 
@@ -41,7 +41,7 @@ class Access:
                 if User.role_access(info.get("token"), user_role) or Robot.is_robot(info.get("token")):
                     return func(*args, **kwargs)
                 else:
-                    return "You don't have enough rights"
+                    return jsonify({"status": False, "info": "You don't have enough rights"}), 403
             return wrapper
         return check_robot_or_user_wrapper
        
@@ -62,7 +62,7 @@ class Access:
                     return func(*args, **kwargs)
                 else:
                     self.loger.warning(loger_module, f"User access denied. User with token: {info.get('token')}")
-                    return "You don't have enough rights"
+                    return jsonify({"status": False, "info": "You don't have enough rights"}), 403
             return wrapper
         return check_user_wrapper
     
@@ -85,7 +85,7 @@ class Access:
                     return func(*args, **kwargs)
                 else:
                     self.loger.warning(loger_module, f"User access denied to create account. User with token: {info.get('token')}")
-                    return "You don't have enough rights"
+                    return jsonify({"status": False, "info": "You don't have enough rights"}), 403
             return wrapper
         return check_user_wrapper
        
@@ -108,7 +108,7 @@ class Access:
                     return func(*args, **kwargs)
                 else:
                     self.loger.warning(loger_module, f"Access denied. User with token: {info.get('token')}")
-                    return "You are not on the users list"
+                    return jsonify({"status": False, "info": "You are not on the users list"}), 403
             return wrapper
         return check_robot_user_wrapper
     
@@ -132,7 +132,7 @@ class Access:
                 and Robot().check_program_token(info.get("robot"), info.get("program_token")) if robots[info.get("robot")]["Program"] != "" else True:
                     return func(*args, **kwargs)
                 else:
-                    return "You are not on the users list or program token is not valid"
+                    return jsonify({"status": False, "info": "You are not on the users list or program token is not valid"}), 403
             return wrapper
         return check_robot_user_prog_token_wrapper
     
@@ -157,9 +157,9 @@ class Access:
                         return func(*args, **kwargs)
                     else:
                         self.loger.warning(loger_module, f"User access denied to set robot {info.get('robot')} minimal angles. User with token: {request.json.get('token')}")
-                        return "You don't have enough rights"
+                        return jsonify({"status": False, "info": "You don't have enough rights"}), 403
                 else:
                     self.loger.warning(loger_module, f"The robot executes an automatic program. It is currently not possible to change the MinAngles parameter. User with token: {info.get('token')}")
-                    return "The robot executes an automatic program. It is currently not possible to change the parameter"
+                    return jsonify({"status": False, "info": "The robot executes an automatic program. It is currently not possible to change the parameter"}), 403
             return wrapper
         return check_robot_user_prog_wrapper

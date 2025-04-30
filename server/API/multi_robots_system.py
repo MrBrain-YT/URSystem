@@ -24,7 +24,7 @@ class URMSystem:
     def get_robots() -> dict:
             return globals()["robots"]
     
-    def __call__(self, app:Flask, loger:Loger) -> Flask:
+    def __call__(self, app:Flask) -> Flask:
         from server_functions import System, User
         from API.frames_manager import FramesManager
         from API.tools_manager import ToolsManager
@@ -32,6 +32,7 @@ class URMSystem:
         from API.access_checker import Access
         from API.robot_manager import RobotManager
         
+        loger = Loger()
         access = Access()
         
         # add robot

@@ -24,6 +24,7 @@ for robot in robots:
     robots_list[robot]["Program"] = ""
     robots_list[robot]["ProgramRunning"] = "False"
     robots_list[robot]["RobotReady"] = True
+    robots_list[robot]["PositionID"] = ""
     robots_list[robot]["Emergency"] = False
     robots_list[robot]["MotorsSpeed"] = robots_list[robot]['StandartSpeed'].copy()
     if isinstance(robots_list[robot]["Position"], dict):
@@ -59,19 +60,19 @@ app = Flask(__name__)
 app = FramesManager(frames)(app)
 
 """ URS tool system """
-app = ToolsManager(tools)(app, loger)
+app = ToolsManager(tools)(app)
 
 """ URMSystem """ # URMS - United Robotics Multi System
-app = URMSystem(Robots)(app, loger)
+app = URMSystem(Robots)(app)
 
 """ URAccount """
-app = AccountManager(users)(app, loger)
+app = AccountManager(users)(app)
 
 """ URLogs """
 app = LogsManager()(app)
 
 """ Kinematics manager """
-app = KinematicsManager(kinematics)(app, loger)
+app = KinematicsManager(kinematics)(app)
 
 """ Robot manager """
 app = RobotManager()(app)

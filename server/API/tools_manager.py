@@ -17,10 +17,10 @@ class ToolsManager:
     def get_tools() -> dict:
         return globals()["tools"]
     
-    def __call__(self, app:Flask, loger: Loger) -> Flask:
+    def __call__(self, app:Flask) -> Flask:
         from server_functions import System, User
         from API.access_checker import Access
-
+        loger = Loger()
         access = Access()
         
         # get tools

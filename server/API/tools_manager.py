@@ -48,7 +48,7 @@ class ToolsManager:
                     return jsonify({"status": True, "info": "Tool value", "data": tools[info.get("id")], "request_type": "read"}), 200
             else:
                 log_message = f"The tool {info.get('id')} has not been created and cannot be modified"
-                loger.error("URTools", log_message)
+                loger.error(module=self.loger_module, msg=log_message)
                 return jsonify({"status": False, "info": log_message}), 400
 
         # creating tool 
@@ -62,11 +62,11 @@ class ToolsManager:
                 System().SaveToCache(tools=tools)
                 User().update_token()
                 log_message = f"Tool {info.get('id')} was created"
-                loger.info("URTools", log_message)
+                loger.info(module=self.loger_module, msg=log_message)
                 return jsonify({"status": True, "info": log_message}), 200
             else:
                 log_message = f"The tool {info.get('id')} already exists"
-                loger.error("URTools", log_message)
+                loger.error(module=self.loger_module, msg=log_message)
                 return jsonify({"status": True, "info": log_message}), 400
 
             
@@ -80,7 +80,7 @@ class ToolsManager:
             System().SaveToCache(tools=tools)
             User().update_token()
             log_message = f"Tool {info.get('id')} was deleted"
-            loger.info("URTools", log_message)
+            loger.info(module=self.loger_module, msg=log_message)
             return jsonify({"status": True, "info": log_message}), 200
             
         return app

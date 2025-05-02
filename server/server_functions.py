@@ -1,6 +1,12 @@
 import os
-import sqlite3
 import secrets
+
+import sqlalchemy as db
+
+engine = db.create_engine("sqlite:///databases/Users.sqlite")
+conn = engine.connect() 
+metadata = db.MetaData()
+users_table = db.Table("users",metadata, autoload_with=engine)
 
 class Robot:
     def check_angles(info, Robots) -> None: 
@@ -21,11 +27,11 @@ class Robot:
             tokens.append(users.get(i)["token"])
         if token in tokens:
             # Get role from token
-            con = sqlite3.connect("databases\\Users.sqlite")
-            cur = con.cursor()
-            res = cur.execute(f"SELECT role, name FROM 'users' WHERE token = '{token}'")
-            role, n = res.fetchone()
-            con.close()
+            query = db.select(
+                users_table.columns.role
+            ).where(users_table.columns.token == token)
+            role = conn.execute(query).fetchone()
+
             if role == "robot": return True
             else: return False
         else:
@@ -40,9 +46,7 @@ class Robot:
             return True
         else:
             return False
-        
-    
-    
+
 class System:   
     
     @staticmethod
@@ -76,14 +80,8 @@ class User:
             tokens.append(users.get(name)["token"])
 
         if token in tokens:
-            # Get role from token
-            
-            con = sqlite3.connect("databases\\Users.sqlite")
-            cur = con.cursor()
-            
-            res = cur.execute(f"SELECT role, name FROM 'users' WHERE token = '{token}'")
-            role, n = res.fetchone()
-            con.close()
+            query = db.select(users_table.columns.role, users_table.columns.name).where(users_table.columns.token == token).select()
+            role, name = conn.execute(query).fetchone()._tuple()
             # extracting a role from a token
             if role == "user": role_level = 1
             elif role == "robot": role_level = 1
@@ -108,11 +106,8 @@ class User:
     def update_user_info():
         from API.accounts_manager import AccountManager
         users = {}
-        con = sqlite3.connect("databases\\Users.sqlite")
-        cur = con.cursor()
-        res = cur.execute("SELECT * FROM 'users'")
-        rows = res.fetchall()
-        con.close()
+        query = users_table.select()
+        rows = conn.execute(query).fetchall()
         for i in rows:
             users[i[0]] = {"password": i[1],
                     "role": i[2],
@@ -131,11 +126,13 @@ class User:
             token = secrets.token_hex(32)
             if token not in tokens:
                 break
-            
-        con = sqlite3.connect("databases\\Users.sqlite")
-        cur = con.cursor()
-        cur.execute(f"UPDATE users SET token = '{token}' WHERE role = 'System' and name = '' and password = ''")
-        con.commit()
-        con.close()
+        
+        query = users_table.update().where(db.and_(users_table.columns.role == "System",
+                    users_table.columns.name == "",
+                    users_table.columns.password == "" 
+                    )).values(token=token)
+        conn.execute(query)
+        conn.commit()
+
         os.environ["SYSTEM_API_TOKEN"] = token
         return self.update_user_info()

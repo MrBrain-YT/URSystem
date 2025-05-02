@@ -1,15 +1,16 @@
 import secrets
-import sqlite3
 import json
 
 from flask import Flask, request, jsonify
+import sqlalchemy as db
 
 from utils.loger import Loger
+from server_functions import users_table, conn
 
 class AccountManager:
     
     def __init__(self, users:dict=None):
-        self.loger_module = "URAccount"
+        self.loger_module = "URAccounts"
         if users is not None:
             globals()["users"] = users
     
@@ -34,27 +35,28 @@ class AccountManager:
         def CreateAccount():
             info = request.json
             users:dict = globals()["users"]
-
             if info.get("name") not in users:
+                token:str
+                tokens = []
+                for i in [i for i in users]:
+                    tokens.append(users.get(i)["token"])
                 while True:
                     token = secrets.token_hex(32)
-                    tokens = []
-                    for i in [i for i in users]:
-                        tokens.append(users.get(i)["token"])
                     if token not in tokens:
                         break
-                    con = sqlite3.connect("Databases\\Users.sqlite")
-                    cur = con.cursor()
-                    res = cur.execute(f"INSERT INTO users VALUES ('{info.get('name')}', '{info.get('password')}', '{info.get('user_role')}', '{token}')")
-                    con.commit()
-                    loger.info("URAccount", f"Account was created with name-{info.get('name')} and password-{info.get('password')}")
-                    User().update_token()
-                    log_message = f"Account with name: {info.get('name')} was created"
-                    loger.info("URAccount", log_message)
-                    return jsonify({"status": True, "info": log_message, "token": token}), 200
+                
+                # DB query send
+                query = db.insert(users_table).values(name=info.get('name'), password=info.get('password'), role=info.get('user_role'), token=token)
+                conn.execute(query)
+                conn.commit()
+
+                User().update_token()
+                log_message = f"Account with name: {info.get('name')} was created"
+                loger.info(module=self.loger_module, msg=log_message)
+                return jsonify({"status": True, "info": log_message, "token": token}), 200
             else:
                 log_message = f"The account has already been created"
-                loger.info("URAccount", log_message)
+                loger.info(module=self.loger_module, msg=log_message)
                 return jsonify({"status": False, "info": log_message}), 400
             
         @app.route("/DeleteAccount", methods=['POST'])
@@ -64,13 +66,14 @@ class AccountManager:
             users:dict = globals()["users"]
             if info.get("name") in users:
                 if users[info.get("name")]["role"] not in {"SuperAdmin", "System"}:
-                    con = sqlite3.connect("Databases\\Users.sqlite")
-                    cur = con.cursor()
-                    res = cur.execute(f"DELETE FROM 'users' WHERE name = '{info.get('name')}'")
-                    con.commit()
+                    # DB query send
+                    query = users_table.delete().where(users_table.columns.name == info.get('name'))
+                    conn.execute(query)
+                    conn.commit()
+
                     User().update_token()
                     log_message = f"Account with name: {info.get('name')} was deleted"
-                    loger.info("URAccount", log_message)
+                    loger.info(module=self.loger_module, msg=log_message)
                     return jsonify({"status": True, "info": log_message}), 200
             else:
                 return jsonify({"status": False, "info": "No such account exists"}), 400
@@ -101,16 +104,16 @@ class AccountManager:
                             token = users[info.get('name')]['token']
                             return jsonify({"status": True, "info": "User found", "role": role, "token": token}), 200
                         else:
-                            loger.error("URAccount", f"Password incorrect")
+                            loger.error(module=self.loger_module, msg=f"Password incorrect")
                             return jsonify({"status": False, "info": "Password incorrect"}), 400
                     else:
-                        loger.error("URAccount", f"Account data with the System role cannot be transferred") # TODO: add ip address user to log
+                        loger.error(module=self.loger_module, msg=f"Account data with the System role cannot be transferred") # TODO: add ip address user to log
                         return jsonify({"status": False, "info": "Account data with the System role cannot be transferred"}), 400
                 else:
-                    loger.error("URAccount", f"Name not in users")
+                    loger.error(module=self.loger_module, msg=f"Name not in users")
                     return jsonify({"status": False, "info": "Name not in users"}), 404
             else:
-                loger.error("URAccount", f"Server token incorrect")
+                loger.error(module=self.loger_module, msg=f"Server token incorrect")
                 return jsonify({"status": False, "info": "Server token incorrect"}), 400
 
         # change password
@@ -121,19 +124,20 @@ class AccountManager:
             users:dict = globals()["users"]
             if info.get("name") in users:
                 if info.get("name") != "":
-                    con = sqlite3.connect("Databases\\Users.sqlite")
-                    cur = con.cursor()
-                    cur.execute(f"UPDATE users SET password = '{info.get('password')}' WHERE name = '{info.get('name')}'")
-                    con.commit()
-                    con.close()
+                    # DB query send
+                    query = users_table.update().where(
+                        users_table.columns.name == info.get('name')).values(password=info.get('password'))
+                    conn.execute(query)
+                    conn.commit()
+
                     User().update_token()
                     log_message = f"Password was changed for account with name: {info.get('name')}"
-                    loger.info("URAccount", )
+                    loger.info(module=self.loger_module, msg=log_message)
                     return jsonify({"status": True, "info": log_message}), 200
-                loger.error("URAccount", f"You try change password system account")
+                loger.error(module=self.loger_module, msg=f"You try change password system account")
                 return jsonify({"status": False, "info": "You try change password system account"}), 400
             else:
-                loger.error("URAccount", f"Name not in users")
+                loger.error(module=self.loger_module, msg=f"Name not in users")
                 return jsonify({"status": False, "info": "Name not in users"}), 404
         # get user token
         @app.route("/GetToken", methods=['POST'])
@@ -143,24 +147,20 @@ class AccountManager:
             users:dict = globals()["users"]
             if info.get("name") in users:
                 if info.get("name") != "":
-                    con = sqlite3.connect("Databases\\Users.sqlite")
-                    cur = con.cursor()
-                    cur.execute(f"SELECT token FROM users WHERE name = '{info.get('name')}, password = '{info.get('password')}'")
-                    token = cur.fetchone()
-                    con.commit()
-                    con.close()
+                    query = db.select(users_table.columns.token).where(db.and_(users_table.columns.name == info.get('name'), users_table.columns.password == info.get('password')))
+                    token = conn.execute(query).fetchone()._tuple()
                     return jsonify({"status": True, "info": "", "token": token}), 200
                 else:
-                    loger.error("URAccount", f"You try get token system account")
+                    loger.error(module=self.loger_module, msg=f"You try get token system account")
                     return jsonify({"status": False, "info": "You try get token system account"}), 400
             else:
-                loger.error("URAccount", f"Name not in users")
+                loger.error(module=self.loger_module, msg=f"Name not in users")
                 return jsonify({"status": False, "info": "Name not in users"}), 404
 
         # change user token
         @app.route("/ChangeToken", methods=['POST'])
         @access.check_user(user_role="SuperAdmin", loger_module=self.loger_module)
-        def changedoken():
+        def changetoken():
             info = request.json
             users:dict = globals()["users"]
             while True:
@@ -170,13 +170,17 @@ class AccountManager:
                     tokens.append(users.get(i)["token"])
                 if token not in tokens:
                     break
-            con = sqlite3.connect("Databases\\Users.sqlite")
-            cur = con.cursor()
-            cur.execute(f"UPDATE users SET token = '{token}' WHERE name = '{info.get('name')}' and password = '{info.get('password')}' WHERE role != 'System' and role != 'robot'")
-            con.commit()
-            con.close()
+            # DB query send
+            query = users_table.update().where(db.and_(
+                users_table.columns.name == info.get('name'),
+                users_table.columns.password == info.get('password'),
+                users_table.columns.role != "System"),
+                users_table.columns.role != "robot").values(token=token)
+            conn.execute(query)
+            conn.commit()
+
             log_message = f"Token was changed for account with name: {info.get('name')}"
-            loger.info("URAccount", log_message)
+            loger.info(module=self.loger_module, msg=log_message)
             return jsonify({"status": True, "info": log_message, "token": token}), 200
 
         return app

@@ -30,7 +30,7 @@ class KinematicsManager:
             shutil.unpack_archive(filename=zip_path, extract_dir=zip_path.replace(".zip", ""), format="zip")
             os.remove(zip_path)
             log_message = f"Added new kinematic with id: {request.files.get('file')}"
-            loger.info("URSystem", log_message)
+            loger.info(module=self.loger_module, msg=log_message)
             return jsonify({"status": True, "info": log_message}), 200
 
 
@@ -46,11 +46,11 @@ class KinematicsManager:
             
             if robots[info.get("robot")]["Kinematic"] == info.get('id'):
                 log_message = f"Was created associate kinematics-{info.get('id')} and robot-{info.get('robot')}"
-                loger.info("URSystem", log_message)
+                loger.info(module=self.loger_module, msg=log_message)
                 return jsonify({"status": True, "info": log_message}), 200
             else:
                 log_message = f"Not created associate kinematics-{info.get('id')} and robot-{info.get('robot')}"
-                loger.error("URSystem", log_message)
+                loger.error(module=self.loger_module, msg=log_message)
                 return jsonify({"status": True, "info": log_message}), 400
 
         return app

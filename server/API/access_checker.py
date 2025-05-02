@@ -61,7 +61,7 @@ class Access:
                 if User.role_access(info.get("token"), user_role):
                     return func(*args, **kwargs)
                 else:
-                    self.loger.warning(loger_module, f"User access denied. User with token: {info.get('token')}")
+                    self.loger.warning(module=loger_module, msg=f"User access denied. User with token: {info.get('token')}")
                     return jsonify({"status": False, "info": "You don't have enough rights"}), 403
             return wrapper
         return check_user_wrapper
@@ -84,7 +84,7 @@ class Access:
                 if User.role_access(info.get("token"), user_role) and Robot.robot_access(robots, info.get("robot"), info.get("code")):
                     return func(*args, **kwargs)
                 else:
-                    self.loger.warning(loger_module, f"User access denied to create account. User with token: {info.get('token')}")
+                    self.loger.warning(module=loger_module, msg=f"User access denied to create account. User with token: {info.get('token')}")
                     return jsonify({"status": False, "info": "You don't have enough rights"}), 403
             return wrapper
         return check_user_wrapper
@@ -107,7 +107,7 @@ class Access:
                 Robot.robot_access(robots, info.get("robot"), info.get("code"))) or Robot.is_robot(info.get("token")):
                     return func(*args, **kwargs)
                 else:
-                    self.loger.warning(loger_module, f"Access denied. User with token: {info.get('token')}")
+                    self.loger.warning(module=loger_module, msg=f"Access denied. User with token: {info.get('token')}")
                     return jsonify({"status": False, "info": "You are not on the users list"}), 403
             return wrapper
         return check_robot_user_wrapper
@@ -156,10 +156,10 @@ class Access:
                     if User.role_access(info.get("token"), user_role) and Robot.robot_access(robots, info.get("robot"), info.get("code")):
                         return func(*args, **kwargs)
                     else:
-                        self.loger.warning(loger_module, f"User access denied to set robot {info.get('robot')} minimal angles. User with token: {request.json.get('token')}")
+                        self.loger.warning(module=loger_module, msg=f"User access denied to set robot {info.get('robot')} minimal angles. User with token: {request.json.get('token')}")
                         return jsonify({"status": False, "info": "You don't have enough rights"}), 403
                 else:
-                    self.loger.warning(loger_module, f"The robot executes an automatic program. It is currently not possible to change the MinAngles parameter. User with token: {info.get('token')}")
+                    self.loger.warning(module=loger_module, msg=f"The robot executes an automatic program. It is currently not possible to change the MinAngles parameter. User with token: {info.get('token')}")
                     return jsonify({"status": False, "info": "The robot executes an automatic program. It is currently not possible to change the parameter"}), 403
             return wrapper
         return check_robot_user_prog_wrapper

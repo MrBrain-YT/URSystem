@@ -108,16 +108,16 @@ if __name__ == "__main__":
     # Creating SSL context
     context=ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     context.load_cert_chain('SSL\\URSystem.crt','SSL\\URSystem.key')
-    loger.info("URSecurity", "Succes load SSL")
+    loger.info(module="URSecurity", msg="Succes load SSL")
     # Starting server
     server = Thread(target=lambda: app.run(host="localhost", ssl_context=context))
     server.start()
-    loger.info("web components", "Succes starting server")
+    loger.info(module="web components", msg="Succes starting server")
     # Starting UPStarter
     ups = Thread(target=lambda:programs_starter.UPS())
     ups.start()
-    loger.info("UPStarter", "Succes starting UPStarter")
+    loger.info(module="UPStarter", msg="Succes starting UPStarter")
     # Joining processes
-    loger.info("URSystem", "System started")
+    loger.info(module="URSystem", msg="System started")
     ups.join()
     server.join()

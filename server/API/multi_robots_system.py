@@ -76,7 +76,7 @@ class URMSystem:
             User().update_token()
             RobotManager.add_new_robot_ready(info.get("robot"))
             log_message = f"Robot named {info.get('robot')} was created"
-            loger.info("URMS", log_message)
+            loger.info(module=self.loger_module, msg=log_message)
             return jsonify({"status": True, "info": log_message}), 200
 
         # Import robot cache
@@ -132,7 +132,7 @@ class URMSystem:
                     
             System().SaveToCache(robots=robots, tools=tools, frames=frames)
             log_message = "Cache was imorted"
-            loger.info("URSystem", log_message)
+            loger.info(module=self.loger_module, msg=log_message)
             return jsonify({"status": True, "info": log_message}), 200
             
         # Export robot cache from cache file
@@ -142,7 +142,7 @@ class URMSystem:
             with open("./configuration/robots_cache.py", "r") as file:
                 cache = file.read()
                 
-            loger.info("URSystem", "Current cache from cache file was exported")
+            loger.info(module=self.loger_module, msg="Current cache from cache file was exported")
             new_cache = {
                 "robots": ast.literal_eval(cache.split("\n")[0].lstrip("robots = ")),
                 "tools": ast.literal_eval(cache.split("\n")[1].lstrip("robots = ")),
@@ -163,7 +163,7 @@ class URMSystem:
             for robot_name in robots.keys():
                 del robots[robot_name]["ProgramToken"]
             
-            loger.info("URSystem", "Current cache from RAM was exported")
+            loger.info(module=self.loger_module, msg="Current cache from RAM was exported")
             new_cache = {
                 "robots": robots,
                 "tools": tools,
@@ -206,11 +206,11 @@ class URMSystem:
                 del robots[info.get("robot")]
                 RobotManager.remove_new_robot_ready(info.get("robot"))
                 User().update_token()
-                loger.info("URSystem", f"Robot was deleted user with token: {info.get('token')}")
+                loger.info(module=self.loger_module, msg=f"Robot was deleted user with token: {info.get('token')}")
                 return jsonify({"status": True, "info": f"Robot '{info.get('robot')}' was deleted"}), 200
             else:
                 User().update_token()
-                loger.info("URSystem", f"Robot did not deleted user with token: {info.get('token')}")
+                loger.info(module=self.loger_module, msg=f"Robot did not deleted user with token: {info.get('token')}")
                 return jsonify({"status": False, "info": "Robot not found"}), 400
             
         return app

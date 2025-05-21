@@ -1,9 +1,9 @@
 import time
 import os
 
-loger_is_started = False
+logger_is_started = False
 
-class Loger():
+class Logger():
     
     def __init__(self, robot_name:str=None) -> None:
         current_time = time.localtime()
@@ -18,22 +18,21 @@ class Loger():
                 pass
             file_path = f'logs/{robot_name}/{file_name}.log'
             
-        if not loger_is_started:
+        if not logger_is_started:
             if os.path.exists(file_path):
                 with open(file_path, "r") as file:
                     text = file.read()
                 if text == "":
                     with open(file_path, "a") as file:
-                        file.write(f"[{self.__get_time()}] [INFO] [loger] System logging module started")
+                        file.write(f"[{self.__get_time()}] [INFO] [logger] System logging module started")
                 else:
                     with open(file_path, "a") as file:
-                        file.write(f"\n[{self.__get_time()}] [INFO] [loger] System logging module started")
+                        file.write(f"\n[{self.__get_time()}] [INFO] [logger] System logging module started")
         
             else:
                 with open(f'logs/{file_name}.log', "a") as file:
-                    file.write(f"[{self.__get_time()}] [INFO] [loger] System logging module started")
-            globals()["loger_is_started"] = True
-            
+                    file.write(f"[{self.__get_time()}] [INFO] [logger] System logging module started")
+            globals()["logger_is_started"] = True
     
     @staticmethod
     def __get_time() -> str:
@@ -86,12 +85,10 @@ class Loger():
         else:
             current_time = time.localtime(timestamp)
         file_name = f"{current_time[2]}_{current_time[1]}_{current_time[0]}"
-        print(file_name)
         if self.robot_name is None:
             with open(f'logs/{file_name}.log', 'r') as file:
                 return file.readlines()
         else:
-            print(123, self.robot_name)
             if os.path.exists(f'logs/{self.robot_name}/{file_name}.log'):
                 with open(f'logs/{self.robot_name}/{file_name}.log', 'r') as file:
                     return file.readlines()

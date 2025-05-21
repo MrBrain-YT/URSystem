@@ -1,78 +1,38 @@
-import shutil
-import os
-import importlib
-
 from flask import Flask, request, jsonify
 
-from utils.loger import Loger
+from services.kinematics_manager import KinematicsManager
+from API.access_checker import Access
 
-class KinematicsManager:
+class KinematicsManagerAPI:
+    access = Access()
     
     def __init__(self, kinematics:dict=None):
-        self.loger_module = "URKinematics"
+        self.logger_module = "URKinematics"
         if kinematics is not None:
-            globals()["kinematics"] = kinematics
+            self.kinematic_manager = KinematicsManager(kinematics)
+        else:
+            self.kinematic_manager = KinematicsManager()
     
     def __call__(self, app: Flask) -> Flask:
-        from API.multi_robots_system import URMSystem
-        from server_functions import System
-        from API.access_checker import Access
-
-        loger = Loger()
-        access = Access()
+        
         
         """ Add kinematics to system """
-        @app.route("/AddKinematics", methods=['POST'])
-        @access.check_user(user_role="administrator", loger_module=self.loger_module)
-        def AddKinematics():
-            zip_path = f"./kinematics/{request.files.get('file').filename}"
-            request.files.get("file").save(zip_path)
-            shutil.unpack_archive(filename=zip_path, extract_dir=zip_path.replace(".zip", ""), format="zip")
-            os.remove(zip_path)
-            log_message = f"Added new kinematic with id: {request.files.get('file')}"
-            loger.info(module=self.loger_module, msg=log_message)
-            return jsonify({"status": True, "info": log_message}), 200
+        @app.route("/add-kinematic", methods=['POST'])
+        @self.access.check_user(user_role="administrator", logger_module=self.logger_module)
+        def add_kinematic():
+            kinematic_file = request.files.get('file')
+            responce, code = self.kinematic_manager.add_kinematic(kinematic_file=kinematic_file)
+            return jsonify(responce), code
 
 
         """ Bind kinematics to robot """
-        @app.route("/BindKinematics", methods=['POST'])
-        @access.check_user_and_robot_data(user_role="administrator", loger_module=self.loger_module)
-        def BindKinematics():
+        @app.route("/bind-kinematic", methods=['POST'])
+        @self.access.check_user_and_robot_data(user_role="administrator", logger_module=self.logger_module)
+        def bind_kinematic():
             info = request.json
-            robots = URMSystem().get_robots()
-            robots[info.get("robot")]["Kinematic"] = info.get('id') if \
-                os.path.exists(f"./kinematics/{info.get('id')}") else robots[info.get("robot")]["Kinematic"]
-            System().SaveToCache(robots=robots)
-            
-            if robots[info.get("robot")]["Kinematic"] == info.get('id'):
-                log_message = f"Was created associate kinematics-{info.get('id')} and robot-{info.get('robot')}"
-                loger.info(module=self.loger_module, msg=log_message)
-                return jsonify({"status": True, "info": log_message}), 200
-            else:
-                log_message = f"Not created associate kinematics-{info.get('id')} and robot-{info.get('robot')}"
-                loger.error(module=self.loger_module, msg=log_message)
-                return jsonify({"status": True, "info": log_message}), 400
+            robot_name = info.get("robot")
+            kinematic_id = info.get("id")
+            responce, code = self.kinematic_manager.bind_kinematic(robot_name=robot_name, kinematic_id=kinematic_id)
+            return jsonify(responce), code
 
         return app
-            
-    @staticmethod
-    def update_kinematics_data():
-        from API.multi_robots_system import URMSystem
-        kinematics = {}
-        robots:dict = URMSystem().get_robots()
-        for robot in robots:
-            if robots.keys()[robot]["Kinematic"] == "None":
-                kinematics[robot] = "None"
-            else:
-                try:
-                    kinematics[robot] = importlib.import_module(
-                        f'kinematics.{robots.keys()[robot]["Kinematic"]}.kin')
-                except:
-                    # send to logs!
-                    print(f"For robot '{robot}' kinematic file not found ")
-                    
-        globals()["kinematics"] = kinematics
-        
-    @staticmethod
-    def get_kinematics():
-        return globals()["kinematics"]

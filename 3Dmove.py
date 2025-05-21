@@ -1,3 +1,5 @@
+""" Module for connection 3D mouse """
+
 import hid
 import time
 import requests

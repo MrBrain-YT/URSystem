@@ -1,58 +1,49 @@
 from flask import Flask, request, jsonify
 
-class FramesManager:
+from services.frames_manager import FramesManager
+from API.access_checker import Access
+
+class FramesManagerAPI:
+    access = Access()
     
     def __init__(self, frames: dict=None):
-        self.loger_module = "URFrames"
+        self.logger_module = "URFrames"
         if frames is not None:
-            globals()["frames"] = frames
-        
-    def get_frames(self) -> dict:
-        return globals()["frames"]
-    
-    def set_frame(self, frames: dict) -> None:
-        globals()["frames"] = frames
+            self.frames_manager = FramesManager(frames)
+        else:
+            self.frames_manager = FramesManager()
     
     def __call__(self, app:Flask) -> Flask:
-        from server_functions import System, User
-        from API.access_checker import Access
 
-        access = Access()
-        
-        """ URFrames """
-        @app.route("/GetFrames", methods=['POST'])
-        @access.check_user(user_role="administrator", loger_module=self.loger_module)
-        def GetFrames():
-            return jsonify({"status": True, "info": f"All frames", "data": globals()["frames"]}), 200
-
+        @app.route("/get-frames", methods=['POST'])
+        @self.access.check_user(user_role="administrator", logger_module=self.logger_module)
+        def get_frames():
+            responce, code = self.frames_manager.get_frames_api()
+            return jsonify(responce), code
             
-        @app.route("/GetFrame", methods=['POST'])
-        @access.check_robot_or_user(user_role="user")
-        def GetFrame():
+        @app.route("/get-frame", methods=['POST'])
+        @self.access.check_robot_or_user(user_role="user", logger_module=self.logger_module)
+        def get_frame():
             info = request.json
-            if globals()["frames"].get(info.get("id")) is not None:
-                return jsonify({"status": True, "info": f"Value from frame with id {info.get('id')}", "data": globals()["frames"].get(info.get("id"))}), 200
-            else:
-                return jsonify({"status": False, "info": f"Frame '{info.get('id')}' not found"}), 400
+            frame_id = info.get("id")
+            responce, code = self.frames_manager.get_frame(frame_id=frame_id)
+            return jsonify(responce), code
             
-        @app.route("/SetFrame", methods=['POST'])
-        @access.check_robot_or_user(user_role="administrator")
-        def SetFrame():
+        @app.route("/set-frame", methods=['POST'])
+        @self.access.check_robot_or_user(user_role="administrator", logger_module=self.logger_module)
+        def set_frame():
             info = request.json
-            globals()["frames"][info.get("id")] = info.get("config")
-            System().SaveToCache(frames=globals()["frames"])
-            User().update_token()
-            return jsonify({"status": True, "info": f"The value has been changed in frame with id {info.get('id')}"}), 200
-
+            frame_id = info.get("id")
+            config = info.get("config")
+            responce, code = self.frames_manager.set_frame(frame_id=frame_id, config=config)
+            return jsonify(responce), code
             
-        @app.route("/DelFrame", methods=['POST'])
-        @access.check_user(user_role="administrator", loger_module=self.loger_module)
-        def DelFrame():
+        @app.route("/delete-frame", methods=['POST'])
+        @self.access.check_user(user_role="administrator", logger_module=self.logger_module)
+        def delete_frame():
             info = request.json
-            del globals()["frames"][info.get("id")]
-            System().SaveToCache(frames=globals()["frames"])
-            User().update_token()
-            return jsonify({"status": True, "info": f"Frame with id {info.get('id')} has ben deleted"}), 200
-
+            frame_id = info.get("id")
+            responce, code = self.frames_manager.delete_frame(frame_id=frame_id)
+            return jsonify(responce), code
         
         return app

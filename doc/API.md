@@ -6,59 +6,68 @@
 
 | Метод | Описание | Параметры |
 |-------|----------|-----------|
-| `CreateAccount` | Создание аккаунта пользователя или робота | [Посмотреть здесь](#CreateAccount) |
-| `DeleteAccount` | Удаление аккаунта пользователя или робота  кроме пользователей с ролями (`SuperAdmin` и `System`)| [Посмотреть здесь](#DeleteAccount) |
-| `GetAccounts` | Получение всех аккаунтов пользователей в системе кроме пользователей с ролями (`SuperAdmin` и `System`) | [Посмотреть здесь](#GetAccounts) |.
-| `GetRoleAccount` | Получение роли и токена по логину и паролю аккаунта (данные от аккаунта с ролью System не передаются) | [Посмотреть здесь](#GetRoleAccount) |
-| `ChangePass` | Изменение пароля аккаунта пользователя или робота | [Посмотреть здесь](#ChangePass) |
-| `GetToken` | Получение токена пользователя или робота (токен аккаунта с ролью System не передаются)| [Посмотреть здесь](#GetToken) |
-| `ChangeToken` | Изменение токена пользователя или робота (токен аккаунта с ролью System или robot не изменяются) | [Посмотреть здесь](#ChangeToken) |
-| `GetFrames` | Получение всех фреймов | [Посмотреть здесь](#GetFrames) |
-| `GetFrame` | Получение фрейма по идентификационному номеру | [Посмотреть здесь](#GetFrame) |
-| `SetFrame` | Установка значения для фрейма по идентификационному номеру | [Посмотреть здесь](#SetFrame) |
-| `AddKinematics` | Добавление файлов кинематики в систему | [Посмотреть здесь](#AddKinematics) |
-| `BindKinematics` | Привязка файлов кинематики к роботу | [Посмотреть здесь](#AddKinematics) |
-| `GetRobotLogs` | Получение логов робота | [Посмотреть здесь](#GetRobotLogs) |
-| `AddRobotLog` | Добавление логов робота | [Посмотреть здесь](#AddRobotLog) |
-| `GetSystemLogs` | Получение системного лога  | [Посмотреть здесь](#GetSystemLogs) |
-| `AddSystemLog` | Добавление системных логов | [Посмотреть здесь](#AddSystemLog) |
-| `CreateRobot` | Создание нового робота | [Посмотреть здесь](#CreateRobot) |
-| `ImportCache` | Импортирование конфигурации оборудования с другого сервера | [Посмотреть здесь](#ImportCache) |
-| `ExportFileCache` | Экспортирование конфигурации оборудования из файла | [Посмотреть здесь](#ExportFileCache) |
-| `ExportCache` | Экспортирование конфигурации оборудования из памяти системы (Позволяет получить самые свежие данные) | [Посмотреть здесь](#ExportCache) |
-| `GetRobot` | Получение параметров робота | [Посмотреть здесь](#GetRobot) |
-| `GetRobots` | Получение параметров всех роботов в системе | [Посмотреть здесь](#GetRobots) |
-| `GetCurentPosition` | Получение актуальной позиции робота | [Посмотреть здесь](#GetCurentPosition) |
-| `GetPositionID` | Получение id позиции робота | [Посмотреть здесь](#GetPositionID) |
-| `GetCurentSpeed` | Получение актуальной скорости робота | [Посмотреть здесь](#GetCurentSpeed) |
-| `GetXYZPosition` | Получение актуальной декартовой позиции робота | [Посмотреть здесь](#GetXYZPosition) |
-| `GetRobotAnglesCount` | Получение количество осей робота | [Посмотреть здесь](#GetRobotAnglesCount) |
-| `SetCurentMotorsPosition` | Установка актуальной позиции робота | [Посмотреть здесь](#SetCurentMotorsPosition) |
-| `GetRobotReady` | Получение параметра готовности робота к следующей команде перемещения | [Посмотреть здесь](#GetRobotReady) |
-| `GetRobotEmergency` | Получение параметра аварийной ситуации робота | [Посмотреть здесь](#GetRobotEmergency) |
-| `SetRobotReady` | Установка параметра готовности робота к следующей команде перемещения | [Посмотреть здесь](#SetRobotReady) |
-| `SetRobotEmergency` | Установка параметра аварийной ситуации робота | [Посмотреть здесь](#SetRobotEmergency) |
-| `SetPositionID` | Установка id позиции робота | [Посмотреть здесь](#SetPositionID) |
-| `CurentPosition` | Установка актуальной позиции робота | [Посмотреть здесь](#CurentPosition) |
-| `RemoveCurentPointPosition` | Удаление первой целевой позиции в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveCurentPointPosition) |
-| `RemoveAllPointPosition` | Удаление всех целевых позиций в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveAllPointPosition) |
-| `HomePosition` | Установка домашней позиции робота | [Посмотреть здесь](#HomePosition) |
-| `CurentSpeed` | Установка актуальной скорости робота | [Посмотреть здесь](#CurentSpeed) |
-| `RemoveCurentPointSpeed` | Удаление первой целевой скорости в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveCurentPointSpeed) |
-| `RemoveAllPointSpeed` | Удаление всех целевых скоростей в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveAllPointSpeed) |
-| `StandartSpeed` | Установка скорости робота по умолчанию (при включении) | [Посмотреть здесь](#StandartSpeed) |
-| `SetProgram` | Загрузить програму автоматики для робота | [Посмотреть здесь](#SetProgram) |
-| `DeleteProgram` | Удалить програму автоматики для робота (Останавливаеться программа автоматики или происходит адаление поле завершения программы)| [Посмотреть здесь](#DeleteProgram) |
-| `angle_to_xyz` | Преобразование углов в декартовые координаты | [Посмотреть здесь](#angle_to_xyz) |
-| `XYZ_to_angle` | Преобразование декартовых координат в углы | [Посмотреть здесь](#XYZ_to_angle) |
-| `Move_XYZ` | Перемещение робота по декартовым координатам (установка актуальной позиции по координатам) | [Посмотреть здесь](#Move_XYZ) |
-| `MinAngles` | Установка минимальных ограничений для осей | [Посмотреть здесь](#MinAngles) |
-| `MaxAngles` | Установка максимальных ограничений для осей | [Посмотреть здесь](#MaxAngles) |
-| `SetProgramRun` | Установка состояния параметра готовности робота к следующей команде перемещения | [Посмотреть здесь](#SetProgramRun) |
-| `GetTools` | Получение данных всех инструментов | [Посмотреть здесь](#GetTools) |
-| `GetTool` | Получение данных инструмента по идентификационному номеру | [Посмотреть здесь](#GetTool) |
-| `CreateTool` | Создание нового инструмента | [Посмотреть здесь](#CreateTool) |
-| `DeleteTool` | Удаление инструмента | [Посмотреть здесь](#DeleteTool) |
+| `сreate-account` | Создание аккаунта пользователя или робота | [Посмотреть здесь](#CreateAccount) |
+| `delete-account` | Удаление аккаунта пользователя или робота  кроме пользователей с ролями (`SuperAdmin` и `System`)| [Посмотреть здесь](#DeleteAccount) |
+| `get-accounts` | Получение всех аккаунтов пользователей в системе кроме пользователей с ролями (`SuperAdmin` и `System`) | [Посмотреть здесь](#GetAccounts) |.
+| `get-account-data` | Получение роли и токена по логину и паролю аккаунта (данные от аккаунта с ролью System не передаются) | [Посмотреть здесь](#GetRoleAccount) |
+| `change-password` | Изменение пароля аккаунта пользователя или робота | [Посмотреть здесь](#ChangePass) |
+| `get-token` | Получение токена пользователя или робота (токен аккаунта с ролью System не передаются)| [Посмотреть здесь](#GetToken) |
+| `change-token` | Изменение токена пользователя или робота (токен аккаунта с ролью System или robot не изменяются) | [Посмотреть здесь](#ChangeToken) |
+| `get-frames` | Получение всех фреймов | [Посмотреть здесь](#GetFrames) |
+| `get-frame` | Получение фрейма по идентификационному номеру | [Посмотреть здесь](#GetFrame) |
+| `set-frame` | Установка значения для фрейма по идентификационному номеру | [Посмотреть здесь](#SetFrame) |
+| `add-kinematic` | Добавление файлов кинематики в систему | [Посмотреть здесь](#AddKinematics) |
+| `bind-kinematic` | Привязка файлов кинематики к роботу | [Посмотреть здесь](#AddKinematics) |
+| `get-robot-log` | Получение логов робота | [Посмотреть здесь](#GetRobotLogs) |
+| `add-robot-log` | Добавление логов робота | [Посмотреть здесь](#AddRobotLog) |
+| `get-system-log` | Получение системного лога  | [Посмотреть здесь](#GetSystemLogs) |
+| `add-system-log` | Добавление системных логов | [Посмотреть здесь](#AddSystemLog) |
+| `create-robot` | Создание нового робота | [Посмотреть здесь](#CreateRobot) |
+| `import-cache` | Импортирование конфигурации оборудования с другого сервера | [Посмотреть здесь](#ImportCache) |
+| `export-file-cache` | Экспортирование конфигурации оборудования из файла | [Посмотреть здесь](#ExportFileCache) |
+| `export-cache` | Экспортирование конфигурации оборудования из памяти системы (Позволяет получить самые свежие данные) | [Посмотреть здесь](#ExportCache) |
+| `get-robot` | Получение параметров робота | [Посмотреть здесь](#GetRobot) |
+| `get-robots` | Получение параметров всех роботов в системе | [Посмотреть здесь](#GetRobots) |
+| `get-position` | Получение актуальной позиции робота | [Посмотреть здесь](#GetCurentPosition) |
+| `get-position-id` | Получение id позиции робота | [Посмотреть здесь](#GetPositionID) |
+| `get-speed` | Получение актуальной скорости робота | [Посмотреть здесь](#GetCurentSpeed) |
+| `get-cartesian-position` | Получение актуальной декартовой позиции робота | [Посмотреть здесь](#GetXYZPosition) |
+| `get-angles-count` | Получение количество осей робота | [Посмотреть здесь](#GetRobotAnglesCount) |
+| `set-motors-position` | Установка актуальной позиции робота | [Посмотреть здесь](#SetCurentMotorsPosition) |
+| `get-ready` | Получение параметра готовности робота к следующей команде перемещения | [Посмотреть здесь](#GetRobotReady) |
+| `get-emergency` | Получение параметра аварийной ситуации робота | [Посмотреть здесь](#GetRobotEmergency) |
+| `set-ready` | Установка параметра готовности робота к следующей команде перемещения | [Посмотреть здесь](#SetRobotReady) |
+| `set-emergency` | Установка параметра аварийной ситуации робота | [Посмотреть здесь](#SetRobotEmergency) |
+| `set-position-id` | Установка id позиции робота | [Посмотреть здесь](#SetPositionID) |
+| `set-position` | Установка актуальной позиции робота | [Посмотреть здесь](#CurentPosition) |
+| `remove-curent-point-position` | Удаление первой целевой позиции в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveCurentPointPosition) |
+| `remove-all-point-position` | Удаление всех целевых позиций в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveAllPointPosition) |
+| `set-home-position` | Установка домашней позиции робота | [Посмотреть здесь](#HomePosition) |
+| `set-speed` | Установка актуальной скорости робота | [Посмотреть здесь](#CurentSpeed) |
+| `remove-curent-point-speed` | Удаление первой целевой скорости в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveCurentPointSpeed) |
+| `remove-all-point-speed` | Удаление всех целевых скоростей в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveAllPointSpeed) |
+| `set-standart-speed` | Установка скорости робота по умолчанию (при включении) | [Посмотреть здесь](#StandartSpeed) |
+| `set-program` | Загрузить програму автоматики для робота | [Посмотреть здесь](#SetProgram) |
+| `delete-program` | Удалить програму автоматики для робота (Останавливаеться программа автоматики или происходит адаление поле завершения программы)| [Посмотреть здесь](#DeleteProgram) |
+| `angles-to-cartesian` | Преобразование углов в декартовые координаты | [Посмотреть здесь](#angle_to_xyz) |
+| `cartesian-to-angles` | Преобразование декартовых координат в углы | [Посмотреть здесь](#XYZ_to_angle) |
+| `set-cartesian-position` | Перемещение робота по декартовым координатам (установка актуальной позиции по координатам) | [Посмотреть здесь](#Move_XYZ) |
+| `set-min-angles` | Установка минимальных ограничений для осей | [Посмотреть здесь](#MinAngles) |
+| `set-max-angles` | Установка максимальных ограничений для осей | [Посмотреть здесь](#MaxAngles) |
+| `set-program-run` | Установка состояния параметра готовности робота к следующей команде перемещения | [Посмотреть здесь](#SetProgramRun) |
+| `set-robot-tool` | Привязка инструмента к роботу | [Посмотреть здесь](#set-robot-tool) |
+| `set-robot-base` | Привязка базы к роботу | [Посмотреть здесь](#set-robot-base) |
+| `get-tools` | Получение данных всех инструментов | [Посмотреть здесь](#GetTools) |
+| `get-tool` | Получение данных инструмента по идентификационному номеру | [Посмотреть здесь](#GetTool) |
+| `set-tool` | Установка значения для параметра инструмента | [Посмотреть здесь](#set-tool) |
+| `set-tool-calibration` | Установка значения для параметра калибровки инструмента | [Посмотреть здесь](#set-tool-calibration) |
+| `create-tool` | Создание нового инструмента | [Посмотреть здесь](#CreateTool) |
+| `delete-tool` | Удаление инструмента | [Посмотреть здесь](#DeleteTool) |
+| `get-bases` | Получение данных всех баз | [Посмотреть здесь](#get-bases) |
+| `get-base` | Получение данных базы по идентификационному номеру | [Посмотреть здесь](#get-base) |
+| `create-base` | создание базы | [Посмотреть здесь](#create-base) |
+| `set-base` | установка значения каллибровки базы | [Посмотреть здесь](#set-base) |
+| `delete-base` | Удаление базы | [Посмотреть здесь](#delete-base) |
 
 ## Возвращаемый результат
 ```JSON
@@ -73,7 +82,7 @@
 - `data`- данные которые были запрошены (параметр может отсутсвовать если запрос не подразумевает получение данных)
 
 ## Параметры методов
-- <h3 id="CreateAccount"> CreateAccount </h3>
+- <h3 id="CreateAccount"> create-account </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -92,7 +101,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="DeleteAccount"> DeleteAccount </h3>
+- <h3 id="DeleteAccount"> deleteaccount </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -108,7 +117,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetAccounts"> GetAccounts </h3>
+- <h3 id="GetAccounts"> get-accounts </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -122,7 +131,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetRoleAccount"> GetRoleAccount </h3>
+- <h3 id="GetRoleAccount"> get-account-data </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -138,7 +147,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="ChangePass"> ChangePass </h3>
+- <h3 id="ChangePass"> change-password </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -156,7 +165,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetToken"> GetToken </h3>
+- <h3 id="GetToken"> get-token </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -174,7 +183,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="ChangeToken"> ChangeToken </h3>
+- <h3 id="ChangeToken"> change-token </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -192,7 +201,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetFrames"> GetFrames </h3>
+- <h3 id="GetFrames"> get-frames </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -206,7 +215,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetFrame"> GetFrames </h3>
+- <h3 id="GetFrame"> get-frame </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -222,7 +231,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="SetFrame"> SetFrame </h3>
+- <h3 id="SetFrame"> set-frame </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -240,7 +249,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="DelFrame"> DelFrame </h3>
+- <h3 id="DelFrame"> delete-frame </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -256,7 +265,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="AddKinematics"> AddKinematics </h3>
+- <h3 id="AddKinematics"> add-kinematic </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -274,7 +283,7 @@
         requests.post(url, verify=True, json=data, files=files)
         ```
     ---
-- <h3 id="BindKinematics"> BindKinematics </h3>
+- <h3 id="BindKinematics"> bind-kinematic </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -292,7 +301,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetRobotLogs"> GetRobotLogs </h3>
+- <h3 id="GetRobotLogs"> get-robot-logs </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -308,7 +317,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="AddRobotLog"> AddRobotLog </h3>
+- <h3 id="AddRobotLog"> add-robot-log </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -326,7 +335,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetSystemLogs"> GetSystemLogs </h3>
+- <h3 id="GetSystemLogs"> get-system-logs </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -342,7 +351,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-<!-- - <h3 id="AddSystemLog"> AddSystemLog </h3>
+- <h3 id="AddSystemLog"> add-system-log </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -359,12 +368,13 @@
         }
         requests.post(url, verify=True, json=data)
         ```
-    --- -->
-- <h3 id="CreateRobot"> CreateRobot </h3>
+    ---
+- <h3 id="CreateRobot"> crate-robot </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
     |POST| `robot` | **String** |
+    || `password` | **String** |
     || `angle` | **Int** |
     || `id` | **String \| None** |
     || `code` | **String \| None** |
@@ -382,7 +392,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="ImportCache"> ImportCache </h3>
+- <h3 id="ImportCache"> import-cache </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -402,7 +412,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="ExportFileCache"> ExportFileCache </h3>
+- <h3 id="ExportFileCache"> export-file-cache </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -416,7 +426,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="ExportCache"> ExportCache </h3>
+- <h3 id="ExportCache"> export-cache </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -430,7 +440,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetRobot"> GetRobot </h3>
+- <h3 id="GetRobot"> get-robot </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -446,7 +456,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetRobots"> GetRobots </h3>
+- <h3 id="GetRobots"> get-robots </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -460,23 +470,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="DelRobot"> DelRobot </h3>
-
-    | Метод | Параметр | Тип данных |
-    |-|----------|------------|
-    |POST| `robot` | **String** |
-    || `token` | **String** |
-    
-    - ### Пример
-        ```python
-        data = {
-            "robot": "TestRobot",
-            "token": "akjy7wefwjgv6qohg..."
-        }
-        requests.post(url, verify=True, json=data)
-        ```
-    ---
-- <h3 id="GetCurentPosition"> GetCurentPosition </h3>
+- <h3 id="DelRobot"> delete-robot </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -492,7 +486,23 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetPositionID"> GetPositionID </h3>
+- <h3 id="GetCurentPosition"> get-position </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `robot` | **String** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "robot": "TestRobot",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="GetPositionID"> get-position-id </h3>
 
 | Метод | Параметр | Тип данных |
 |-|----------|------------|
@@ -508,7 +518,7 @@
     requests.post(url, verify=True, json=data)
     ```
     ---
-- <h3 id="GetCurentSpeed"> GetCurentSpeed </h3>
+- <h3 id="GetCurentSpeed"> get-speed </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -524,7 +534,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetXYZPosition"> GetXYZPosition </h3>
+- <h3 id="GetXYZPosition"> get-cartesian-position </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -540,7 +550,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetRobotAnglesCount"> GetRobotAnglesCount </h3>
+- <h3 id="GetRobotAnglesCount"> get-angles-count </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -556,7 +566,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="SetCurentMotorsPosition"> GetRobotAnglesCount </h3>
+- <h3 id="SetCurentMotorsPosition"> set-motors-position </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -574,7 +584,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetRobotReady"> GetRobotReady </h3>
+- <h3 id="GetRobotReady"> get-ready </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -590,7 +600,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetRobotEmergency"> GetRobotEmergency </h3>
+- <h3 id="GetRobotEmergency"> get-emergency </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -606,7 +616,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="SetRobotReady"> SetRobotReady </h3>
+- <h3 id="SetRobotReady"> set-ready </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -623,7 +633,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="SetRobotEmergency"> SetRobotEmergency </h3>
+- <h3 id="SetRobotEmergency"> set-emergency </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -641,7 +651,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="SetPositionID"> SetPositionID </h3>
+- <h3 id="SetPositionID"> set-position-id </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -661,24 +671,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="SetRobotEmergency"> SetRobotEmergency </h3>
-
-    | Метод | Параметр | Тип данных |
-    |-|----------|------------|
-    |POST| `robot` | **String** |
-    || `state` | **Bool** |
-    || `token` | **String** |
-    
-    - ### Пример
-        ```python
-        data = {
-            "robot": "TestRobot",
-            "token": "akjy7wefwjgv6qohg..."
-        }
-        requests.post(url, verify=True, json=data)
-        ```
-    ---
-- <h3 id="CurentPosition"> CurentPosition </h3>
+- <h3 id="CurentPosition"> set-position </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -705,7 +698,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="RemoveCurentPointPosition"> RemoveCurentPointPosition </h3>
+- <h3 id="RemoveCurentPointPosition"> remove-curent-point-position </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -721,7 +714,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="RemoveAllPointPosition"> RemoveAllPointPosition </h3>
+- <h3 id="RemoveAllPointPosition"> remove-all-point-position </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -737,7 +730,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="HomePosition"> HomePosition </h3>
+- <h3 id="HomePosition"> set-home-position </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -754,7 +747,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="CurentSpeed"> CurentSpeed </h3>
+- <h3 id="CurentSpeed"> set-speed </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -781,7 +774,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="RemoveCurentPointSpeed"> RemoveCurentPointSpeed </h3>
+- <h3 id="RemoveCurentPointSpeed"> remove-curent-point-speed </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -797,7 +790,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="RemoveAllPointSpeed"> RemoveAllPointSpeed </h3>
+- <h3 id="RemoveAllPointSpeed"> remove-all-point-speed </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -813,7 +806,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="StandartSpeed"> StandartSpeed </h3>
+- <h3 id="StandartSpeed"> set-standart-speed </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -831,7 +824,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="SetProgram"> SetProgram </h3>
+- <h3 id="SetProgram"> set-program </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -849,7 +842,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="DeleteProgram"> DeleteProgram </h3>
+- <h3 id="DeleteProgram"> delete-program </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -865,7 +858,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="angle_to_xyz"> angle_to_xyz </h3>
+- <h3 id="angle_to_xyz"> angles-to-cartesian </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -892,7 +885,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="XYZ_to_angle"> XYZ_to_angle </h3>
+- <h3 id="XYZ_to_angle"> cartesian-to-angles </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -919,7 +912,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="Move_XYZ"> Move_XYZ </h3>
+- <h3 id="Move_XYZ"> set-cartesian-position </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -946,7 +939,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="MinAngles"> MinAngles </h3>
+- <h3 id="MinAngles"> set-min-angles </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -964,7 +957,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="MaxAngles"> MaxAngles </h3>
+- <h3 id="MaxAngles"> set-max-angles </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -982,7 +975,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="SetProgramRun"> SetProgramRun </h3>
+- <h3 id="SetProgramRun"> set-program-run </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -995,6 +988,46 @@
         data = {
             "robot": "TestRobot",
             "angles": {"J1": 10, "J2": 100, ...},
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="set-robot-tool"> set-robot-tool </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `robot` | **String** |
+    || `code` | **String** |
+    || `id` | **String** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "robot": "TestRobot",
+            "cade": "123654",
+            "id": "ToolID",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="set-robot-base"> set-robot-base </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `robot` | **String** |
+    || `code` | **String** |
+    || `id` | **String** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "robot": "TestRobot",
+            "cade": "123654",
+            "id": "BaseID",
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -1014,31 +1047,56 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetTool"> GetTool </h3>
+- <h3 id="GetTool"> get-tool </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
     |POST| `id` | **String** |
-    || `type` | **String** |
-    || `config` | **Any** |
     || `token` | **String** |
     
     - ### Пример
         ```python
         data = {
             "id": "ToolID",
-            "type": "read",
-            "config": "", # При type="read" config не обязателен (можно не указывать)
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
         ```
+    ---
+- <h3 id="set-tool"> set-tool </h3>
 
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `id` | **String** |
+    || `config` | **Any** |
+    || `parameter` | **String** |
+    || `token` | **String** |
+    
+    - ### Пример
         ```python
         data = {
             "id": "ToolID",
-            "type": "write",
-            "config": {"enable": True},
+            "config": {"status": 1},
+            "parameter": "info",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="set-tool-calibration"> set-tool-calibration </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `id` | **String** |
+    || `id` | **Any** |
+    || `calibration_data` | **Dict** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "id": "ToolID",
+            "calibration_data": {"x": 0, "y": 0, "z": 0},
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -1054,7 +1112,7 @@
     - ### Пример
         ```python
         data = {
-            "id": "ToolID"
+            "id": "ToolID",
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -1070,7 +1128,89 @@
     - ### Пример
         ```python
         data = {
-            "id": "ToolID"
+            "id": "ToolID",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="get-bases"> get-bases </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `id` | **String** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="get-base"> get-base </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `id` | **String** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "id": "ToolID",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="create-base"> create-base </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `id` | **String** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "id": "ToolID",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="set-base"> set-base </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `id` | **String** |
+    || `data` | **Dict** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "id": "ToolID",
+            "data": {"x": 0, "y": 150, "z": 0,
+                "a": 0, "b": 0, "c": 45},
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="delete-base"> delete-base </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `id` | **String** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "id": "ToolID",
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)

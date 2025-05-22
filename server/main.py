@@ -4,25 +4,27 @@ import importlib
 from flask import Flask
 from threading import Thread
 
-import configuration.robots_cache as robots_cache
-from server_functions import User
+import configuration.cache.robots_cache as robots_cache
+from utils.user_updater import update_token
 import utils.programs_starter as programs_starter
-from utils.loger import Loger
-from API.frames_manager import FramesManager
-from API.multi_robots_system import URMSystem
-from API.accounts_manager import AccountManager
-from API.logs_manager import LogsManager
-from API.tools_manager import ToolsManager
-from API.kinematics_manager import KinematicsManager
-from API.robot_manager import RobotManager
-from utils.public_loader.loader import Loader
+from utils.logger import Logger
+from API.frames_manager import FramesManagerAPI
+from API.multi_robots_manager import MultiRobotsManagerAPI
+from API.accounts_manager import AccountManagerAPI
+from API.logs_manager import LogsManagerAPI
+from API.tools_manager import ToolsManagerAPI
+from API.bases_manager import BasesManagerAPI
+from API.kinematics_manager import KinematicsManagerAPI
+from API.robot_manager import RobotManagerAPI
+from utils.public_loader.loader import loader
+from utils.multicast_dns import register_mdns_service
 
 # Importing robots from cache
 robots_list = robots_cache.robots
-robots = robots_cache.robots.keys()
-for robot in robots:
+_robots = robots_cache.robots.keys()
+for robot in _robots:
     robots_list[robot]["Program"] = ""
-    robots_list[robot]["ProgramRunning"] = "False"
+    robots_list[robot]["ProgramRunning"] = False
     robots_list[robot]["RobotReady"] = True
     robots_list[robot]["PositionID"] = ""
     robots_list[robot]["Emergency"] = False
@@ -34,7 +36,7 @@ for robot in robots:
     
 # importing all kinematics
 kinematics = {}
-for robot in robots:
+for robot in _robots:
     if robots_list[robot]["Kinematic"] == "None":
         kinematics[robot] = "None"
     else:
@@ -47,38 +49,43 @@ for robot in robots:
             print(f"For robot '{robot}' kinematic file not found ")
 
 # Set global variables
-Robots = robots_list
+robots = robots_list
 tools = robots_cache.tools
+bases = robots_cache.bases
 frames = robots_cache.frames
-users = User().update_token()
-loger = Loger()
+users = update_token()
+loger = Logger()
 
 """ Server """
 app = Flask(__name__)
 
 """ Frames manager """
-app = FramesManager(frames)(app)
+app = FramesManagerAPI(frames)(app)
 
-""" URS tool system """
-app = ToolsManager(tools)(app)
+""" URS tools system """
+app = ToolsManagerAPI(tools)(app)
+
+""" URS bases system """
+app = BasesManagerAPI(bases)(app)
 
 """ URMSystem """ # URMS - United Robotics Multi System
-app = URMSystem(Robots)(app)
+app = MultiRobotsManagerAPI(robots)(app)
 
 """ URAccount """
-app = AccountManager(users)(app)
+app = AccountManagerAPI(users)(app)
 
 """ URLogs """
-app = LogsManager()(app)
+app = LogsManagerAPI()(app)
 
 """ Kinematics manager """
-app = KinematicsManager(kinematics)(app)
+app = KinematicsManagerAPI(kinematics)(app)
 
 """ Robot manager """
-app = RobotManager()(app)
+app = RobotManagerAPI(robots)(app)
 
 """ Public loader """
-app = Loader(app)()
+loader.init_app(app)
+app = loader.app
 
 """ hello message """
 @app.route("/")
@@ -105,19 +112,24 @@ def URGreetings():
 </html>"""
 
 if __name__ == "__main__":
+    host = "0.0.0.0"
+    port = 5000
+    # MDNS registrate
+    register_mdns_service(host=host, port=port)
+    loger.info(module="URDomen", msg="Multicast DNS service registered")
     # Creating SSL context
     context=ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     context.load_cert_chain('SSL\\URSystem.crt','SSL\\URSystem.key')
-    loger.info("URSecurity", "Succes load SSL")
+    loger.info(module="URSecurity", msg="Succes load SSL")
     # Starting server
-    server = Thread(target=lambda: app.run(host="localhost", ssl_context=context))
+    server = Thread(target=lambda: app.run(host=host, port=port, ssl_context=context)) #
     server.start()
-    loger.info("web components", "Succes starting server")
+    loger.info(module="web components", msg="Succes starting server")
     # Starting UPStarter
     ups = Thread(target=lambda:programs_starter.UPS())
     ups.start()
-    loger.info("UPStarter", "Succes starting UPStarter")
+    loger.info(module="UPStarter", msg="Succes starting UPStarter")
     # Joining processes
-    loger.info("URSystem", "System started")
+    loger.info(module="URSystem", msg="System started")
     ups.join()
     server.join()

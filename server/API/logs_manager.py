@@ -1,58 +1,54 @@
 from flask import Flask, request, jsonify
 
-class LogsManager:
+from API.access_checker import Access
+from services.logs_manager import LogsManager
+
+class LogsManagerAPI:
+    access = Access()
+    
     
     def __init__(self):
-        self.loger_module = "URLogs"
+        self.logger_module = "URLogs"
+        self.logs_manager = LogsManager()
     
     def __call__(self, app:Flask) -> Flask:
-        from server_functions import User
-        from utils.loger import Loger
-        from API.access_checker import Access
-
-        access = Access()
-
         # get log
-        @app.route("/GetRobotLogs", methods=['POST'])
-        @access.check_user("user", loger_module=self.loger_module)
-        def URLog():
+        @app.route("/get-robot-logs", methods=['POST'])
+        @self.access.check_user("user", logger_module=self.logger_module)
+        def get_robot_log():
             info = request.json
+            robot_name = info.get("robot")
             timestamp = info.get("timestamp")
-            if timestamp is not None:
-                logs = Loger(robot_name=request.json.get("robot")).get_logs(timestamp)
-            else:
-                logs = Loger(robot_name=request.json.get("robot")).get_logs()
-            User().update_token()
-            return jsonify({"status": True, "info": f"The {request.json.get('robot')} robot logs", "data": logs}), 200
+            responce, code = self.logs_manager.get_robot_log(robot_name=robot_name, timestamp=timestamp)
+            return jsonify(responce), code
 
         # add new robot log
-        @app.route("/AddRobotLog", methods=['POST'])
-        @access.check_user("user", loger_module=self.loger_module)
-        def AddRobotLog():
+        @app.route("/add-robot-log", methods=['POST'])
+        @self.access.check_user("user", logger_module=self.logger_module)
+        def add_robot_debug_log():
             info = request.json
-            Loger(robot_name=info.get("robot")).debug(info.get("text"))
-            User().update_token()
-            return jsonify({"status": True, "info": "Log added"}), 200
+            robot_name = info.get("robot")
+            message = info.get("text")
+            responce, code = self.logs_manager.add_robot_debug_log(robot_name=robot_name, message=message)
+            return jsonify(responce), code
         
         # add new system log
-        # @app.route("/AddSystemLog", methods=['POST'])
-        # @access.check_user("user", loger_module=self.loger_module)
-        # def AddSystemLog():
-        #     info = request.json
-        #     Loger().debug(info.get("module"), info.get("text"))
-        #     User().update_token()
-        #     return jsonify({"status": True, "info": "Log added"}), 200
+        @app.route("/add-system-log", methods=['POST'])
+        @self.access.check_user("administrator", logger_module=self.logger_module)
+        def add_system_debug_log():
+            info = request.json
+            module = info.get("module")
+            message = info.get("text")
+            responce, code = self.logs_manager.add_system_debug_log(module=module, message=message)
+            return jsonify(responce), code
         
         # get system logs
-        @app.route("/GetSystemLogs", methods=['POST'])
-        @access.check_user("administrator", loger_module=self.loger_module)
-        def AddSystemLog():
+        @app.route("/get-system-logs", methods=['POST'])
+        @self.access.check_user("administrator", logger_module=self.logger_module)
+        def get_system_log():
             info = request.json
-            User().update_token()
             timestamp = info.get("timestamp")
-            if timestamp is not None:
-                return jsonify({"status": True, "info": "System logs", "data": Loger().get_logs(timestamp)}), 200
-            else:
-                return jsonify({"status": True, "info": "System logs", "data": Loger().get_logs()}), 200
+            responce, code = self.logs_manager.get_system_log(timestamp=timestamp)
+            return jsonify(responce), code
 
         return app

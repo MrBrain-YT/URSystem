@@ -38,7 +38,7 @@ class MultiRobotsManager:
 
     # add robot
     def create_robot(self, robot_name:str, angle_count:int, secret_code:str, password:str, kinematic_id:str=None) -> tuple:
-        from API.robot_manager import RobotManagerAPI
+        from api.robot_manager import RobotManagerAPI
         
         if robot_name not in self.robots.keys():
             # create robot configuretion
@@ -54,7 +54,7 @@ class MultiRobotsManager:
                     "HomePosition" : angles.copy(),
                     "MotorsPosition" : angles.copy(),
                     "MotorsSpeed" : angles.copy(),
-                    "StandartSpeed" : angles.copy(),
+                    "standardSpeed" : angles.copy(),
                     "MinAngles" : angles.copy(),
                     "MaxAngles" : angles.copy(),
                     "Program" : "", 
@@ -102,7 +102,7 @@ class MultiRobotsManager:
 
     # Import robot cache
     def import_cache(self, import_robots:dict, import_tools:dict, import_frames:dict, import_bases:dict) -> tuple:
-        from API.robot_manager import RobotManagerAPI
+        from api.robot_manager import RobotManagerAPI
         
         frames:dict = self.frames_manager.get_frames()
         users:dict = self.account_manager.get_users()
@@ -219,7 +219,7 @@ class MultiRobotsManager:
 
     # delete robot
     def delete_robot(self, robot_name:str) -> tuple:
-        from API.robot_manager import RobotManagerAPI
+        from api.robot_manager import RobotManagerAPI
         
         if robot_name in self.robots.keys():
             del self.robots[robot_name]

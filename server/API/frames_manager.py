@@ -1,7 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
 
 from services.frames_manager import FramesManager
-from API.access_checker import Access
+from api.access_checker import Access
 
 class FramesManagerAPI:
     access = Access()
@@ -13,37 +13,39 @@ class FramesManagerAPI:
         else:
             self.frames_manager = FramesManager()
     
-    def __call__(self, app:Flask) -> Flask:
+    def __call__(self) -> Blueprint:
+        
+        frames_bp = Blueprint("frames_api", __name__, url_prefix="/api")
 
-        @app.route("/get-frames", methods=['POST'])
+        @frames_bp.route("/get-frames", methods=['POST'])
         @self.access.check_user(user_role="administrator", logger_module=self.logger_module)
         def get_frames():
-            responce, code = self.frames_manager.get_frames_api()
-            return jsonify(responce), code
+            response, code = self.frames_manager.get_frames_api()
+            return jsonify(response), code
             
-        @app.route("/get-frame", methods=['POST'])
+        @frames_bp.route("/get-frame", methods=['POST'])
         @self.access.check_robot_or_user(user_role="user", logger_module=self.logger_module)
         def get_frame():
             info = request.json
             frame_id = info.get("id")
-            responce, code = self.frames_manager.get_frame(frame_id=frame_id)
-            return jsonify(responce), code
+            response, code = self.frames_manager.get_frame(frame_id=frame_id)
+            return jsonify(response), code
             
-        @app.route("/set-frame", methods=['POST'])
+        @frames_bp.route("/set-frame", methods=['POST'])
         @self.access.check_robot_or_user(user_role="administrator", logger_module=self.logger_module)
         def set_frame():
             info = request.json
             frame_id = info.get("id")
             config = info.get("config")
-            responce, code = self.frames_manager.set_frame(frame_id=frame_id, config=config)
-            return jsonify(responce), code
+            response, code = self.frames_manager.set_frame(frame_id=frame_id, config=config)
+            return jsonify(response), code
             
-        @app.route("/delete-frame", methods=['POST'])
+        @frames_bp.route("/delete-frame", methods=['POST'])
         @self.access.check_user(user_role="administrator", logger_module=self.logger_module)
         def delete_frame():
             info = request.json
             frame_id = info.get("id")
-            responce, code = self.frames_manager.delete_frame(frame_id=frame_id)
-            return jsonify(responce), code
+            response, code = self.frames_manager.delete_frame(frame_id=frame_id)
+            return jsonify(response), code
         
-        return app
+        return frames_bp

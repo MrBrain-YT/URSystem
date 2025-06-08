@@ -5,19 +5,27 @@ from flask import Flask
 from threading import Thread
 
 import configuration.cache.robots_cache as robots_cache
-from utils.user_updater import update_token
+# Import api
+from api.frames_manager import FramesManagerAPI
+from api.multi_robots_manager import MultiRobotsManagerAPI
+from api.accounts_manager import AccountManagerAPI
+from api.logs_manager import LogsManagerAPI
+from api.tools_manager import ToolsManagerAPI
+from api.bases_manager import BasesManagerAPI
+from api.kinematics_manager import KinematicsManagerAPI
+from api.robot_manager import RobotManagerAPI
+from api.certs_manager import CertsManagerAPI
+# import views
+from views.home import home_bp
+from views.certs import certs_bp
+# import utilities
 import utils.programs_starter as programs_starter
 from utils.logger import Logger
-from API.frames_manager import FramesManagerAPI
-from API.multi_robots_manager import MultiRobotsManagerAPI
-from API.accounts_manager import AccountManagerAPI
-from API.logs_manager import LogsManagerAPI
-from API.tools_manager import ToolsManagerAPI
-from API.bases_manager import BasesManagerAPI
-from API.kinematics_manager import KinematicsManagerAPI
-from API.robot_manager import RobotManagerAPI
 from utils.public_loader.loader import loader
 from utils.multicast_dns import register_mdns_service
+from utils.certs_signer import create_certs
+from utils.user_updater import update_token
+from utils.sni_registator import SNIRegistrator
 
 # Importing robots from cache
 robots_list = robots_cache.robots
@@ -28,7 +36,7 @@ for robot in _robots:
     robots_list[robot]["RobotReady"] = True
     robots_list[robot]["PositionID"] = ""
     robots_list[robot]["Emergency"] = False
-    robots_list[robot]["MotorsSpeed"] = robots_list[robot]['StandartSpeed'].copy()
+    robots_list[robot]["MotorsSpeed"] = robots_list[robot]['standardSpeed'].copy()
     if isinstance(robots_list[robot]["Position"], dict):
         robots_list[robot]["Position"] = robots_list[robot]["MotorsPosition"].copy()
     elif isinstance(robots_list[robot]["Position"], list):
@@ -54,82 +62,68 @@ tools = robots_cache.tools
 bases = robots_cache.bases
 frames = robots_cache.frames
 users = update_token()
-loger = Logger()
+logger = Logger()
 
 """ Server """
-app = Flask(__name__)
+app = Flask(__name__,
+            template_folder="templates",
+            static_folder="static")
 
 """ Frames manager """
-app = FramesManagerAPI(frames)(app)
+app.register_blueprint(FramesManagerAPI(frames)())
 
 """ URS tools system """
-app = ToolsManagerAPI(tools)(app)
+app.register_blueprint(ToolsManagerAPI(tools)())
 
 """ URS bases system """
-app = BasesManagerAPI(bases)(app)
+app.register_blueprint(BasesManagerAPI(bases)())
 
 """ URMSystem """ # URMS - United Robotics Multi System
-app = MultiRobotsManagerAPI(robots)(app)
+app.register_blueprint(MultiRobotsManagerAPI(robots)())
 
 """ URAccount """
-app = AccountManagerAPI(users)(app)
+app.register_blueprint(AccountManagerAPI(users)())
 
 """ URLogs """
-app = LogsManagerAPI()(app)
+app.register_blueprint(LogsManagerAPI()())
 
 """ Kinematics manager """
-app = KinematicsManagerAPI(kinematics)(app)
+app.register_blueprint(KinematicsManagerAPI(kinematics)())
 
 """ Robot manager """
-app = RobotManagerAPI(robots)(app)
+app.register_blueprint(RobotManagerAPI(robots)())
+
+""" Certificates manager """
+app.register_blueprint(CertsManagerAPI()())
+
+""" Other sites """
+app.register_blueprint(home_bp)
+app.register_blueprint(certs_bp)
 
 """ Public loader """
 loader.init_app(app)
 app = loader.app
-
-""" hello message """
-@app.route("/")
-def URGreetings():
-    # home site
-    return """<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>3D Object</title>
-        <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
-    </head>
-    <body>
-        <model-viewer class="model" src="static/Robot.gltf" ar ar-modes="webxr scene-viewer quick-look" camera-controls poster="poster.webp" shadow-intensity="1">
-        </model-viewer>
-        
-    </body>
-    <style>
-        .model{
-            width: 700px;
-            height: 1000px;
-        }
-    </style>
-</html>"""
 
 if __name__ == "__main__":
     host = "0.0.0.0"
     port = 5000
     # MDNS registrate
     register_mdns_service(host=host, port=port)
-    loger.info(module="URDomen", msg="Multicast DNS service registered")
+    logger.info(module="URDomen", msg="Multicast DNS service registered")
     # Creating SSL context
+    create_certs()
     context=ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-    context.load_cert_chain('SSL\\URSystem.crt','SSL\\URSystem.key')
-    loger.info(module="URSecurity", msg="Succes load SSL")
+    context.sni_callback = SNIRegistrator(context).get_sni_callback()
+    logger.info(module="URSecurity", msg="Succes load SSL")
     # Starting server
-    server = Thread(target=lambda: app.run(host=host, port=port, ssl_context=context)) #
+    server = Thread(target=lambda: app.run(host=host, port=port, ssl_context=context))
     server.start()
-    loger.info(module="web components", msg="Succes starting server")
+    logger.info(module="web components", msg="Succes starting server")
     # Starting UPStarter
     ups = Thread(target=lambda:programs_starter.UPS())
     ups.start()
-    loger.info(module="UPStarter", msg="Succes starting UPStarter")
+    logger.info(module="UPStarter", msg="Succes starting UPStarter")
     # Joining processes
-    loger.info(module="URSystem", msg="System started")
+    logger.info(module="URSystem", msg="System started")
     ups.join()
     server.join()

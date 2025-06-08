@@ -212,8 +212,8 @@ def Inverse(robot_name, position:dict, coords_type:str="flange"):
             raise Exception("Base not found")
         
     elif coords_type == "tool":
-        from server.API.multi_robots_manager import URMSystem
-        from API.tools_manager import ToolsManager
+        from server.api.multi_robots_manager import URMSystem
+        from api.tools_manager import ToolsManager
         
         robots = URMSystem().get_robots()
         tools = ToolsManager().get_tools()

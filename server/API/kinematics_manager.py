@@ -1,7 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
 
 from services.kinematics_manager import KinematicsManager
-from API.access_checker import Access
+from api.access_checker import Access
 
 class KinematicsManagerAPI:
     access = Access()
@@ -13,26 +13,27 @@ class KinematicsManagerAPI:
         else:
             self.kinematic_manager = KinematicsManager()
     
-    def __call__(self, app: Flask) -> Flask:
+    def __call__(self) -> Blueprint:
         
+        kinematics_bp = Blueprint("kinematics_api", __name__, url_prefix="/api")
         
         """ Add kinematics to system """
-        @app.route("/add-kinematic", methods=['POST'])
+        @kinematics_bp.route("/add-kinematic", methods=['POST'])
         @self.access.check_user(user_role="administrator", logger_module=self.logger_module)
         def add_kinematic():
             kinematic_file = request.files.get('file')
-            responce, code = self.kinematic_manager.add_kinematic(kinematic_file=kinematic_file)
-            return jsonify(responce), code
+            response, code = self.kinematic_manager.add_kinematic(kinematic_file=kinematic_file)
+            return jsonify(response), code
 
 
         """ Bind kinematics to robot """
-        @app.route("/bind-kinematic", methods=['POST'])
+        @kinematics_bp.route("/bind-kinematic", methods=['POST'])
         @self.access.check_user_and_robot_data(user_role="administrator", logger_module=self.logger_module)
         def bind_kinematic():
             info = request.json
             robot_name = info.get("robot")
             kinematic_id = info.get("id")
-            responce, code = self.kinematic_manager.bind_kinematic(robot_name=robot_name, kinematic_id=kinematic_id)
-            return jsonify(responce), code
+            response, code = self.kinematic_manager.bind_kinematic(robot_name=robot_name, kinematic_id=kinematic_id)
+            return jsonify(response), code
 
-        return app
+        return kinematics_bp

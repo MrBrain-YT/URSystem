@@ -1,0 +1,132 @@
+/* General body styling */
+body {
+    user-select: none;
+    background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Main card styling */
+#main_card {
+    margin: 20px;
+    width: 1000px;
+    height: 700px;
+    min-height: 500px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    padding: 20px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+/* Title styling */
+#title {
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: #007bff;
+    margin: 0;
+}
+
+/* Token card styling */
+#token_card {
+    width: 93%;
+    height: 20px;
+    padding-top: 0;
+    padding-right: 0;
+    display: flex;
+    justify-content: end;
+}
+
+/* Token input styling */
+#token_input input {
+    width: 131%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+}
+
+#token_input input:focus {
+    outline: none;
+    border-color: #0056b3;
+    box-shadow: 0 0 8px rgba(0, 86, 179, 0.3);
+}
+
+/* Certs list card styling */
+#certs_list {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+    flex-grow: 1;
+    overflow-y: auto;
+    height: 500px;
+}
+
+#certs_list .card-body {
+    padding: 0;
+}
+
+#certs_list .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+    margin-right: 0px;
+}
+
+#certs_list .card-text {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.4;
+}
+
+#cert_name {
+    display: flex;
+    justify-content: start;
+    margin: 15px;
+    font-size: 1.5rem !important;
+}
+
+#cert_name button{
+    margin: 15px;
+    margin-right: 10px;
+    font-size: 1.25rem !important; 
+    position: relative;
+    /* left: 645px; */
+    bottom: 23px;
+    width: 120px;
+    display: flex;
+    justify-self: end;
+}
+
+#cert_card {
+    height: 60px;
+    margin-bottom: 10px;
+}
+
+#name_text {
+    width: 90%;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    #main_card {
+        width: 90vw;
+        margin: 10px;
+        padding: 15px 20px;
+    }
+}

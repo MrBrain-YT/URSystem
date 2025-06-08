@@ -22,7 +22,7 @@ class KinematicsManager:
         return self.kinematics
     
     def update_kinematics_data(self) -> None:
-        from server.API.multi_robots_manager import MultiRobotsManager
+        from server.api.multi_robots_manager import MultiRobotsManager
         kinematics = {}
         robots:dict = self.multi_robots_manager.get_robots()
         for robot in robots:

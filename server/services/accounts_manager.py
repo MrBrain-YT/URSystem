@@ -47,16 +47,18 @@ class AccountManager:
             self.logger.info(module=self.logger_module, msg=log_message)
             return {"status": True, "info": log_message, "token": token}, 200
         else:
-            log_message = f"The account has already been created"
+            log_message = "The account has already been created"
             self.logger.info(module=self.logger_module, msg=log_message)
             return {"status": False, "info": log_message}, 400
 
     def delete_account(self, name:str) -> tuple:
+        print(self.users)
         if name in self.users:
             if self.users[name]["role"] not in {"SuperAdmin", "System"}:
                 # DB query send
                 query = users_table.delete().where(users_table.columns.name == name)
                 self.database_worker.send_query(query=query)
+                del self.users[name]
 
                 update_token()
                 log_message = f"Account with name: {name} was deleted"
@@ -65,7 +67,7 @@ class AccountManager:
         else:
             return {"status": False, "info": "No such account exists"}, 400
         
-    # get account
+    # get accounts
     def get_accounts(self) -> tuple:
         user = {}
         for info in self.users.copy():

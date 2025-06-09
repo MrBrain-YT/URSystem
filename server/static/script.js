@@ -17,7 +17,7 @@ function download_cert(name) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = name; // имя файла для сохранения
+        a.download = name; // filename for saving
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);

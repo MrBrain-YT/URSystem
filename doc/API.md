@@ -101,7 +101,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="DeleteAccount"> deleteaccount </h3>
+- <h3 id="DeleteAccount"> delete-account </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -137,12 +137,14 @@
     |-|----------|------------|
     |POST| `name` | **String** |
     || `password` | **String** |
+    || `server_token` | **String** |
 
     - ### Пример
         ```python
         data = {
             "name": 'TestAccount',
             "password": '12345'
+            "server_token": 'htf121jhbt124e...'
         }
         requests.post(url, verify=True, json=data)
         ```
@@ -306,12 +308,14 @@
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
     |POST| `robot` | **String** |
+    || `timestamp` | **String** |
     || `token` | **String** |
 
     - ### Пример
         ```python
         data = {
             "robot": "TestRobot",
+            "timestamp": "1746013996", # Unix time (Не обязательный параметр)
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -399,6 +403,7 @@
     |POST| `robots` | **Dict** |
     || `tools` | **Dict** |
     || `frames` | **Dict** |
+    || `bases` | **Dict** |
     || `token` | **String** |
 
     - ### Пример
@@ -407,6 +412,7 @@
             "robots": {"testRobot": ...},
             "tools": {"Tool_1": ...},
             "frames": {"Frame_1": ...},
+            "bases": {"Base_1": ...},
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -892,6 +898,7 @@
     |POST| `robot` | **String** |
     || `position` | **Dict** |
     || `positions_data` | **Array** |
+    || `coordinate_system` | **String** |
     || `token` | **String** |
     
     - ### Пример
@@ -899,6 +906,7 @@
         data = {
             "robot": "TestRobot",
             "position": {"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, # Передавать либо point либо points_data для multipoint position
+            "coordinate_system": "world",
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -919,6 +927,7 @@
     |POST| `robot` | **String** |
     || `position` | **Dict** |
     || `positions_data` | **Array** |
+    || `coordinate_system` | **String** |
     || `token` | **String** |
     
     - ### Пример
@@ -926,6 +935,7 @@
         data = {
             "robot": "TestRobot",
             "position": {"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, # Передавать либо angles либо angles_data для multipoint position
+            "coordinate_system": "world",
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -1088,7 +1098,6 @@
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
     |POST| `id` | **String** |
-    || `id` | **Any** |
     || `calibration_data` | **Dict** |
     || `token` | **String** |
     

@@ -61,9 +61,6 @@ while True:
         except:
             pass
 
-        # responce = requests.get(f"http://127.0.0.1:5000/3Dmouse?J1={Angle1}&J3={Angle2}&J2={Angle3}&J4={Angle4}&J5={Angle5}&J6={Angle6}").text
-        # print(f"1: {Angle1} 2: {Angle2} 3: {Angle3} 4: {Angle4} 5: {Angle5} 6: {Angle6}")
-
         responce = requests.get("http://127.0.0.1:5000/CurentPosition").text
         print(responce)
         if responce == "":
@@ -87,10 +84,7 @@ while True:
                 J5Angle = int(line[5])
                 J6Angle = int(line[6])
 
-                # print(line[1])
-
         
-
         
         if (int(Angle1) > 5 and int(Angle2) > 5):
             if (angle == 1):

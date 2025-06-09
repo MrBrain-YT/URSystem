@@ -35,7 +35,7 @@ class AccountManagerAPI:
             response, code = self.accounts_manager.delete_account(name=user_name)
             return jsonify(response), code
             
-        # get account
+        # get accounts
         @accounts_bp.route("/get-accounts", methods=['POST'])
         @self.access.check_user(user_role="SuperAdmin", logger_module=self.logger_module)
         def get_accounts():

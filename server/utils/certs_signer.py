@@ -7,9 +7,9 @@ from OpenSSL import crypto
 
 def create_self_signed_cert(cert_dir:str, ip_address:str):
     k = crypto.PKey()
-    k.generate_key(crypto.TYPE_RSA, 1024)   #  размер может быть 2048, 4196
+    k.generate_key(crypto.TYPE_RSA, 1024)   #  size can be 2048, 4196
 
-    #  Создание сертификата
+    #  Certificate creation
     cert = crypto.X509()
     cert.get_subject().C = "RU"
     cert.get_subject().ST = "Tatarstan"

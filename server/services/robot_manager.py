@@ -173,6 +173,7 @@ class RobotManager:
     
     """ Set robot position id """
     # TODO: determine access to the function (who has access)
+
     def set_position_id(self, robot_name:str, token:str, position_id:str) -> tuple:
         robots = self.robots_manager.get_robots()
         robot_name_by_token = self.user_checker.get_robot_name(token)
@@ -570,7 +571,6 @@ class RobotManager:
                     else:
                         return {"status": False, "info": "Multi points data is not valid"}, 400
             # except:
-            #     return jsonify({"status": False, "info": "An error has occurred"}), 400
         else:
             return {"status": False, "info": "This command does not work if you are not using kinematics"}, 400
         

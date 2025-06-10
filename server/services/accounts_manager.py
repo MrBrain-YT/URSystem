@@ -69,12 +69,12 @@ class AccountManager:
         
     # get accounts
     def get_accounts(self) -> tuple:
-        user = {}
+        _users = {}
         for info in self.users.copy():
             if self.users[info]["role"] not in {"SuperAdmin", "System"}:
-                user[info] = self.users.get(info)
+                _users[info] = self.users.get(info)
         update_token()
-        return {"status": True, "info": "Found users", "users": json.dumps(user)}, 200
+        return {"status": True, "info": "Found users", "data": _users}, 200
         
     # get role account
     def get_account_data(self, name:str, password:str, server_token:str) -> tuple:
@@ -117,12 +117,12 @@ class AccountManager:
             return {"status": False, "info": "Name not in users"}, 404
         
     # get user token
-    def get_user_token(self, name:str, password:str) -> tuple:
+    def get_user_token(self, name:str) -> tuple:
         if name in self.users:
             if name != "":
-                query = db.select(users_table.columns.token).where(db.and_(users_table.columns.name == name, users_table.columns.password == password))
+                query = db.select(users_table.columns.token).where(db.and_(users_table.columns.name == name))
                 token = self.database_worker.send_select_query(query=query).fetchone()._tuple()
-                return {"status": True, "info": "", "data": {"token": token}}, 200
+                return {"status": True, "info": "User token", "data": {"token": token[0]}}, 200
             else:
                 self.logger.error(module=self.logger_module, msg=f"You try get token system account")
                 return {"status": False, "info": "You try get token system account"}, 400
@@ -131,22 +131,22 @@ class AccountManager:
             return {"status": False, "info": "Name not in users"}, 404
 
     # change user token
-    def change_token(self, name:str, password:str) -> tuple:
-        while True:
-            token = secrets.token_hex(32)
-            tokens = []
-            for i in [i for i in self.users]:
-                tokens.append(self.users.get(i)["token"])
-            if token not in tokens:
-                break
+    def change_token(self, name:str, token:str=None) -> tuple:
+        if token is None:
+            while True:
+                token = secrets.token_hex(32)
+                tokens = []
+                for i in [i for i in self.users]:
+                    tokens.append(self.users.get(i)["token"])
+                if token not in tokens:
+                    break
         # DB query send
         query = users_table.update().where(db.and_(
             users_table.columns.name == name,
-            users_table.columns.password == password,
-            users_table.columns.role != "System"),
-            users_table.columns.role != "robot").values(token=token)
+            users_table.columns.role != "System",
+            users_table.columns.role != "robot")).values(token=token)
         self.database_worker.send_query(query=query)
 
         log_message = f"Token was changed for account with name: {name}"
         self.logger.info(module=self.logger_module, msg=log_message)
-        return {"status": True, "info": log_message, "token": token}, 200
+        return {"status": True, "info": log_message, "data": {"token": token}}, 200

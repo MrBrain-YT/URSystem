@@ -72,8 +72,7 @@ class AccountManagerAPI:
         def get_user_token():
             info = request.json
             user_name = info.get('name')
-            password = info.get('password')
-            response, code = self.accounts_manager.get_user_token(name=user_name, password=password)
+            response, code = self.accounts_manager.get_user_token(name=user_name)
             return jsonify(response), code
 
         # change user token
@@ -82,8 +81,7 @@ class AccountManagerAPI:
         def change_token():
             info = request.json
             user_name = info.get('name')
-            password = info.get('password')
-            response, code = self.accounts_manager.change_token(name=user_name, password=password)
+            response, code = self.accounts_manager.change_token(name=user_name)
             return jsonify(response), code
-
+        
         return accounts_bp

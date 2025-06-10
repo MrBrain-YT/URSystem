@@ -63,7 +63,8 @@ def UPS():
                         data = {'robot':robot_name, "state": False, "token":os.environ.get("SYSTEM_API_TOKEN")}
                         requests.post(url, json=data, verify=True).json()['data']
         
-        except:
+        except Exception as e:
+            # print(e)
             pass
 
         time.sleep(3)

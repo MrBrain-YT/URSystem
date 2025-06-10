@@ -172,14 +172,12 @@
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
     |POST| `name` | **String** |
-    || `password` | **String** |
     || `token` | **String** |
 
     - ### Пример
         ```python
         data = {
             "name": 'TestAccount',
-            "password": '12345',
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)

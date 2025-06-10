@@ -1,11 +1,11 @@
 import math
 
 import numpy as np
-import matlab.engine
+# import matlab.engine
 from scipy.spatial.transform import Rotation as R
 
-eng = matlab.engine.start_matlab()
-eng.addpath("./kinematics/First", nargout=0)
+# eng = matlab.engine.start_matlab()
+# eng.addpath("./kinematics/First", nargout=0)
 
 def Forward(angles:dict):
     J1 = angles.get("J1")

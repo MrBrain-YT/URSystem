@@ -25,7 +25,6 @@ class KinematicsManagerAPI:
             response, code = self.kinematic_manager.add_kinematic(kinematic_file=kinematic_file)
             return jsonify(response), code
 
-
         """ Bind kinematics to robot """
         @kinematics_bp.route("/bind-kinematic", methods=['POST'])
         @self.access.check_user_and_robot_data(user_role="administrator", logger_module=self.logger_module)

@@ -2,7 +2,6 @@ import sys
 
 import sqlalchemy as db
 
-print("pytest" in sys.modules)
 if "pytest" in sys.modules:
     engine = db.create_engine("sqlite:///databases/auto_test/users.sqlite")
 else:

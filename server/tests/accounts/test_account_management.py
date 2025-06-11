@@ -24,7 +24,6 @@ def test_create_account_success(client):
         "token": "f5d9bdd8ffa3b2195736ea54a84e0bd85d03b95d6f0163e9da529bb1adceb425"
     }
     response = client.post('/api/create-account', json=json)
-    print(response.get_json())
     assert response.status_code == 200
     json = response.get_json()
     assert json["status"] == True

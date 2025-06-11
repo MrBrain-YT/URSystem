@@ -22,12 +22,11 @@ class KinematicsManager:
         return self.kinematics
     
     def update_kinematics_data(self) -> None:
-        from server.api.multi_robots_manager import MultiRobotsManager
         kinematics = {}
         robots:dict = self.multi_robots_manager.get_robots()
         for robot in robots:
-            if robots.keys()[robot]["Kinematic"] == "None":
-                kinematics[robot] = "None"
+            if robots.keys()[robot]["Kinematic"] == None:
+                kinematics[robot] = None
             else:
                 try:
                     kinematics[robot] = importlib.import_module(
@@ -47,7 +46,6 @@ class KinematicsManager:
         log_message = f"Added new kinematic with id: {kinematic_file}"
         self.logger.info(module=self.logger_module, msg=log_message)
         return {"status": True, "info": log_message}, 200
-
 
     """ Bind kinematics to robot """
     def bind_kinematic(self, robot_name:str, kinematic_id:str) -> tuple:

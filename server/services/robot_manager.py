@@ -109,7 +109,7 @@ class RobotManager:
             if robots[robot_name]["Emergency"] == True:
                 robots[robot_name]["Position"][f"J{i}"] = angles.get(f'J{i}')
         
-        if robots[robot_name]["Kinematic"] != "None":
+        if robots[robot_name]["Kinematic"] != None:
             modul = kinematics[robot_name]
             result_forward:dict = modul.Forward(angles)
             pos = robots[robot_name]["XYZposition"]
@@ -207,7 +207,7 @@ class RobotManager:
             robots[robot_name]["RobotReady"] = False
             robots[robot_name]["Program"] = ""
             
-        if robots[robot_name]["Kinematic"] != "None":
+        if robots[robot_name]["Kinematic"] != None:
             modul = kinematics[robot_name]
             pos = robots[robot_name]["Position"]
             result_forward:dict = modul.Forward(pos)
@@ -257,7 +257,7 @@ class RobotManager:
                                 for i in range(1, int(robots[robot_name]["AngleCount"])+1):
                                     robots[robot_name]["Position"][f"J{i}"] = angles.get(f'J{i}')
                                 
-                                if robots[robot_name]["Kinematic"] != "None":
+                                if robots[robot_name]["Kinematic"] != None:
                                     modul = kinematics[robot_name]
                                     result_forward:dict = modul.Forward(angles)
                                     pos = robots[robot_name]["XYZposition"]
@@ -496,7 +496,7 @@ class RobotManager:
         elif robot_name_by_token is not None:
             robot_name = robot_name_by_token
             
-        if kinematics[robot_name] != "None":
+        if kinematics[robot_name] != None:
             try:
                 if angles_data is None:
                     point_coords = {}
@@ -546,7 +546,7 @@ class RobotManager:
         elif robot_name_by_token is not None:
             robot_name = robot_name_by_token
             
-        if kinematics[robot_name] != "None":
+        if kinematics[robot_name] != None:
             # try:
                 if positions_data is None:
                     point_angles = {}
@@ -588,7 +588,7 @@ class RobotManager:
         if robots[robot_name]["RobotReady"] == True:
             self.is_robot_ready_setted_false[robot_name] = False
         kinematics:dict = self.kinematic_manager.get_kinematics()
-        if kinematics[robot_name] != "None":
+        if kinematics[robot_name] != None:
             while True:
                 if robots[robot_name]["Emergency"] == True:
                     log_message = f"The robot '{robot_name}' is currently in emergency stop"

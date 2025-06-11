@@ -1,5 +1,5 @@
 import secrets
-import json
+import hashlib
 
 import sqlalchemy as db
 
@@ -39,6 +39,7 @@ class AccountManager:
                     break
             
             # DB query send
+            password = hashlib.sha256(password.encode(encoding="utf-8")).hexdigest()
             query = db.insert(users_table).values(name=name, password=password, role=role, token=token)
             self.database_worker.send_query(query=query)
 
@@ -81,7 +82,7 @@ class AccountManager:
         if server_token == server_auth_token.reg_token:
             update_token()
             if name in self.users:
-                if self.users[name]["role"] not in {"System"}:
+                if self.users[name]["role"] != "System":
                     if self.users[name]["password"] == password:
                         return {"status": True, "info": "User found", "data": self.users[name]}, 200
                     else:

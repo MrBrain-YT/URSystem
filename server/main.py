@@ -45,8 +45,8 @@ for robot in _robots:
 # importing all kinematics
 kinematics = {}
 for robot in _robots:
-    if robots_list[robot]["Kinematic"] == "None":
-        kinematics[robot] = "None"
+    if robots_list[robot]["Kinematic"] == None:
+        kinematics[robot] = None
     else:
         try:
             # import kinematics.First.kin

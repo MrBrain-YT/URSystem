@@ -60,7 +60,7 @@ class MultiRobotsManager:
                     "Program" : "", 
                     "ProgramRunning" : False,
                     "ProgramToken" : "", 
-                    "Kinematic" : f"./kinematics/{kinematic_id}" if kinematic_id != None else "None", 
+                    "Kinematic" : f"./kinematics/{kinematic_id}" if kinematic_id != None else None, 
                     "Logs" : "", 
                     "RobotReady" : True,
                     "Emergency" : False,

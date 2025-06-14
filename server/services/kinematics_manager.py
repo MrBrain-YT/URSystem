@@ -41,24 +41,43 @@ class KinematicsManager:
     def add_kinematic(self, kinematic_file) -> tuple:
         zip_path = f"./kinematics/{kinematic_file.filename}"
         kinematic_file.save(zip_path)
+        os.mkdir(zip_path.replace(".zip", ""))
         shutil.unpack_archive(filename=zip_path, extract_dir=zip_path.replace(".zip", ""), format="zip")
         os.remove(zip_path)
-        log_message = f"Added new kinematic with id: {kinematic_file}"
+        log_message = f"Added new kinematic with id: {kinematic_file.filename}"
         self.logger.info(module=self.logger_module, msg=log_message)
         return {"status": True, "info": log_message}, 200
 
     """ Bind kinematics to robot """
     def bind_kinematic(self, robot_name:str, kinematic_id:str) -> tuple:
         robots = self.multi_robots_manager.get_robots()
-        robots[robot_name]["Kinematic"] = kinematic_id if \
-            os.path.exists(f"./kinematics/{kinematic_id}") else robots[robot_name]["Kinematic"]
-        save_to_cache(robots=robots)
+        if kinematic_id != "":
+            robots[robot_name]["Kinematic"] = kinematic_id if \
+                os.path.exists(f"./kinematics/{kinematic_id}") else robots[robot_name]["Kinematic"]
+            save_to_cache(robots=robots)
+            
+            if robots[robot_name]["Kinematic"] == kinematic_id:
+                log_message = f"Was created associate kinematics-{kinematic_id} and robot-{robot_name}"
+                self.logger.info(module=self.logger_module, msg=log_message)
+                return {"status": True, "info": log_message}, 200
+            else:
+                log_message = f"Not created associate kinematics-{kinematic_id} and robot-{robot_name}"
+                self.logger.error(module=self.logger_module, msg=log_message)
+                return {"status": False, "info": log_message}, 400
+        else:
+            log_message = f"Kinematic id not found"
+            self.logger.error(module=self.logger_module, msg=log_message)
+            return {"status": False, "info": log_message}, 404
         
-        if robots[robot_name]["Kinematic"] == kinematic_id:
-            log_message = f"Was created associate kinematics-{kinematic_id} and robot-{robot_name}"
+    # TODO: Add documentation for API doc
+    def unbind_kinematic(self, robot_name:str) -> tuple:
+        robots = self.multi_robots_manager.get_robots()
+        if robot_name in robots:
+            robots[robot_name]["Kinematic"] = None
+            log_message = f"Was deleted associate kinematic for robot-{robot_name}"
             self.logger.info(module=self.logger_module, msg=log_message)
             return {"status": True, "info": log_message}, 200
         else:
-            log_message = f"Not created associate kinematics-{kinematic_id} and robot-{robot_name}"
-            self.logger.error(module=self.logger_module, msg=log_message)
-            return {"status": True, "info": log_message}, 400
+            log_message = f"Robot not found"
+            self.logger.info(module=self.logger_module, msg=log_message)
+            return {"status": False, "info": log_message}, 404

@@ -46,6 +46,7 @@ class ToolsManager:
     # set tool calibration data
     def set_calibration_data(self, tool_id:str, calibration_data:dict) -> tuple:
         if self.tools.get(tool_id) is not None:
+            # TODO: add validation callibarion data
             if isinstance(calibration_data, dict):
                 self.tools[tool_id]["calibrated_vector"] = calibration_data
                 save_to_cache(tools=self.tools)
@@ -60,7 +61,7 @@ class ToolsManager:
         else:
             log_message = f"The tool was not found"
             self.logger.error(module=self.logger_module, msg=log_message)
-            return {"status": False, "info": log_message}, 403
+            return {"status": False, "info": log_message}, 404
         
     # creating tool 
     def create_tool(self, tool_id:str) -> tuple:
@@ -74,7 +75,7 @@ class ToolsManager:
         else:
             log_message = f"The tool {tool_id} already exists"
             self.logger.error(module=self.logger_module, msg=log_message)
-            return {"status": True, "info": log_message}, 400
+            return {"status": False, "info": log_message}, 400
         
     # delete tool
     def delete_tool(self, tool_id:str) -> tuple:

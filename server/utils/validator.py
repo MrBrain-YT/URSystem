@@ -20,8 +20,11 @@ class RobotChecker:
         return True
     
     @staticmethod
-    def robot_access(Robots:dict, name:str, code:str) -> bool:
-        return Robots[name]["SecureCode"] == code
+    def robot_access(robots:dict, name:str, code:str) -> bool:
+        if name in robots:
+            return robots[name]["SecureCode"] == code
+        else:
+            return True
 
     @staticmethod
     def is_robot(token:str) -> bool:

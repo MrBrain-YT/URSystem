@@ -68,6 +68,9 @@
 | `create-base` | создание базы | [Посмотреть здесь](#create-base) |
 | `set-base` | установка значения каллибровки базы | [Посмотреть здесь](#set-base) |
 | `delete-base` | Удаление базы | [Посмотреть здесь](#delete-base) |
+| `get-certs` | Получить все сертификаты | [Посмотреть здесь](#get-certs) |
+| `download-cert` | Скачать сертификат | [Посмотреть здесь](#download-cert) |
+
 
 ## Возвращаемый результат
 ```JSON
@@ -1076,7 +1079,7 @@
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
     |POST| `id` | **String** |
-    || `config` | **Any** |
+    || `value` | **Any** |
     || `parameter` | **String** |
     || `token` | **String** |
     
@@ -1084,7 +1087,7 @@
         ```python
         data = {
             "id": "ToolID",
-            "config": {"status": 1},
+            "value": {"status": 1},
             "parameter": "info",
             "token": "akjy7wefwjgv6qohg..."
         }
@@ -1219,6 +1222,36 @@
         data = {
             "id": "ToolID",
             "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="get-certs"> get-certs </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="download-cert"> download-cert </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `file_name` | **String** |
+    || `server_token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "file_name": "localhost.crt",
+            "server_token": 'htf121jhbt124e...'
         }
         requests.post(url, verify=True, json=data)
         ```

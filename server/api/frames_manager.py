@@ -37,6 +37,7 @@ class FramesManagerAPI:
             info = request.json
             frame_id = info.get("id")
             config = info.get("config")
+            print(config)
             response, code = self.frames_manager.set_frame(frame_id=frame_id, config=config)
             return jsonify(response), code
             
@@ -46,6 +47,14 @@ class FramesManagerAPI:
             info = request.json
             frame_id = info.get("id")
             response, code = self.frames_manager.delete_frame(frame_id=frame_id)
+            return jsonify(response), code
+        
+        @frames_bp.route("/create-frame", methods=['POST'])
+        @self.access.check_user(user_role="administrator", logger_module=self.logger_module)
+        def create_frame():
+            info = request.json
+            frame_id = info.get("id")
+            response, code = self.frames_manager.create_frame(frame_id=frame_id)
             return jsonify(response), code
         
         return frames_bp

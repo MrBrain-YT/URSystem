@@ -36,6 +36,18 @@ class FramesManager:
     def delete_frame(self, frame_id:str) -> tuple:
         if self.frames.get(frame_id) is not None:
             del self.frames[frame_id]
-        save_to_cache(frames=self.frames)
-        update_token()
-        return {"status": True, "info": f"Frame with id {frame_id} has ben deleted"}, 200
+            save_to_cache(frames=self.frames)
+            update_token()
+            return {"status": True, "info": f"Frame with id {frame_id} has ben deleted"}, 200
+        else:
+            return {"status": False, "info": f"Frame not found"}, 400
+    
+    def create_frame(self, frame_id:str) -> tuple:
+        print(self.frames)
+        if self.frames.get(frame_id) is None:
+            self.frames[frame_id] = {}
+            save_to_cache(frames=self.frames)
+            update_token()
+            return {"status": True, "info": f"Frame with id {frame_id} has ben deleted"}, 200
+        else:
+            return {"status": False, "info": f"Frame already was created"}, 400

@@ -34,5 +34,14 @@ class KinematicsManagerAPI:
             kinematic_id = info.get("id")
             response, code = self.kinematic_manager.bind_kinematic(robot_name=robot_name, kinematic_id=kinematic_id)
             return jsonify(response), code
+        
+        """ Unbind kinematics to robot """
+        @kinematics_bp.route("/unbind-kinematic", methods=['POST'])
+        @self.access.check_user_and_robot_data(user_role="administrator", logger_module=self.logger_module)
+        def unbind_kinematic():
+            info = request.json
+            robot_name = info.get("robot")
+            response, code = self.kinematic_manager.unbind_kinematic(robot_name=robot_name)
+            return jsonify(response), code
 
         return kinematics_bp

@@ -41,7 +41,7 @@ class ToolsManagerAPI:
             info = request.json
             tool_id = info.get("id")
             parameter = info.get("parameter")
-            parametr_config = info.get("config")
+            parametr_config = info.get("value")
             response, code = self.tools_manager.set_tool_data(
                     tool_id=tool_id,
                     parameter=parameter,

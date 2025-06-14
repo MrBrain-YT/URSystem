@@ -19,4 +19,6 @@ def save_to_cache(robots:dict=None, tools:dict=None, bases:dict=None, frames:dic
     if tools is not None:
         ToolsManager().set_tools(tools)
     if frames is not None:
-        FramesManager().set_frame(frames)
+        FramesManager().set_frames(frames)
+    if bases is not None:
+        BasesManager().set_bases(bases)

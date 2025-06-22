@@ -1,5 +1,7 @@
 import ssl
 import importlib
+import os
+import json
 
 from flask import Flask
 from threading import Thread
@@ -63,6 +65,10 @@ bases = robots_cache.bases
 frames = robots_cache.frames
 users = update_token()
 logger = Logger()
+os.environ["ROBOTS"] = json.dumps(robots)
+os.environ["TOOLS"] = json.dumps(tools)
+os.environ["FRAMES"] = json.dumps(frames)
+os.environ["BASES"] = json.dumps(bases)
 
 """ Server """
 app = Flask(__name__,

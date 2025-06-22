@@ -1,24 +1,17 @@
-import pytest
-import os
-import sys
 import hashlib
+import sys
+import os
 
-# Add project root to sys.path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
-from main import app
+from tests.config import client, TestData
 from configuration.server_token import reg_token
 
-@pytest.fixture
-def client():
-    with app.test_client() as client:
-        yield client
-
 def test_get_account_data_success(client):
-    password = hashlib.sha256("12345".encode(encoding="utf-8")).hexdigest()
+    password = TestData.super_admin_password.encode(encoding="utf-8")
+    password_hash = hashlib.sha256(password).hexdigest()
     json = {
         "name": "SuperAdmin",
-        "password": password,
+        "password": password_hash,
         "server_token": reg_token
     }
     response = client.post('/api/get-account-data', json=json)
@@ -29,7 +22,7 @@ def test_get_account_data_success(client):
 
 def test_get_account_data_error_password(client):
     json = {
-        "name": "SuperAdmin",
+        "name": TestData.super_admin_login,
         "password": "lkjgneiruhh45",
         "server_token": reg_token
     }
@@ -38,7 +31,7 @@ def test_get_account_data_error_password(client):
     json = response.get_json()
     assert json["status"] == False
 
-def test_get_account_data_error_role(client):
+def test_get_account_data_error_system_role(client):
     json = {
         "name": "",
         "password": "",
@@ -60,10 +53,10 @@ def test_get_account_data_error_name(client):
     json = response.get_json()
     assert json["status"] == False
 
-def test_get_account_data_error_server(client):
+def test_get_account_data_error_server_token(client):
     json = {
-        "name": "SuperAdmin",
-        "password": "12345",
+        "name": TestData.super_admin_login,
+        "password": TestData.super_admin_password,
         "server_token": ""
     }
     response = client.post('/api/get-account-data', json=json)

@@ -1,4 +1,5 @@
 import os
+import json
 
 def save_to_cache(robots:dict=None, tools:dict=None, bases:dict=None, frames:dict=None) -> None:
     from services.multi_robots_manager import MultiRobotsManager
@@ -16,9 +17,13 @@ def save_to_cache(robots:dict=None, tools:dict=None, bases:dict=None, frames:dic
         file.write(f"\nframes = {frames if frames is not None else FramesManager().get_frames()}")
     if robots is not None:
         MultiRobotsManager().set_robots(robots)
+        os.environ["ROBOTS"] = json.dumps(robots)
     if tools is not None:
         ToolsManager().set_tools(tools)
+        os.environ["TOOLS"] = json.dumps(tools)
     if frames is not None:
         FramesManager().set_frames(frames)
+        os.environ["FRAMES"] = json.dumps(frames)
     if bases is not None:
         BasesManager().set_bases(bases)
+        os.environ["BASES"] = json.dumps(bases)

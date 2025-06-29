@@ -1,11 +1,48 @@
-from typing import Union
+from typing import Union, get_type_hints, Any, get_args
+from functools import wraps
 
 import sqlalchemy as db
 
 from databases.connection import users_table
 from databases.database_manager import DBWorker
-from services.accounts_manager import AccountManager
-from services.multi_robots_manager import MultiRobotsManager
+
+import configuration.server_token as server_auth_token
+
+def validate_types(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            hints = get_type_hints(func)
+            
+            # Проверка позиционных аргументов
+            for arg, value in zip(func.__code__.co_varnames, args):
+                if arg in hints:
+                    if hints[arg] != Any:
+                        assert isinstance(value, hints[arg]), f"Argument {arg} must be {hints[arg]}"
+            # Проверка именованных аргументов
+            for key, value in kwargs.items():
+                if key in hints:
+                    if hints[key] != Any:
+                        # if isinstance(hints[key], typing._UnionGenericAlias):
+                        if len(get_args(hints[key])) > 1:
+                            is_correct = False
+                            for list_value in get_args(hints[key]):
+                                if isinstance(value, list_value):
+                                    is_correct = True
+                            assert is_correct
+                        else:
+                            assert isinstance(value, hints[key]),f"Argument {key} must be {hints[key]}"
+            
+            result = func(*args, **kwargs)
+            # Проверка возвращаемого значения
+            # if 'return' in hints:
+            #     if hints['return'] != Any:
+            #         assert isinstance(result, hints['return']), f"Return value must be {hints['return']}"
+            return result
+        
+        except AssertionError as e:
+            return {"status": False, "info": "Received data not valid"}, 400
+    return wrapper
 
 class RobotChecker:
     
@@ -28,6 +65,7 @@ class RobotChecker:
 
     @staticmethod
     def is_robot(token:str) -> bool:
+        from services.accounts_manager import AccountManager
         users:dict = AccountManager().get_users()
         tokens = []
         for i in [i for i in users]:
@@ -45,6 +83,7 @@ class RobotChecker:
         
     @staticmethod
     def check_program_token(robot_name:str, _program_token:str) -> bool:
+        from services.multi_robots_manager import MultiRobotsManager
         robots:dict = MultiRobotsManager.get_robots()
         program_token = robots[robot_name]["ProgramToken"]
         if program_token == _program_token or program_token == "":
@@ -53,6 +92,20 @@ class RobotChecker:
             return False
         
 class UserChecker:
+    
+    @staticmethod    
+    def is_user(user_name:str) -> bool:
+        from services.accounts_manager import AccountManager
+        """_summary_
+
+        Args:
+            user_name (str): User name
+
+        Returns:
+            bool: True if user exists, False otherwise
+        """
+        users:dict = AccountManager().get_users()
+        return user_name in users
     
     @staticmethod
     def get_role_level(role:str) -> int:
@@ -65,6 +118,7 @@ class UserChecker:
         return role_level
     
     def role_access(self, token:str, target_role:str) -> bool:
+        from services.accounts_manager import AccountManager
         users:dict = AccountManager().get_users()
         tokens = []
         for name in users.keys():
@@ -103,3 +157,12 @@ class UserChecker:
             return account_data["name"]
         else:
             return None
+
+class ServerChecker:
+    
+    @staticmethod
+    def is_server_token(token:str) -> bool:
+        if token == server_auth_token.reg_token:
+            return True
+        else:
+            return False

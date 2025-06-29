@@ -2,9 +2,10 @@ import shutil
 import os
 import importlib
 
-from utils.logger import Logger
 from services.multi_robots_manager import MultiRobotsManager
 from configuration.cache.file_cache import save_to_cache
+from utils.logger import Logger
+from utils.validator import validate_types
 
 kinematics = {}
 
@@ -21,6 +22,7 @@ class KinematicsManager:
     def get_kinematics(self) -> dict:
         return self.kinematics
     
+    @validate_types 
     def update_kinematics_data(self) -> None:
         kinematics = {}
         robots:dict = self.multi_robots_manager.get_robots()
@@ -38,6 +40,7 @@ class KinematicsManager:
         self.kinematics.update(kinematics)
         
     """ Add kinematics to system """
+    @validate_types 
     def add_kinematic(self, kinematic_file) -> tuple:
         zip_path = f"./kinematics/{kinematic_file.filename}"
         kinematic_file.save(zip_path)
@@ -49,6 +52,7 @@ class KinematicsManager:
         return {"status": True, "info": log_message}, 200
 
     """ Bind kinematics to robot """
+    @validate_types 
     def bind_kinematic(self, robot_name:str, kinematic_id:str) -> tuple:
         robots = self.multi_robots_manager.get_robots()
         if kinematic_id != "":
@@ -70,6 +74,7 @@ class KinematicsManager:
             return {"status": False, "info": log_message}, 404
         
     # TODO: Add documentation for API doc
+    @validate_types 
     def unbind_kinematic(self, robot_name:str) -> tuple:
         robots = self.multi_robots_manager.get_robots()
         if robot_name in robots:

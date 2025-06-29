@@ -2,6 +2,7 @@ from typing import Any
 
 from utils.user_updater import update_token
 from configuration.cache.file_cache import save_to_cache
+from utils.validator import validate_types
 
 frames = {}
 
@@ -21,18 +22,21 @@ class FramesManager:
     def get_frames_api(self) -> tuple:
         return {"status": True, "info": f"All frames", "data": self.frames}, 200
 
+    @validate_types 
     def get_frame(self, frame_id:str) -> tuple:
         if self.frames.get(frame_id) is not None:
             return {"status": True, "info": f"Value from frame with id {frame_id}", "data": self.frames.get(frame_id)}, 200
         else:
             return {"status": False, "info": f"Frame '{frame_id}' not found"}, 400
 
+    @validate_types 
     def set_frame(self, frame_id:str, config:Any) -> tuple:
         self.frames[frame_id] = config
         save_to_cache(frames=self.frames)
         update_token()
         return {"status": True, "info": f"The value has been changed in frame with id {frame_id}"}, 200
 
+    @validate_types 
     def delete_frame(self, frame_id:str) -> tuple:
         if self.frames.get(frame_id) is not None:
             del self.frames[frame_id]
@@ -42,6 +46,7 @@ class FramesManager:
         else:
             return {"status": False, "info": f"Frame not found"}, 400
     
+    @validate_types 
     def create_frame(self, frame_id:str) -> tuple:
         print(self.frames)
         if self.frames.get(frame_id) is None:

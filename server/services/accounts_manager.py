@@ -7,7 +7,7 @@ from utils.logger import Logger
 from databases.connection import users_table
 from databases.database_manager import DBWorker
 from utils.user_updater import update_token
-import configuration.server_token as server_auth_token
+from utils.validator import UserChecker, ServerChecker, validate_types
 
 users = {}
 
@@ -15,6 +15,8 @@ class AccountManager:
     users = users
     logger = Logger()
     database_worker = DBWorker()
+    user_checker = UserChecker()
+    server_checker = ServerChecker()
     
     def __init__(self, users:dict=None) -> None:
         self.logger_module = "URAccounts"
@@ -27,8 +29,9 @@ class AccountManager:
     def set_users(self, users:dict) -> None:
         self.users.update(users)
 
+    @validate_types
     def create_account(self, name:str, password:str, role:str) -> tuple:
-        if name not in self.users:
+        if not self.user_checker.is_user(name):
             token:str
             tokens = []
             for i in [i for i in self.users]:
@@ -52,9 +55,9 @@ class AccountManager:
             self.logger.info(module=self.logger_module, msg=log_message)
             return {"status": False, "info": log_message}, 400
 
+    @validate_types
     def delete_account(self, name:str) -> tuple:
-        print(self.users)
-        if name in self.users:
+        if self.user_checker.is_user(name):
             if self.users[name]["role"] not in {"SuperAdmin", "System"}:
                 # DB query send
                 query = users_table.delete().where(users_table.columns.name == name)
@@ -69,6 +72,7 @@ class AccountManager:
             return {"status": False, "info": "No such account exists"}, 400
         
     # get accounts
+    @validate_types
     def get_accounts(self) -> tuple:
         _users = {}
         for info in self.users.copy():
@@ -78,10 +82,11 @@ class AccountManager:
         return {"status": True, "info": "Found users", "data": _users}, 200
         
     # get role account
+    @validate_types
     def get_account_data(self, name:str, password:str, server_token:str) -> tuple:
-        if server_token == server_auth_token.reg_token:
+        if self.server_checker.is_server_token(server_token):
             update_token()
-            if name in self.users:
+            if self.user_checker.is_user(name):
                 if self.users[name]["role"] != "System":
                     if self.users[name]["password"] == password:
                         return {"status": True, "info": "User found", "data": self.users[name]}, 200
@@ -99,8 +104,9 @@ class AccountManager:
             return {"status": False, "info": "Server token incorrect"}, 400
 
     # change password
+    @validate_types
     def change_password(self, name:str, password:str) -> tuple:
-        if name in self.users:
+        if self.user_checker.is_user(name):
             if name != "":
                 # DB query send
                 query = users_table.update().where(
@@ -118,8 +124,9 @@ class AccountManager:
             return {"status": False, "info": "Name not in users"}, 404
         
     # get user token
+    @validate_types
     def get_user_token(self, name:str) -> tuple:
-        if name in self.users:
+        if self.user_checker.is_user(name):
             if name != "":
                 query = db.select(users_table.columns.token).where(db.and_(users_table.columns.name == name))
                 token = self.database_worker.send_select_query(query=query).fetchone()._tuple()
@@ -132,6 +139,7 @@ class AccountManager:
             return {"status": False, "info": "Name not in users"}, 404
 
     # change user token
+    @validate_types
     def change_token(self, name:str, token:str=None) -> tuple:
         if token is None:
             while True:

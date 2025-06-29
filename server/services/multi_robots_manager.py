@@ -5,6 +5,7 @@ import os
 import sqlalchemy as db
 
 from utils.logger import Logger
+from utils.validator import validate_types
 from databases.connection import users_table
 from databases.database_manager import DBWorker
 from configuration.cache.file_cache import save_to_cache
@@ -37,6 +38,7 @@ class MultiRobotsManager:
         return self.robots
 
     # add robot
+    @validate_types 
     def create_robot(self, robot_name:str, angle_count:int, secret_code:str, password:str, kinematic_id:str=None) -> tuple:
         from api.robot_manager import RobotManagerAPI
         
@@ -101,6 +103,7 @@ class MultiRobotsManager:
             return {"status": False, "info": log_message, "token": token}, 200
 
     # Import robot cache
+    @validate_types 
     def import_cache(self, import_robots:dict, import_tools:dict, import_frames:dict, import_bases:dict) -> tuple:
         from api.robot_manager import RobotManagerAPI
         
@@ -199,6 +202,7 @@ class MultiRobotsManager:
         return {"status": True, "info": "Current cache from RAM", "data": new_cache}, 200
 
     # get robot
+    @validate_types 
     def get_robot(self, robot_name:str) -> tuple:
         robots:dict = self.robots.copy()
         update_token()
@@ -218,6 +222,7 @@ class MultiRobotsManager:
         return {"status": True, "info": "All robots data", "data": robots}, 200
 
     # delete robot
+    @validate_types 
     def delete_robot(self, robot_name:str) -> tuple:
         from api.robot_manager import RobotManagerAPI
         

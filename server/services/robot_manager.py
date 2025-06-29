@@ -4,7 +4,7 @@ import time
 from configuration.cache.file_cache import save_to_cache
 from utils.logger import Logger
 from utils.user_updater import update_token
-from utils.validator import RobotChecker, UserChecker
+from utils.validator import RobotChecker, UserChecker, validate_types
 from services.multi_robots_manager import MultiRobotsManager
 from services.kinematics_manager import KinematicsManager
 from services.tools_manager import ToolsManager
@@ -36,6 +36,7 @@ class RobotManager:
             del self.is_robot_ready_setted_false[robot_name]
     
     """ Get current robot position """
+    @validate_types 
     def get_position(self, robot_name:str, token:str) -> tuple:
         time.sleep(0.2)
         robots = self.robots_manager.get_robots()
@@ -48,6 +49,7 @@ class RobotManager:
         return {"status": True, "info": f"current robot '{robot_name}' angles position", "data": robots[robot_name]["Position"]}, 200
     
     """ Get robot position id """
+    @validate_types 
     def get_position_id(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         robot_name_by_token = self.user_checker.get_robot_name(token)
@@ -59,6 +61,7 @@ class RobotManager:
         return {"status": True, "info": f"current robot '{robot_name}' position id", "data": robots[robot_name]["PositionID"]}, 200
     
     """ Get current robot speed """
+    @validate_types 
     def get_speed(self, robot_name:str, token:str) -> tuple:
         time.sleep(0.2)
         robots = self.robots_manager.get_robots()
@@ -71,6 +74,7 @@ class RobotManager:
         return {"status": True, "info": f"current robot '{robot_name}' angles speed", "data": robots[robot_name]["MotorsSpeed"]}, 200
     
     """ Get current robot position """
+    @validate_types 
     def get_catesian_position(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         robot_name_by_token = self.user_checker.get_robot_name(token)
@@ -82,6 +86,7 @@ class RobotManager:
         return {"status": True, "info": f"current robot '{robot_name}' cartesian position", "data": robots[robot_name]["XYZposition"]}, 200
     
     """ Get robot angles count """
+    @validate_types 
     def get_angles_count(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         robot_name_by_token = self.user_checker.get_robot_name(token)
@@ -93,6 +98,7 @@ class RobotManager:
         return {"status": True, "info": f"current robot '{robot_name}' angles count", "data": robots[robot_name]["AngleCount"]}, 200
         
     """ Set current robot motors position """
+    @validate_types 
     def set_motors_position(self, robot_name:str, token:str, angles:dict[float]) -> tuple:
         robots = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
@@ -124,6 +130,7 @@ class RobotManager:
         return {"status": True, "info": f"Motors position for robot '{robot_name}' has been setted"}, 200
         
     """ Get robot ready parameter """
+    @validate_types 
     def get_ready_state(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         robot_name_by_token = self.user_checker.get_robot_name(token)
@@ -135,6 +142,7 @@ class RobotManager:
         return {"status": True, "info": f"current robot '{robot_name}' RobotReady parameter", "data": robots[robot_name]["RobotReady"]}, 200
     
     ''' Get emergency stop '''
+    @validate_types 
     def get_emergency_state(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         robot_name_by_token = self.user_checker.get_robot_name(token)
@@ -146,6 +154,7 @@ class RobotManager:
         return {"status": True, "info": f"current robot '{robot_name}' Emergency parameter", "data": robots[robot_name]["Emergency"]}, 200
         
     """ Set robot ready parameter """
+    @validate_types 
     def set_ready_state(self, robot_name:str, token:str, state:bool) -> tuple:
         robots = self.robots_manager.get_robots()
         robot_name_by_token = self.user_checker.get_robot_name(token)
@@ -173,7 +182,7 @@ class RobotManager:
     
     """ Set robot position id """
     # TODO: determine access to the function (who has access)
-
+    @validate_types 
     def set_position_id(self, robot_name:str, token:str, position_id:str) -> tuple:
         robots = self.robots_manager.get_robots()
         robot_name_by_token = self.user_checker.get_robot_name(token)
@@ -189,6 +198,7 @@ class RobotManager:
         return {"status": True, "info": "The PositionID parameter was been seted"}, 200
         
     ''' Activate and deactivate emergency stop '''
+    @validate_types 
     def set_emergency_state(self, robot_name:str, token:str, state:bool) -> tuple:
         robots = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
@@ -225,6 +235,7 @@ class RobotManager:
         return {"status": True, "info": "The Emergency parameter was been seted"}, 200
 
     """ current robot position"""
+    @validate_types 
     def set_position(self, robot_name:str, token:str, angles:dict=None, angles_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -283,6 +294,7 @@ class RobotManager:
                         return {"status": True, "info": f"current robot '{robot_name}' position was been seted"}, 200
                         
     """ Remove current robot point position """
+    @validate_types 
     def remove_current_point_position(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -305,6 +317,7 @@ class RobotManager:
             return {"status": False, "info": "current robot point position is not multi point"}, 400
         
     """ Remove all robot point positions """
+    @validate_types 
     def remove_all_point_position(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -324,6 +337,7 @@ class RobotManager:
             return {"status": False, "info": "current robot point position is not multi point"}, 400
 
     """ current home position"""
+    @validate_types 
     def set_home_position(self, robot_name:str, token:str, angles:dict) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -348,6 +362,7 @@ class RobotManager:
             return {"status": True, "info": f"Was setted robot '{robot_name}' home position"}, 200
 
     """ current robot speed """
+    @validate_types 
     def set_speed(self, robot_name:str, token:str, angles:dict=None, angles_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -381,6 +396,7 @@ class RobotManager:
             return {"status": True, "info": "The robot speed parameter was been seted"}, 200
                 
     """ Remove current robot point speed """
+    @validate_types 
     def remove_current_point_speed(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -403,6 +419,7 @@ class RobotManager:
             return {"status": False, "info": "current robot point speed is not multi point"}, 400
         
     """ Remove all robot point speeds """
+    @validate_types 
     def remove_all_point_speed(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -422,6 +439,7 @@ class RobotManager:
             return {"status": False, "info": "current robot point speed is not multi point"}, 400
 
     """ standard robot speed"""
+    @validate_types 
     def set_standard_speed(self, robot_name:str, token:str, angles:dict[float]) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -440,6 +458,7 @@ class RobotManager:
         return {"status": True, "info": "The robot default speed parameter was been seted"}, 200
         
     """ Set program """
+    @validate_types 
     def set_program(self, robot_name:str, token:str, program:str) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -465,6 +484,7 @@ class RobotManager:
             return {"status": True, "info": log_message}, 200
 
     """ Delete program """
+    @validate_types 
     def delete_program(self, robot_name:str, token:str) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -485,6 +505,7 @@ class RobotManager:
 
 
     """ Get XYZ from angle robot position """
+    @validate_types 
     def angles_to_cartesian(self, robot_name:str, token:str, angles:dict=None, angles_data:list=None) -> tuple:
         robots:dict = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
@@ -535,6 +556,7 @@ class RobotManager:
             return {"status": False, "info": "This command does not work if you are not using kinematics"}, 400
 
     """ Get angle from XYZ robot position """
+    @validate_types 
     def cartesian_to_angles(self, robot_name:str, token:str, coordinate_system:str, position:dict=None, positions_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
@@ -575,6 +597,7 @@ class RobotManager:
             return {"status": False, "info": "This command does not work if you are not using kinematics"}, 400
         
     """ Set current robot XYZ position """
+    @validate_types 
     def set_cartesian_position(self, robot_name:str, token:str, coordinate_system:str, position:dict=None, positions_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -638,6 +661,7 @@ class RobotManager:
             return {"status": False, "info": "This command does not work if you are not using kinematics"}, 400
 
     ''' Set minimal angle of rotation '''
+    @validate_types 
     def set_min_angles(self, robot_name:str, token:str, angles:dict[float]) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -661,6 +685,7 @@ class RobotManager:
             return {"status": True, "info": f"Robot '{robot_name}' minimal angles data was been seted"}, 200
 
     ''' Set maximum angle of rotation '''
+    @validate_types 
     def set_max_angles(self, robot_name:str, token:str, angles:dict[float]) -> tuple:
         robots = self.robots_manager.get_robots()
         
@@ -684,6 +709,7 @@ class RobotManager:
             return {"status": True, "info": f"Robot '{robot_name}' maximal angles data was been seted"}, 200
 
     ''' Set program is running '''
+    @validate_types 
     def set_program_run_state(self, robot_name:str, state:bool) -> tuple:
         robots = self.robots_manager.get_robots()
         robots[robot_name]["ProgramRunning"] = state
@@ -692,6 +718,7 @@ class RobotManager:
         return {"status": True, "info": f"Robot '{robot_name}' ProgramRun parameter was been seted"}, 200
     
     # set robot tool
+    @validate_types 
     def set_robot_tool(self, robot_name:str, token:str, tool_id:str):
         robots:dict = self.robots_manager.get_robots()
         tools = self.tools_manager.get_tools()
@@ -740,6 +767,7 @@ class RobotManager:
             return {"status": False, "info": log_message}, 403
         
     # set robot base
+    @validate_types 
     def set_robot_base(self, robot_name:str, token:str, base_id:str) -> tuple:
         robots:dict = self.robots_manager.get_robots()
         bases = self.bases_manager.get_bases()

@@ -1,5 +1,8 @@
+from typing import Any
+
 from utils.logger import Logger
 from utils.user_updater import update_token
+from utils.validator import validate_types
 from configuration.cache.file_cache import save_to_cache
 
 tools = {}
@@ -20,10 +23,12 @@ class ToolsManager:
         return self.tools
     
     # get tools
+    @validate_types 
     def get_tools_api(self) -> tuple:
         update_token()
         return {"status": True, "info": "All tools data", "data": self.tools}, 200
     
+    @validate_types 
     def get_tool_data(self, tool_id:str) -> tuple:
         if self.tools.get(tool_id) is not None:
             return {"status": True, "info": "Tool value", "data": self.tools[tool_id]}, 200
@@ -31,8 +36,9 @@ class ToolsManager:
             log_message = f"The tool '{tool_id}' has not been created and cannot be modified"
             self.logger.error(module=self.logger_module, msg=log_message)
             return {"status": False, "info": log_message}, 400
-        
-    def set_tool_data(self, tool_id:str, parameter:str, config:str) -> tuple:
+    
+    @validate_types 
+    def set_tool_data(self, tool_id:str, parameter:str, config:Any) -> tuple:
         if self.tools.get(tool_id) is not None:
             self.tools[tool_id][parameter] = config
             save_to_cache(tools=self.tools)
@@ -44,6 +50,7 @@ class ToolsManager:
             return {"status": False, "info": log_message}, 400
         
     # set tool calibration data
+    @validate_types 
     def set_calibration_data(self, tool_id:str, calibration_data:dict) -> tuple:
         if self.tools.get(tool_id) is not None:
             # TODO: add validation callibarion data
@@ -64,6 +71,7 @@ class ToolsManager:
             return {"status": False, "info": log_message}, 404
         
     # creating tool 
+    @validate_types 
     def create_tool(self, tool_id:str) -> tuple:
         if tool_id not in [i for i in self.tools.keys()]:
             self.tools[tool_id] = {}
@@ -78,6 +86,7 @@ class ToolsManager:
             return {"status": False, "info": log_message}, 400
         
     # delete tool
+    @validate_types 
     def delete_tool(self, tool_id:str) -> tuple:
         from services.multi_robots_manager import MultiRobotsManager
         if self.tools.get(tool_id) is not None:

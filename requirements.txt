@@ -10,7 +10,7 @@ importlib_metadata==8.6.1
 itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.2
-matlabengine==9.14.2
+#matlabengine==9.14.2
 pip-system-certs==4.0
 requests==2.32.3
 SQLAlchemy==2.0.40

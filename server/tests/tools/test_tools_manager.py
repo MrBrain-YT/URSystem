@@ -13,6 +13,7 @@ def test_create_tool_success(client):
         "token": TestData.super_admin_token
     }
     response = client.post('/api/create-tool', json=json)
+    print(response.text)
     assert response.status_code == 200
     json = response.get_json()
     assert json["status"] == True

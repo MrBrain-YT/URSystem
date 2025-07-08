@@ -5,7 +5,7 @@ import os
 import sqlalchemy as db
 
 from utils.logger import Logger
-from utils.validator import validate_types
+from utils.validator import RobotChecker, FramesChecker, BasesChecker, ToolsChecker, validate_types
 from databases.connection import users_table
 from databases.database_manager import DBWorker
 from configuration.cache.file_cache import save_to_cache
@@ -24,6 +24,10 @@ class MultiRobotsManager:
     tools_manager = ToolsManager()
     account_manager = AccountManager()
     bases_manager = BasesManager()
+    robot_checker = RobotChecker()
+    frames_checker = FramesChecker()
+    bases_checker = BasesChecker()
+    tools_checker = ToolsChecker()
     
     def __init__(self, robots:dict=None) -> None:
         self.logger_module = "URMSystem"
@@ -42,7 +46,7 @@ class MultiRobotsManager:
     def create_robot(self, robot_name:str, angle_count:int, secret_code:str, password:str, kinematic_id:str=None) -> tuple:
         from api.robot_manager import RobotManagerAPI
         
-        if robot_name not in self.robots.keys():
+        if not self.robot_checker.robot_exists(robot_name):
             # create robot configuretion
             angles = {}
             for i in range(1, int(angle_count)+1):
@@ -77,19 +81,21 @@ class MultiRobotsManager:
                         }
                     }
             # Creating account for robot
-            users = self.account_manager.get_users()
-            token:str
-            tokens = []
-            # Generate new token
-            for i in [i for i in users]:
-                tokens.append(users.get(i)["token"])
-            while True:
-                token = secrets.token_hex(32)
-                if token not in tokens:
-                    break
-            # Send to db
-            query = db.insert(users_table).values(name=robot_name, password=password, role="robot", token=token)
-            DBWorker().send_query(query=query)
+            # users = self.account_manager.get_users()
+            # token:str
+            # tokens = []
+            # # Generate new token
+            # for i in [i for i in users]:
+            #     tokens.append(users.get(i)["token"])
+            # while True:
+            #     token = secrets.token_hex(32)
+            #     if token not in tokens:
+            #         break
+            # # Send to db
+            # query = db.insert(users_table).values(name=robot_name, password=password, role="robot", token=token)
+            # DBWorker().send_query(query=query)
+            account_data = self.account_manager.create_account(robot_name, password, "robot")[0]["data"]
+            token = account_data["token"]
             
             save_to_cache(robots=self.robots)
             update_token()
@@ -111,17 +117,13 @@ class MultiRobotsManager:
         users:dict = self.account_manager.get_users()
         tools:dict = self.tools_manager.get_tools()
         bases:dict = self.bases_manager.get_bases()
-        new_robots:dict = ast.literal_eval(import_robots)
-        new_tools:dict = ast.literal_eval(import_tools)
-        new_frames:dict = ast.literal_eval(import_frames)
-        new_bases:dict = ast.literal_eval(import_bases)
         robots_new_password = {}
         # import robots
-        for robot_name in new_robots.keys():
-            if robot_name in self.robots:
+        for robot_name in import_robots.keys():
+            if self.robot_checker.robot_exists(robot_name):
                 pass
             else:
-                self.robots[robot_name] = new_robots[robot_name]
+                self.robots[robot_name] = import_robots[robot_name]
                 # creating account for imported robot
                 while True:
                     token = secrets.token_hex(32)
@@ -142,30 +144,30 @@ class MultiRobotsManager:
                 
         RobotManagerAPI().add_new_robot_ready(robot_name=robot_name)
         # import tools
-        for tool_name in new_tools.keys():
-            if tool_name in tools:
+        for tool_name in import_tools.keys():
+            if self.tools_checker.tool_exists(tool_name):
                 pass
             else:
-                tools[tool_name] = new_tools[tool_name]
+                tools[tool_name] = import_tools[tool_name]
                 
         # import frames
-        for frames_name in new_frames.keys():
-            if frames_name in tools:
+        for frames_name in import_frames.keys():
+            if self.frames_checker.frame_exists(frames_name):
                 pass
             else:
-                frames[frames_name] = new_frames[frames_name]
+                frames[frames_name] = import_frames[frames_name]
         
         # import bases
-        for base_name in new_bases.keys():
-            if base_name in bases:
+        for base_name in import_bases.keys():
+            if self.bases_checker.base_exists(base_name):
                 pass
             else:
-                bases[base_name] = new_bases[base_name]
+                bases[base_name] = import_bases[base_name]
                 
         save_to_cache(robots=self.robots, tools=tools, frames=frames, bases=bases)
         log_message = "Cache was imorted"
         self.logger.info(module=self.logger_module, msg=log_message)
-        return {"status": True, "info": log_message, "data": robots_new_password}, 200
+        return {"status": True, "info": log_message, "data": {"passwords" : robots_new_password}}, 200
         
     # Export robot cache from cache file
     def export_file_cache(self) -> tuple:
@@ -224,11 +226,11 @@ class MultiRobotsManager:
     # delete robot
     @validate_types 
     def delete_robot(self, robot_name:str) -> tuple:
-        from api.robot_manager import RobotManagerAPI
+        from services.robot_manager import RobotManager
         
-        if robot_name in self.robots.keys():
+        if self.robot_checker.robot_exists(robot_name):
             del self.robots[robot_name]
-            RobotManagerAPI().remove_new_robot_ready(robot_name=robot_name)
+            RobotManager().remove_new_robot_ready(robot_name=robot_name)
             query = users_table.delete().where(db.and_(
                 users_table.columns.name == robot_name,
                 users_table.columns.role == "robot"))

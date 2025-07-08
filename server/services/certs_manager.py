@@ -1,10 +1,10 @@
 import os
 from typing import Union
 
-from configuration.server_token import reg_token
-from utils.validator import validate_types
+from utils.validator import ServerChecker, validate_types
 
 class CertsManager:
+    server_checker = ServerChecker()
     
     def __init__(self) -> None:
         self.certs = [name for name in os.listdir("certs") if ".crt" in name]
@@ -15,7 +15,7 @@ class CertsManager:
     
     @validate_types 
     def get_certificate_path(self, server_token:str, file_name:str) -> Union[str, None]:
-        if server_token == reg_token:
+        if self.server_checker.is_server_token(server_token):
             if file_name in self.certs:
                 return f"certs/{file_name}"
                     

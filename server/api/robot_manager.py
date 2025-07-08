@@ -20,10 +20,8 @@ class RobotManagerAPI:
         def get_position():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             response, code = self.robot_manager.get_position(
                 robot_name=robot_name,
-                token=token
             )
             return jsonify(response), code
         

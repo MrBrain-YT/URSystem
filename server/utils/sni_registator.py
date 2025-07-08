@@ -13,7 +13,6 @@ class SNIRegistrator():
             elif server_name == "localhost":
                 self.context.load_cert_chain('certs\\localhost.crt','certs\\localhost.key')
             else:
-                print(f'certs\\{ssl_sock.getsockname()[0]}.crt')
                 self.context.load_cert_chain(f'certs\\{ssl_sock.getsockname()[0]}.crt',f'certs\\{ssl_sock.getsockname()[0]}.key')
                 
         return custom_sni_callback

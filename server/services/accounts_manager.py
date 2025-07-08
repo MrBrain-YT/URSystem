@@ -49,7 +49,7 @@ class AccountManager:
             update_token()
             log_message = f"Account with name: {name} was created"
             self.logger.info(module=self.logger_module, msg=log_message)
-            return {"status": True, "info": log_message, "token": token}, 200
+            return {"status": True, "info": log_message, "data": {"token": token}}, 200
         else:
             log_message = "The account has already been created"
             self.logger.info(module=self.logger_module, msg=log_message)

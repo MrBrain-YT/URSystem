@@ -80,16 +80,33 @@ class RobotChecker:
             return role[0] == "robot"
         else:
             raise ValueError("Token incorrect")
+       
+    @staticmethod 
+    def auto_robot_name_finder(robot_name:Union[str, None], token) -> Union[str, None]:
+        robot_name_by_token = UserChecker().get_robot_name(token)
+        if robot_name_by_token is None:
+            if robot_name is None:
+                return None
+        elif robot_name_by_token is not None:
+            robot_name = robot_name_by_token
+            
+        if RobotChecker().robot_exists(robot_name):
+            return robot_name
+        else:
+            return None
         
     @staticmethod
     def check_program_token(robot_name:str, _program_token:str) -> bool:
         from services.multi_robots_manager import MultiRobotsManager
-        robots:dict = MultiRobotsManager.get_robots()
+        robots = MultiRobotsManager().get_robots()
         program_token = robots[robot_name]["ProgramToken"]
-        if program_token == _program_token or program_token == "":
-            return True
-        else:
-            return False
+        return program_token == _program_token or program_token == ""
+        
+    @staticmethod
+    def robot_exists(robot_name:str) -> bool:
+        from services.multi_robots_manager import MultiRobotsManager
+        robots = MultiRobotsManager().get_robots()
+        return robot_name in robots
         
 class UserChecker:
     
@@ -132,10 +149,7 @@ class UserChecker:
             # set target_role_level
             target_role_level = self.get_role_level(target_role)
             # comparison of levels
-            if role_level >= target_role_level and role != "robot":
-                return True
-            else:
-                return False
+            return role_level >= target_role_level and role != "robot"
         else:
             raise ValueError("Token incorrect")
         
@@ -162,7 +176,53 @@ class ServerChecker:
     
     @staticmethod
     def is_server_token(token:str) -> bool:
-        if token == server_auth_token.reg_token:
+        return token == server_auth_token.reg_token
+        
+class BasesChecker:
+    
+    @staticmethod
+    def base_exists(base_name:str) -> bool:
+        from services.bases_manager import BasesManager
+        bases = BasesManager().get_bases()
+        return base_name in bases.keys()
+        
+    @staticmethod
+    def data_is_valid(base_data:dict) -> bool:
+        if isinstance(base_data, dict) and \
+            (("x" in base_data and "y" in base_data and "z" in base_data) and\
+            ("a" in base_data and "b" in base_data and "c" in base_data)):
+                return True
+        else:
+            return False
+        
+class FramesChecker:
+    
+    @staticmethod
+    def frame_exists(frame_name:str) -> bool:
+        from services.frames_manager import FramesManager
+        frames = FramesManager().get_frames()
+        return frames.get(frame_name) is not None
+    
+class ToolsChecker:
+    
+    @staticmethod
+    def tool_exists(tool_id:str) -> bool:
+        from services.tools_manager import ToolsManager
+        tools = ToolsManager().get_tools()
+        return tools.get(tool_id) is not None
+    
+    @staticmethod
+    def calibration_is_valid(calibration_data:dict) -> bool:
+        if isinstance(calibration_data, dict):
+            return True
+        else:
+            return False
+        
+    @staticmethod
+    def calibration_is_exists(tool_id:str) -> bool:
+        from services.tools_manager import ToolsManager
+        tools = ToolsManager().get_tools()
+        if tools[tool_id].get("calibrated_vector") is not None:
             return True
         else:
             return False

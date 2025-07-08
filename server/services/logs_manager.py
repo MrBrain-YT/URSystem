@@ -1,5 +1,3 @@
-from typing import Union
-
 from utils.user_updater import update_token
 from utils.logger import Logger
 from utils.validator import validate_types

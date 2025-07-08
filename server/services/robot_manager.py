@@ -1,14 +1,14 @@
 import secrets
 import time
+from typing import Callable
+from functools import wraps
 
 from configuration.cache.file_cache import save_to_cache
 from utils.logger import Logger
 from utils.user_updater import update_token
-from utils.validator import RobotChecker, UserChecker, validate_types
+from utils.validator import RobotChecker, UserChecker, BasesChecker, ToolsChecker, validate_types
 from services.multi_robots_manager import MultiRobotsManager
 from services.kinematics_manager import KinematicsManager
-from services.tools_manager import ToolsManager
-from services.bases_manager import BasesManager
 
 is_robot_ready_setted_false = {}
 
@@ -17,10 +17,10 @@ class RobotManager:
     logger = Logger()
     robot_checker = RobotChecker()
     user_checker = UserChecker()
+    tools_checker = ToolsChecker()
+    bases_checker = BasesChecker()
     robots_manager = MultiRobotsManager()
     kinematic_manager = KinematicsManager()
-    tools_manager = ToolsManager()
-    bases_manager = BasesManager()
     
     def __init__(self, robots:dict=None) -> None:
         self.logger_module = "URManager"
@@ -35,81 +35,66 @@ class RobotManager:
         if self.is_robot_ready_setted_false.get(robot_name) is not None:
             del self.is_robot_ready_setted_false[robot_name]
     
+    def robot_name_finder(func:Callable):
+        """Auto finding robot name by token or getted string\n
+        Using @robot_name_finder\n
+        Automatically removes the token from the key arguments after verification
+        """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            robot_name = kwargs["robot_name"]
+            token = kwargs["token"]
+            robot_name = RobotChecker().auto_robot_name_finder(robot_name, token)
+            if robot_name is None:
+                return {"status": False, "info": "Robot name is not defined"}, 400   
+            kwargs.pop("token")
+            return func(*args, **kwargs)
+        return wrapper
+    
     """ Get current robot position """
     @validate_types 
-    def get_position(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def get_position(self, robot_name:str) -> tuple:
         time.sleep(0.2)
-        robots = self.robots_manager.get_robots()
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token      
+        robots = self.robots_manager.get_robots() 
         return {"status": True, "info": f"current robot '{robot_name}' angles position", "data": robots[robot_name]["Position"]}, 200
     
     """ Get robot position id """
     @validate_types 
-    def get_position_id(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def get_position_id(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
         return {"status": True, "info": f"current robot '{robot_name}' position id", "data": robots[robot_name]["PositionID"]}, 200
     
     """ Get current robot speed """
     @validate_types 
-    def get_speed(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def get_speed(self, robot_name:str) -> tuple:
         time.sleep(0.2)
         robots = self.robots_manager.get_robots()
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
+
         return {"status": True, "info": f"current robot '{robot_name}' angles speed", "data": robots[robot_name]["MotorsSpeed"]}, 200
     
     """ Get current robot position """
     @validate_types 
-    def get_catesian_position(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def get_catesian_position(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
         return {"status": True, "info": f"current robot '{robot_name}' cartesian position", "data": robots[robot_name]["XYZposition"]}, 200
     
     """ Get robot angles count """
     @validate_types 
-    def get_angles_count(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def get_angles_count(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
         return {"status": True, "info": f"current robot '{robot_name}' angles count", "data": robots[robot_name]["AngleCount"]}, 200
         
     """ Set current robot motors position """
     @validate_types 
-    def set_motors_position(self, robot_name:str, token:str, angles:dict[float]) -> tuple:
+    @robot_name_finder
+    def set_motors_position(self, robot_name:str, angles:dict[float]) -> tuple:
         robots = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-
         for i in range(1, int(robots[robot_name]["AngleCount"])+1):
             robots[robot_name]["MotorsPosition"][f"J{i}"] = angles.get(f'J{i}')
             if robots[robot_name]["Emergency"] == True:
@@ -131,44 +116,24 @@ class RobotManager:
         
     """ Get robot ready parameter """
     @validate_types 
-    def get_ready_state(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def get_ready_state(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
         return {"status": True, "info": f"current robot '{robot_name}' RobotReady parameter", "data": robots[robot_name]["RobotReady"]}, 200
     
     ''' Get emergency stop '''
     @validate_types 
-    def get_emergency_state(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def get_emergency_state(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
         return {"status": True, "info": f"current robot '{robot_name}' Emergency parameter", "data": robots[robot_name]["Emergency"]}, 200
-        
+    
     """ Set robot ready parameter """
     @validate_types 
-    def set_ready_state(self, robot_name:str, token:str, state:bool) -> tuple:
+    @robot_name_finder
+    def set_ready_state(self, robot_name:str, state:bool) -> tuple:
         robots = self.robots_manager.get_robots()
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
-        if state == False:
-            self.is_robot_ready_setted_false[robot_name] = True
-            robots[robot_name]["RobotReady"] = state
-            
-        if state == True:
+        if state:
             if not self.is_robot_ready_setted_false[robot_name]: 
                 return {"status": False, "info": "The RobotReady parameter was not been seted"}, 400
             else:
@@ -176,6 +141,10 @@ class RobotManager:
                     robots[robot_name]["RobotReady"] = state
                 else:
                     return {"status": False, "info": "The RobotReady parameter was not been seted"}, 400
+        else:
+            self.is_robot_ready_setted_false[robot_name] = True
+            robots[robot_name]["RobotReady"] = state
+        
         save_to_cache(robots=robots)
         update_token()
         return {"status": True, "info": "The RobotReady parameter was been seted"}, 200
@@ -183,33 +152,20 @@ class RobotManager:
     """ Set robot position id """
     # TODO: determine access to the function (who has access)
     @validate_types 
-    def set_position_id(self, robot_name:str, token:str, position_id:str) -> tuple:
+    @robot_name_finder
+    def set_position_id(self, robot_name:str, position_id:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
         robots[robot_name]["PositionID"] = position_id
-        
         save_to_cache(robots=robots)
         update_token()
         return {"status": True, "info": "The PositionID parameter was been seted"}, 200
         
     ''' Activate and deactivate emergency stop '''
     @validate_types 
-    def set_emergency_state(self, robot_name:str, token:str, state:bool) -> tuple:
+    @robot_name_finder
+    def set_emergency_state(self, robot_name:str, state:bool) -> tuple:
         robots = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         robots[robot_name]["Emergency"] = True if state == True else False
         if robots[robot_name]["Emergency"] == True:
             robots[robot_name]["Position"] = robots[robot_name]["MotorsPosition"].copy()
@@ -236,16 +192,9 @@ class RobotManager:
 
     """ current robot position"""
     @validate_types 
-    def set_position(self, robot_name:str, token:str, angles:dict=None, angles_data:list=None) -> tuple:
+    @robot_name_finder
+    def set_position(self, robot_name:str, angles:dict=None, angles_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if robots[robot_name]["RobotReady"] == True:
             self.is_robot_ready_setted_false[robot_name] = False
         kinematics:dict = self.kinematic_manager.get_kinematics()
@@ -295,16 +244,9 @@ class RobotManager:
                         
     """ Remove current robot point position """
     @validate_types 
-    def remove_current_point_position(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def remove_current_point_position(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if isinstance(robots[robot_name]["Position"], list):
             if len(robots[robot_name]["Position"]) > 2:
                 robots[robot_name]["Position"] = robots[robot_name]["Position"][1::]
@@ -318,16 +260,9 @@ class RobotManager:
         
     """ Remove all robot point positions """
     @validate_types 
-    def remove_all_point_position(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def remove_all_point_position(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if isinstance(robots[robot_name]["Position"], list):
             robots[robot_name]["Position"] = robots[robot_name]["Position"][-1]
             save_to_cache(robots=robots)
@@ -338,16 +273,9 @@ class RobotManager:
 
     """ current home position"""
     @validate_types 
-    def set_home_position(self, robot_name:str, token:str, angles:dict) -> tuple:
+    @robot_name_finder
+    def set_home_position(self, robot_name:str, angles:dict) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if RobotChecker().check_angles(robot_name, angles, robots) == False:
             log_message = "Angles values ​​are not correct"
             Logger(robot_name=robot_name).error(log_message)
@@ -363,16 +291,9 @@ class RobotManager:
 
     """ current robot speed """
     @validate_types 
-    def set_speed(self, robot_name:str, token:str, angles:dict=None, angles_data:list=None) -> tuple:
+    @robot_name_finder
+    def set_speed(self, robot_name:str, angles:dict=None, angles_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if robots[robot_name]["Emergency"] == True:
             log_message = f"The robot is currently in emergency stop"
             Logger(robot_name=robot_name).error(log_message)
@@ -397,16 +318,9 @@ class RobotManager:
                 
     """ Remove current robot point speed """
     @validate_types 
-    def remove_current_point_speed(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def remove_current_point_speed(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if isinstance(robots[robot_name]["MotorsSpeed"], list):
             if len(robots[robot_name]["MotorsSpeed"]) > 2:
                 robots[robot_name]["MotorsSpeed"] = robots[robot_name]["MotorsSpeed"][1::]
@@ -420,16 +334,9 @@ class RobotManager:
         
     """ Remove all robot point speeds """
     @validate_types 
-    def remove_all_point_speed(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    def remove_all_point_speed(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if isinstance(robots[robot_name]["MotorsSpeed"], list):
             robots[robot_name]["MotorsSpeed"] = robots[robot_name]["MotorsSpeed"][-1]
             save_to_cache(robots=robots)
@@ -440,16 +347,9 @@ class RobotManager:
 
     """ standard robot speed"""
     @validate_types 
-    def set_standard_speed(self, robot_name:str, token:str, angles:dict[float]) -> tuple:
+    @robot_name_finder
+    def set_standard_speed(self, robot_name:str, angles:dict[float]) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         for i in range(1, int(robots[robot_name]["AngleCount"])+1):
             robots["First"]["standardSpeed"][f"J{i}"] = float(angles.get(f'J{i}'))
         save_to_cache(robots=robots)
@@ -458,17 +358,9 @@ class RobotManager:
         return {"status": True, "info": "The robot default speed parameter was been seted"}, 200
         
     """ Set program """
-    @validate_types 
-    def set_program(self, robot_name:str, token:str, program:str) -> tuple:
+    @validate_types
+    def set_program(self, robot_name:str, program:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if robots[robot_name]["Emergency"] == True:
             log_message = f"The robot '{robot_name}' is currently in emergency stop"
             Logger(robot_name=robot_name).error(log_message)
@@ -485,15 +377,10 @@ class RobotManager:
 
     """ Delete program """
     @validate_types 
-    def delete_program(self, robot_name:str, token:str) -> tuple:
+    @robot_name_finder
+    @robot_name_finder
+    def delete_program(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
             
         robots[robot_name]["Program"] = ""
         robots[robot_name]["ProgramToken"] = ""
@@ -506,17 +393,10 @@ class RobotManager:
 
     """ Get XYZ from angle robot position """
     @validate_types 
-    def angles_to_cartesian(self, robot_name:str, token:str, angles:dict=None, angles_data:list=None) -> tuple:
+    @robot_name_finder
+    def angles_to_cartesian(self, robot_name:str, angles:dict=None, angles_data:list=None) -> tuple:
         robots:dict = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if kinematics[robot_name] != None:
             try:
                 if angles_data is None:
@@ -557,17 +437,10 @@ class RobotManager:
 
     """ Get angle from XYZ robot position """
     @validate_types 
-    def cartesian_to_angles(self, robot_name:str, token:str, coordinate_system:str, position:dict=None, positions_data:list=None) -> tuple:
+    @robot_name_finder
+    def cartesian_to_angles(self, robot_name:str, coordinate_system:str, position:dict=None, positions_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if kinematics[robot_name] != None:
             # try:
                 if positions_data is None:
@@ -598,16 +471,9 @@ class RobotManager:
         
     """ Set current robot XYZ position """
     @validate_types 
-    def set_cartesian_position(self, robot_name:str, token:str, coordinate_system:str, position:dict=None, positions_data:list=None) -> tuple:
+    @robot_name_finder
+    def set_cartesian_position(self, robot_name:str, coordinate_system:str, position:dict=None, positions_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if robots[robot_name]["RobotReady"] == True:
             self.is_robot_ready_setted_false[robot_name] = False
         kinematics:dict = self.kinematic_manager.get_kinematics()
@@ -662,16 +528,9 @@ class RobotManager:
 
     ''' Set minimal angle of rotation '''
     @validate_types 
-    def set_min_angles(self, robot_name:str, token:str, angles:dict[float]) -> tuple:
+    @robot_name_finder
+    def set_min_angles(self, robot_name:str, angles:dict[float]) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if robots[robot_name]["Emergency"] == True:
             log_message = f"The robot '{robot_name}' is currently in emergency stop"
             Logger(robot_name=robot_name).error(log_message)
@@ -686,16 +545,9 @@ class RobotManager:
 
     ''' Set maximum angle of rotation '''
     @validate_types 
-    def set_max_angles(self, robot_name:str, token:str, angles:dict[float]) -> tuple:
+    @robot_name_finder
+    def set_max_angles(self, robot_name:str, angles:dict[float]) -> tuple:
         robots = self.robots_manager.get_robots()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         if robots[robot_name]["Emergency"] == True:
             log_message = f"The robot '{robot_name}' is currently in emergency stop"
             Logger(robot_name=robot_name).error(log_message)
@@ -710,6 +562,7 @@ class RobotManager:
 
     ''' Set program is running '''
     @validate_types 
+    @robot_name_finder
     def set_program_run_state(self, robot_name:str, state:bool) -> tuple:
         robots = self.robots_manager.get_robots()
         robots[robot_name]["ProgramRunning"] = state
@@ -719,17 +572,9 @@ class RobotManager:
     
     # set robot tool
     @validate_types 
-    def set_robot_tool(self, robot_name:str, token:str, tool_id:str):
+    @robot_name_finder
+    def set_robot_tool(self, robot_name:str, tool_id:str):
         robots:dict = self.robots_manager.get_robots()
-        tools = self.tools_manager.get_tools()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         
         if tool_id == "":
             if robots[robot_name]["Tool"] == "":
@@ -744,9 +589,9 @@ class RobotManager:
                 self.logger.info(module=self.logger_module, msg=log_message)
                 return {"status": True, "info": log_message}, 200
             
-        elif tools.get(tool_id) is not None:
-            if tools[tool_id].get("calibrated_vector") is not None:
-                if robots.get(robot_name) is not None:
+        elif self.tools_checker.tool_exists(tool_id):
+            if self.tools_checker.calibration_is_exists(tool_id):
+                if self.robot_checker.robot_exists(robot_name):
                     robots[robot_name]["Tool"] = tool_id
                     save_to_cache(robots=robots)
                     update_token()
@@ -768,17 +613,9 @@ class RobotManager:
         
     # set robot base
     @validate_types 
-    def set_robot_base(self, robot_name:str, token:str, base_id:str) -> tuple:
+    @robot_name_finder
+    def set_robot_base(self, robot_name:str, base_id:str) -> tuple:
         robots:dict = self.robots_manager.get_robots()
-        bases = self.bases_manager.get_bases()
-        
-        robot_name_by_token = self.user_checker.get_robot_name(token)
-        if robot_name_by_token is None:
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
-            
         
         if base_id == "":
             if robots[robot_name]["Base"] == "":
@@ -792,8 +629,8 @@ class RobotManager:
                 log_message = f"The empty base was been setted as base for robot '{robot_name}"
                 self.logger.info(msg=log_message)
                 return {"status": True, "info": log_message}, 200
-        elif bases.get(base_id) is not None:
-            if robots.get(robot_name) is not None:
+        elif self.bases_checker.base_exists(base_id):
+            if self.robot_checker.robot_exists(robot_name):
                 robots[robot_name]["Base"] = base_id
                 save_to_cache(robots=robots)
                 update_token()

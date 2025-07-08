@@ -5,7 +5,7 @@ import importlib
 from services.multi_robots_manager import MultiRobotsManager
 from configuration.cache.file_cache import save_to_cache
 from utils.logger import Logger
-from utils.validator import validate_types
+from utils.validator import RobotChecker, validate_types
 
 kinematics = {}
 
@@ -13,6 +13,7 @@ class KinematicsManager:
     kinematics = kinematics
     logger = Logger()
     multi_robots_manager = MultiRobotsManager()
+    robot_checker = RobotChecker()
     
     def __init__(self, kinematics:dict=None) -> None:
         self.logger_module = "URKinematics"
@@ -76,8 +77,8 @@ class KinematicsManager:
     # TODO: Add documentation for API doc
     @validate_types 
     def unbind_kinematic(self, robot_name:str) -> tuple:
-        robots = self.multi_robots_manager.get_robots()
-        if robot_name in robots:
+        if self.robot_checker.robot_exists(robot_name):
+            robots = self.multi_robots_manager.get_robots()
             robots[robot_name]["Kinematic"] = None
             log_message = f"Was deleted associate kinematic for robot-{robot_name}"
             self.logger.info(module=self.logger_module, msg=log_message)

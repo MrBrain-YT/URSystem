@@ -8,13 +8,14 @@ from scipy.spatial.transform import Rotation as R
 # eng.addpath("./kinematics/First", nargout=0)
 
 def Forward(angles:dict):
-    J1 = angles.get("J1")
-    J2 = angles.get("J2")
-    J3 = angles.get("J3")
-    J4 = angles.get("J4")
-    """ MATLAB forward kinematic """
-    coord = eng.Main_Fwd_Kinematics(float(J1), float(J2), float(J3), float(J4), nargout=1)
-    return {"x": coord[0][-1], "y": coord[1][-1], "z": coord[2][-1], "a": 0, "b": 0, "c": 0}
+    # J1 = angles.get("J1")
+    # J2 = angles.get("J2")
+    # J3 = angles.get("J3")
+    # J4 = angles.get("J4")
+    # """ MATLAB forward kinematic """
+    # coord = eng.Main_Fwd_Kinematics(float(J1), float(J2), float(J3), float(J4), nargout=1)
+    # return {"x": coord[0][-1], "y": coord[1][-1], "z": coord[2][-1], "a": 0, "b": 0, "c": 0}
+    return {"x": 0, "y": 0, "z": 0, "a": 0, "b": 0, "c": 0}
 
 # def Inverse(x,y,z):
 #     """ MATLAB inverse kinematic """

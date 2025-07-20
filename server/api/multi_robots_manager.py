@@ -21,7 +21,7 @@ class MultiRobotsManagerAPI:
         robots_bp = Blueprint("robots_api", __name__, url_prefix="/api")
         
         # add robot
-        @robots_bp.route("/crate-robot", methods=['POST'])
+        @robots_bp.route("/create-robot", methods=['POST'])
         @self.access.check_user(user_role="administrator", logger_module=self.logger_module)
         def create_robot():
             info = request.json
@@ -32,7 +32,7 @@ class MultiRobotsManagerAPI:
             kinematic_id = info.get("id")
             response, code = self.multi_robot_manager.create_robot(
                     robot_name=robot_name,
-                    robot_angle=robot_angle,
+                    angle_count=robot_angle,
                     secret_code=secret_code,
                     password=password,
                     kinematic_id=kinematic_id

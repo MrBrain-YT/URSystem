@@ -12,7 +12,6 @@ def client():
     with app.test_client() as client:
         yield client
         
-
 class TestData():
     super_admin_login = "SuperAdmin"
     super_admin_password = "12345"
@@ -24,5 +23,7 @@ class TestData():
     base_name = "TestName"
     tool_name = "TestName"
     frame_name = "TestName"
+    kinematic_name = "test_kinematic"
     robot_name = "First"
     robot_secret_code = "654123"
+    robot_token = "6566a813a6564058077add5ed9d1e0d4d1da3c42d350b4d804b5999ed441f40f"

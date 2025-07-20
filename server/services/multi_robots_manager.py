@@ -1,6 +1,7 @@
 import ast
 import secrets
 import os
+import copy
 
 import sqlalchemy as db
 
@@ -44,7 +45,7 @@ class MultiRobotsManager:
     # add robot
     @validate_types 
     def create_robot(self, robot_name:str, angle_count:int, secret_code:str, password:str, kinematic_id:str=None) -> tuple:
-        from api.robot_manager import RobotManagerAPI
+        from services.robot_manager import RobotManager
         
         if not self.robot_checker.robot_exists(robot_name):
             # create robot configuretion
@@ -80,38 +81,24 @@ class MultiRobotsManager:
                         "c": 0.0,
                         }
                     }
-            # Creating account for robot
-            # users = self.account_manager.get_users()
-            # token:str
-            # tokens = []
-            # # Generate new token
-            # for i in [i for i in users]:
-            #     tokens.append(users.get(i)["token"])
-            # while True:
-            #     token = secrets.token_hex(32)
-            #     if token not in tokens:
-            #         break
-            # # Send to db
-            # query = db.insert(users_table).values(name=robot_name, password=password, role="robot", token=token)
-            # DBWorker().send_query(query=query)
             account_data = self.account_manager.create_account(robot_name, password, "robot")[0]["data"]
             token = account_data["token"]
             
             save_to_cache(robots=self.robots)
             update_token()
-            RobotManagerAPI().add_new_robot_ready(robot_name=robot_name)
+            RobotManager().add_new_robot_ready(robot_name=robot_name)
             log_message = f"Robot named {robot_name} was created"
             self.logger.info(module=self.logger_module, msg=log_message)
             return {"status": True, "info": log_message, "token": token}, 200
         else:
             log_message = f"The robot `{robot_name}` already exists"
             self.logger.info(module=self.logger_module, msg=log_message)
-            return {"status": False, "info": log_message, "token": token}, 200
+            return {"status": False, "info": log_message}, 400
 
     # Import robot cache
     @validate_types 
     def import_cache(self, import_robots:dict, import_tools:dict, import_frames:dict, import_bases:dict) -> tuple:
-        from api.robot_manager import RobotManagerAPI
+        from services.robot_manager import RobotManager
         
         frames:dict = self.frames_manager.get_frames()
         users:dict = self.account_manager.get_users()
@@ -141,8 +128,8 @@ class MultiRobotsManager:
                     os.mkdir(f'Logs/{robot_name}')
                 except:
                     pass
+                RobotManager().add_new_robot_ready(robot_name=robot_name)
                 
-        RobotManagerAPI().add_new_robot_ready(robot_name=robot_name)
         # import tools
         for tool_name in import_tools.keys():
             if self.tools_checker.tool_exists(tool_name):
@@ -171,14 +158,14 @@ class MultiRobotsManager:
         
     # Export robot cache from cache file
     def export_file_cache(self) -> tuple:
-        with open("./configuration/robots_cache.py", "r") as file:
+        with open("./configuration/cache/robots_cache.py", "r") as file:
             cache = file.read()
 
         new_cache = {
             "robots": ast.literal_eval(cache.split("\n")[0].lstrip("robots = ")),
             "tools": ast.literal_eval(cache.split("\n")[1].lstrip("tools = ")),
             "bases": ast.literal_eval(cache.split("\n")[2].lstrip("bases = ")),
-            "frames": ast.literal_eval(cache.split("\n")[2].lstrip("frames = "))
+            "frames": ast.literal_eval(cache.split("\n")[3].lstrip("frames = "))
         }
         for robot_name in new_cache["robots"].keys():
             del new_cache["robots"][robot_name]["ProgramToken"]
@@ -188,14 +175,15 @@ class MultiRobotsManager:
     
     # Export robot cache from RAM
     def export_ram_cache(self) -> tuple:
-        frames:dict = self.frames_manager.get_frames()
-        tools:dict = self.tools_manager.get_tools()
-        bases:dict = self.bases_manager.get_bases()
-        for robot_name in self.robots.keys():
-            del self.robots[robot_name]["ProgramToken"]
+        frames:dict = copy.deepcopy(self.frames_manager.get_frames())
+        tools:dict = copy.deepcopy(self.tools_manager.get_tools())
+        bases:dict = copy.deepcopy(self.bases_manager.get_bases())
+        robots = copy.deepcopy(self.robots)
+        for robot_name in robots.keys():
+            del robots[robot_name]["ProgramToken"]
 
         new_cache = {
-            "robots": self.robots,
+            "robots": robots,
             "tools": tools,
             "bases": bases,
             "frames": frames,
@@ -206,7 +194,7 @@ class MultiRobotsManager:
     # get robot
     @validate_types 
     def get_robot(self, robot_name:str) -> tuple:
-        robots:dict = self.robots.copy()
+        robots:dict = copy.deepcopy(self.robots)
         update_token()
         result = robots[robot_name] if robot_name in robots.keys() else None
         if result is not None:
@@ -217,7 +205,7 @@ class MultiRobotsManager:
         
     # get robots
     def get_robots_api(self) -> tuple:
-        robots:dict = self.robots.copy()
+        robots:dict = copy.deepcopy(self.robots)
         update_token()
         for robot_name in robots.keys():
             robots[robot_name].pop("ProgramToken", None)

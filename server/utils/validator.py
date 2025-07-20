@@ -32,6 +32,8 @@ def validate_types(func):
                             assert is_correct
                         else:
                             assert isinstance(value, hints[key]),f"Argument {key} must be {hints[key]}"
+            if "token" in kwargs.keys():
+                kwargs.pop("token")
             
             result = func(*args, **kwargs)
             # Проверка возвращаемого значения
@@ -48,10 +50,11 @@ class RobotChecker:
     
     @staticmethod
     def check_angles(robot_name:str, angles:dict, robots:dict) -> bool: 
-        for i in range(1, int(robots[robot_name]["AngleCount"])+1):
+        "True = ok, False = bad"
+        for i in range(1, robots[robot_name]["AngleCount"]+1):
             if float(angles.get(f"J{i}")) <= robots[robot_name]["MaxAngles"][f"J{i}"] and\
                 float(angles.get(f"J{i}")) >= robots[robot_name]["MinAngles"][f"J{i}"]:
-                pass
+                continue
             else:
                 return False
         return True
@@ -61,7 +64,7 @@ class RobotChecker:
         if name in robots:
             return robots[name]["SecureCode"] == code
         else:
-            return True
+            return False
 
     @staticmethod
     def is_robot(token:str) -> bool:
@@ -79,34 +82,36 @@ class RobotChecker:
 
             return role[0] == "robot"
         else:
-            raise ValueError("Token incorrect")
+            return False
        
     @staticmethod 
-    def auto_robot_name_finder(robot_name:Union[str, None], token) -> Union[str, None]:
+    def auto_robot_name_finder(robot_name:Union[str, None], token:str) -> Union[str, None]:
         robot_name_by_token = UserChecker().get_robot_name(token)
         if robot_name_by_token is None:
             if robot_name is None:
                 return None
-        elif robot_name_by_token is not None:
-            robot_name = robot_name_by_token
+        else:
+            return robot_name_by_token
             
         if RobotChecker().robot_exists(robot_name):
             return robot_name
         else:
             return None
         
-    @staticmethod
-    def check_program_token(robot_name:str, _program_token:str) -> bool:
+    def check_program_token(self, robot_name:str, program_token:str) -> Union[bool, None]:
         from services.multi_robots_manager import MultiRobotsManager
         robots = MultiRobotsManager().get_robots()
-        program_token = robots[robot_name]["ProgramToken"]
-        return program_token == _program_token or program_token == ""
+        if self.robot_exists(robot_name):
+            valid_program_token = robots[robot_name]["ProgramToken"]
+            return program_token == valid_program_token or valid_program_token == ""
+        else:
+            return None
         
     @staticmethod
     def robot_exists(robot_name:str) -> bool:
         from services.multi_robots_manager import MultiRobotsManager
         robots = MultiRobotsManager().get_robots()
-        return robot_name in robots
+        return robot_name in robots if robot_name is not None else False
         
 class UserChecker:
     

@@ -37,7 +37,6 @@ class FramesManagerAPI:
             info = request.json
             frame_id = info.get("id")
             config = info.get("config")
-            print(config)
             response, code = self.frames_manager.set_frame(frame_id=frame_id, config=config)
             return jsonify(response), code
             

@@ -106,7 +106,6 @@ def test_delete_base_error(client):
         "token": TestData.super_admin_token
     }
     response = client.post('/api/delete-base', json=json)
-    print(response.get_json())
     assert response.status_code == 400
     json = response.get_json()
     assert json["status"] == False

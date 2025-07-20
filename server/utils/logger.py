@@ -39,45 +39,27 @@ class Logger():
         current_time = time.localtime()
         return f"{current_time[3]}:{current_time[4]}:{current_time[5]}"
     
-    def debug(self, msg:str, module:str=None) -> None:
+    def create_message(self, type:str, msg:str, module:str=None):
         current_time = time.localtime()
         file_name = f"{current_time[2]}_{current_time[1]}_{current_time[0]}"
         if self.robot_name is None:
-            with open(f'logs/{file_name}.log', 'a') as file:
-                file.write(f"\n[{self.__get_time()}] [DEBUG] [{module}] {msg}")
+            with open(f'logs/{file_name}.log', 'a', encoding='utf-8') as file:
+                file.write(f"\n[{self.__get_time()}] [{type}] [{module}] {msg}")
         else:
-            with open(f'logs/{self.robot_name}/{file_name}.log', 'a') as file:
-                file.write(f"\n[{self.__get_time()}] [DEBUG] {msg}")
+            with open(f'logs/{self.robot_name}/{file_name}.log', 'a', encoding='utf-8') as file:
+                file.write(f"\n[{self.__get_time()}] [{type}] {msg}")
+    
+    def debug(self, msg:str, module:str=None) -> None:
+        self.create_message("DEBUG", msg, module)
         
     def info(self, msg:str, module:str=None) -> None:
-        current_time = time.localtime()
-        file_name = f"{current_time[2]}_{current_time[1]}_{current_time[0]}"
-        if self.robot_name is None:
-            with open(f'logs/{file_name}.log', 'a') as file:
-                file.write(f"\n[{self.__get_time()}] [INFO] [{module}] {msg}")
-        else:
-            with open(f'logs/{self.robot_name}/{file_name}.log', 'a') as file:
-                file.write(f"\n[{self.__get_time()}] [INFO] {msg}")
+        self.create_message("INFO", msg, module)
     
     def warning(self, msg:str, module:str=None) -> None:
-        current_time = time.localtime()
-        file_name = f"{current_time[2]}_{current_time[1]}_{current_time[0]}"
-        if self.robot_name is None:
-            with open(f'logs/{file_name}.log', 'a') as file:
-                file.write(f"\n[{self.__get_time()}] [WARNING] [{module}] {msg}")
-        else:
-            with open(f'logs/{self.robot_name}/{file_name}.log', 'a') as file:
-                file.write(f"\n[{self.__get_time()}] [WARNING] {msg}")
+        self.create_message("WARNING", msg, module)
     
     def error(self, msg:str, module:str=None) -> None:
-        current_time = time.localtime()
-        file_name = f"{current_time[2]}_{current_time[1]}_{current_time[0]}"
-        if self.robot_name is None:
-            with open(f'logs/{file_name}.log', 'a') as file:
-                file.write(f"\n[{self.__get_time()}] [ERROR] [{module}] {msg}")
-        else:
-            with open(f'logs/{self.robot_name}/{file_name}.log', 'a') as file:
-                file.write(f"\n[{self.__get_time()}] [ERROR] {msg}")
+        self.create_message("ERROR", msg, module)
             
     def get_logs(self, timestamp:int=None) -> list:
         if timestamp is None:

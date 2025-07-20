@@ -17,7 +17,9 @@
 | `get-frame` | Получение фрейма по идентификационному номеру | [Посмотреть здесь](#GetFrame) |
 | `set-frame` | Установка значения для фрейма по идентификационному номеру | [Посмотреть здесь](#SetFrame) |
 | `add-kinematic` | Добавление файлов кинематики в систему | [Посмотреть здесь](#AddKinematics) |
-| `bind-kinematic` | Привязка файлов кинематики к роботу | [Посмотреть здесь](#AddKinematics) |
+| `bind-kinematic` | Привязка файлов кинематики к роботу | [Посмотреть здесь](#bind-kinematics) |
+| `unbind-kinematic` | Отвязка файлов кинематики к роботу | [Посмотреть здесь](#unbind-kinematics) |
+| `delete-kinematic` | Удаление файлов кинематики из системы | [Посмотреть здесь](#delete-kinematics) |
 | `get-robot-log` | Получение логов робота | [Посмотреть здесь](#GetRobotLogs) |
 | `add-robot-log` | Добавление логов робота | [Посмотреть здесь](#AddRobotLog) |
 | `get-system-log` | Получение системного лога  | [Посмотреть здесь](#GetSystemLogs) |
@@ -286,7 +288,7 @@
         requests.post(url, verify=True, json=data, files=files)
         ```
     ---
-- <h3 id="BindKinematics"> bind-kinematic </h3>
+- <h3 id="bind-kinematics"> bind-kinematic </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -299,6 +301,38 @@
         data = {
             "id": "TestKinematic",
             "robot": "TestRobot",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="unbind-kinematics"> unbind-kinematic </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `robot` | **String** |
+    || `token` | **String** |
+
+    - ### Пример
+        ```python
+        data = {
+            "robot": "TestRobot",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="delete-kinematics"> delete-kinematic </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `id` | **String** |
+    || `token` | **String** |
+
+    - ### Пример
+        ```python
+        data = {
+            "id": "TestKinematic",
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -374,7 +408,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="CreateRobot"> crate-robot </h3>
+- <h3 id="CreateRobot"> create-robot </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|

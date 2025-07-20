@@ -35,6 +35,7 @@ _robots = robots_cache.robots.keys()
 for robot in _robots:
     robots_list[robot]["Program"] = ""
     robots_list[robot]["ProgramRunning"] = False
+    robots_list[robot]["ProgramToken"] = ""
     robots_list[robot]["RobotReady"] = True
     robots_list[robot]["PositionID"] = ""
     robots_list[robot]["Emergency"] = False
@@ -43,7 +44,7 @@ for robot in _robots:
         robots_list[robot]["Position"] = robots_list[robot]["MotorsPosition"].copy()
     elif isinstance(robots_list[robot]["Position"], list):
         robots_list[robot]["Position"] = robots_list[robot]["Position"][0].copy()
-    
+
 # importing all kinematics
 kinematics = {}
 for robot in _robots:

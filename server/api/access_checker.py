@@ -14,6 +14,7 @@ class Access:
     @staticmethod
     def check_robot(func:Callable):
         """Checker for only robot account\n
+        Also checks the existence of a robot\n
         Using @check_robot
         """
         @wraps(func)
@@ -22,7 +23,7 @@ class Access:
             if RobotChecker().is_robot(info.get("token")):
                 return func(*args, **kwargs)
             else:
-                return "Your account is not a robot account"
+                return jsonify({"status": False, "info": "Your account is not a robot account"}), 400
         return wrapper
     
     def check_robot_or_user(self, user_role:str, logger_module:str):
@@ -68,6 +69,7 @@ class Access:
     
     def check_user_and_robot_data(self, user_role:str, logger_module:str):
         """Checker for user account, if you need checking robot data (secure code)\n
+        Also checks the existence of a robot\n
         Using @check_user_and_robot_data(user_role="user", logger_module="URAccounts")
 
         Args:
@@ -85,12 +87,13 @@ class Access:
                     return func(*args, **kwargs)
                 else:
                     self.loger.warning(module=logger_module, msg=f"Access denied when calling {func.__name__}. User with token: {info.get('token')}")
-                    return jsonify({"status": False, "info": "You don't have enough rights"}), 403
+                    return jsonify({"status": False, "info": "Robot not found or you don't have enough rights"}), 403
             return wrapper
         return check_user_wrapper
        
     def check_robot_user(self, user_role:str, logger_module:str):
         """Checker for user or robot account, if you need checking robot data (secure code)\n
+        Also checks the existence of a robot\n
         Using @check_robot_user(user_role="user", logger_module="URSystem")
 
         Args:
@@ -114,6 +117,7 @@ class Access:
     
     def check_robot_user_prog_token(self, user_role:str, logger_module:str):
         """Checker for user or robot account, if you need checking robot data (secure code), program token and robot or user account\n
+        Also checks the existence of a robot\n
         Using @check_robot_user_prog_token(user_role="user")
 
         Args:
@@ -128,7 +132,7 @@ class Access:
                 robots:dict = MultiRobotsManager().get_robots()
                 if ((UserChecker().role_access(info.get("token"), user_role) and \
                 RobotChecker().robot_access(robots, info.get("robot"), info.get("code"))) or RobotChecker().is_robot(info.get("token")))\
-                and RobotChecker().check_program_token(info.get("robot"), info.get("program_token")) if robots[info.get("robot")]["Program"] != "" else True:
+                and RobotChecker().check_program_token(info.get("robot"), info.get("program_token")):
                     return func(*args, **kwargs)
                 else:
                     self.loger.warning(module=logger_module, msg=f"Access denied when calling {func.__name__}. User with token: {info.get('token')}")
@@ -139,6 +143,7 @@ class Access:
     
     def check_robot_user_prog(self, user_role:str, logger_module:str):
         """Checker for program robot and user account, if you need checking robot data (secure code) and value program in robot\n
+        Also checks the existence of a robot\n
         Using @check_robot_user_prog(user_role="user", logger_module="URSystem")
 
         Args:

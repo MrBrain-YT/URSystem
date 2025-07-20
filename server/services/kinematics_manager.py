@@ -2,6 +2,8 @@ import shutil
 import os
 import importlib
 
+from werkzeug.datastructures import FileStorage
+
 from services.multi_robots_manager import MultiRobotsManager
 from configuration.cache.file_cache import save_to_cache
 from utils.logger import Logger
@@ -23,7 +25,6 @@ class KinematicsManager:
     def get_kinematics(self) -> dict:
         return self.kinematics
     
-    @validate_types 
     def update_kinematics_data(self) -> None:
         kinematics = {}
         robots:dict = self.multi_robots_manager.get_robots()
@@ -42,7 +43,7 @@ class KinematicsManager:
         
     """ Add kinematics to system """
     @validate_types 
-    def add_kinematic(self, kinematic_file) -> tuple:
+    def add_kinematic(self, kinematic_file:FileStorage) -> tuple:
         zip_path = f"./kinematics/{kinematic_file.filename}"
         kinematic_file.save(zip_path)
         os.mkdir(zip_path.replace(".zip", ""))
@@ -77,13 +78,26 @@ class KinematicsManager:
     # TODO: Add documentation for API doc
     @validate_types 
     def unbind_kinematic(self, robot_name:str) -> tuple:
-        if self.robot_checker.robot_exists(robot_name):
+        robots = self.multi_robots_manager.get_robots()
+        robots[robot_name]["Kinematic"] = None
+        log_message = f"Was deleted associate kinematic for robot-{robot_name}"
+        self.logger.info(module=self.logger_module, msg=log_message)
+        return {"status": True, "info": log_message}, 200
+    
+    @validate_types 
+    def remove_kinematic(self, kinematic_id:str) -> tuple:
+        kinematic_path = f"./kinematics/{kinematic_id}"
+        if os.path.exists(kinematic_path) and kinematic_id.strip(" ") != "":
+            shutil.rmtree(kinematic_path)
             robots = self.multi_robots_manager.get_robots()
-            robots[robot_name]["Kinematic"] = None
-            log_message = f"Was deleted associate kinematic for robot-{robot_name}"
+            for robot in robots:
+                if robots[robot]["Kinematic"] == kinematic_id:
+                    robots[robot]["Kinematic"] = None
+                    del self.kinematics[robot]
+            log_message = f"Kinematic with id '{kinematic_id}' was been deleted"
             self.logger.info(module=self.logger_module, msg=log_message)
             return {"status": True, "info": log_message}, 200
         else:
-            log_message = f"Robot not found"
+            log_message = f"Kinematic with id '{kinematic_id}' not found"
             self.logger.info(module=self.logger_module, msg=log_message)
-            return {"status": False, "info": log_message}, 404
+            return {"status": False, "info": log_message}, 400

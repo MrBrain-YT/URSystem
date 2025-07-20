@@ -46,53 +46,53 @@ class RobotManager:
             token = kwargs["token"]
             robot_name = RobotChecker().auto_robot_name_finder(robot_name, token)
             if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400   
+                return {"status": False, "info": "Robot name is not defined"}, 400
             kwargs.pop("token")
+            kwargs["robot_name"] = robot_name
             return func(*args, **kwargs)
         return wrapper
     
     """ Get current robot position """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def get_position(self, robot_name:str) -> tuple:
         time.sleep(0.2)
         robots = self.robots_manager.get_robots() 
         return {"status": True, "info": f"current robot '{robot_name}' angles position", "data": robots[robot_name]["Position"]}, 200
     
     """ Get robot position id """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def get_position_id(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
         return {"status": True, "info": f"current robot '{robot_name}' position id", "data": robots[robot_name]["PositionID"]}, 200
     
     """ Get current robot speed """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def get_speed(self, robot_name:str) -> tuple:
         time.sleep(0.2)
         robots = self.robots_manager.get_robots()
-
         return {"status": True, "info": f"current robot '{robot_name}' angles speed", "data": robots[robot_name]["MotorsSpeed"]}, 200
     
     """ Get current robot position """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def get_catesian_position(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
         return {"status": True, "info": f"current robot '{robot_name}' cartesian position", "data": robots[robot_name]["XYZposition"]}, 200
     
     """ Get robot angles count """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def get_angles_count(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
         return {"status": True, "info": f"current robot '{robot_name}' angles count", "data": robots[robot_name]["AngleCount"]}, 200
         
     """ Set current robot motors position """
-    @validate_types 
     @robot_name_finder
-    def set_motors_position(self, robot_name:str, angles:dict[float]) -> tuple:
+    @validate_types
+    def set_motors_position(self, robot_name:str, angles:dict) -> tuple:
         robots = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
         for i in range(1, int(robots[robot_name]["AngleCount"])+1):
@@ -115,22 +115,22 @@ class RobotManager:
         return {"status": True, "info": f"Motors position for robot '{robot_name}' has been setted"}, 200
         
     """ Get robot ready parameter """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def get_ready_state(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
         return {"status": True, "info": f"current robot '{robot_name}' RobotReady parameter", "data": robots[robot_name]["RobotReady"]}, 200
     
     ''' Get emergency stop '''
-    @validate_types 
     @robot_name_finder
+    @validate_types 
     def get_emergency_state(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
         return {"status": True, "info": f"current robot '{robot_name}' Emergency parameter", "data": robots[robot_name]["Emergency"]}, 200
     
     """ Set robot ready parameter """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def set_ready_state(self, robot_name:str, state:bool) -> tuple:
         robots = self.robots_manager.get_robots()
         if state:
@@ -151,8 +151,8 @@ class RobotManager:
     
     """ Set robot position id """
     # TODO: determine access to the function (who has access)
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def set_position_id(self, robot_name:str, position_id:str) -> tuple:
         robots = self.robots_manager.get_robots()
         robots[robot_name]["PositionID"] = position_id
@@ -161,8 +161,8 @@ class RobotManager:
         return {"status": True, "info": "The PositionID parameter was been seted"}, 200
         
     ''' Activate and deactivate emergency stop '''
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def set_emergency_state(self, robot_name:str, state:bool) -> tuple:
         robots = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
@@ -191,8 +191,8 @@ class RobotManager:
         return {"status": True, "info": "The Emergency parameter was been seted"}, 200
 
     """ current robot position"""
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def set_position(self, robot_name:str, angles:dict=None, angles_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
         if robots[robot_name]["RobotReady"] == True:
@@ -204,7 +204,7 @@ class RobotManager:
                 Logger(robot_name=robot_name).error(log_message)
                 return {"status": False, "info": log_message}, 400
             else:
-                if not self.is_robot_ready_setted_false[robot_name] or bool(robots[robot_name]["RobotReady"]) == False:
+                if not self.is_robot_ready_setted_false[robot_name] or robots[robot_name]["RobotReady"] == False:
                     continue
                 elif robots[robot_name]["RobotReady"] == True and self.is_robot_ready_setted_false[robot_name] and\
                     not isinstance(robots[robot_name]["Position"], list):
@@ -243,8 +243,8 @@ class RobotManager:
                         return {"status": True, "info": f"current robot '{robot_name}' position was been seted"}, 200
                         
     """ Remove current robot point position """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def remove_current_point_position(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
         if isinstance(robots[robot_name]["Position"], list):
@@ -259,8 +259,8 @@ class RobotManager:
             return {"status": False, "info": "current robot point position is not multi point"}, 400
         
     """ Remove all robot point positions """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def remove_all_point_position(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
         if isinstance(robots[robot_name]["Position"], list):
@@ -272,11 +272,10 @@ class RobotManager:
             return {"status": False, "info": "current robot point position is not multi point"}, 400
 
     """ current home position"""
-    @validate_types 
-    @robot_name_finder
+    @validate_types
     def set_home_position(self, robot_name:str, angles:dict) -> tuple:
         robots = self.robots_manager.get_robots()
-        if RobotChecker().check_angles(robot_name, angles, robots) == False:
+        if not RobotChecker().check_angles(robot_name, angles, robots):
             log_message = "Angles values ​​are not correct"
             Logger(robot_name=robot_name).error(log_message)
             return {"status": False, "info": log_message}, 400
@@ -290,8 +289,8 @@ class RobotManager:
             return {"status": True, "info": f"Was setted robot '{robot_name}' home position"}, 200
 
     """ current robot speed """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def set_speed(self, robot_name:str, angles:dict=None, angles_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
         if robots[robot_name]["Emergency"] == True:
@@ -306,9 +305,9 @@ class RobotManager:
                 Logger(robot_name=robot_name).info(f"""Was setted robot current speed: {angles}""")
             else:
                 # If getted not one point
-                new_pos = angles_data
-                if isinstance(new_pos, list):
-                    robots[robot_name]["MotorsSpeed"] = new_pos
+                if isinstance(angles_data, list):
+                    
+                    robots[robot_name]["MotorsSpeed"] = angles_data
                 else:
                     return {"status": False, "info": "Multi points agle speed data is not valid"}, 400
                 
@@ -317,8 +316,8 @@ class RobotManager:
             return {"status": True, "info": "The robot speed parameter was been seted"}, 200
                 
     """ Remove current robot point speed """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def remove_current_point_speed(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
         if isinstance(robots[robot_name]["MotorsSpeed"], list):
@@ -333,8 +332,8 @@ class RobotManager:
             return {"status": False, "info": "current robot point speed is not multi point"}, 400
         
     """ Remove all robot point speeds """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def remove_all_point_speed(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
         if isinstance(robots[robot_name]["MotorsSpeed"], list):
@@ -346,9 +345,8 @@ class RobotManager:
             return {"status": False, "info": "current robot point speed is not multi point"}, 400
 
     """ standard robot speed"""
-    @validate_types 
-    @robot_name_finder
-    def set_standard_speed(self, robot_name:str, angles:dict[float]) -> tuple:
+    @validate_types
+    def set_standard_speed(self, robot_name:str, angles:dict) -> tuple:
         robots = self.robots_manager.get_robots()
         for i in range(1, int(robots[robot_name]["AngleCount"])+1):
             robots["First"]["standardSpeed"][f"J{i}"] = float(angles.get(f'J{i}'))
@@ -376,9 +374,7 @@ class RobotManager:
             return {"status": True, "info": log_message}, 200
 
     """ Delete program """
-    @validate_types 
-    @robot_name_finder
-    @robot_name_finder
+    @validate_types
     def delete_program(self, robot_name:str) -> tuple:
         robots = self.robots_manager.get_robots()
             
@@ -392,8 +388,8 @@ class RobotManager:
 
 
     """ Get XYZ from angle robot position """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def angles_to_cartesian(self, robot_name:str, angles:dict=None, angles_data:list=None) -> tuple:
         robots:dict = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
@@ -436,8 +432,8 @@ class RobotManager:
             return {"status": False, "info": "This command does not work if you are not using kinematics"}, 400
 
     """ Get angle from XYZ robot position """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def cartesian_to_angles(self, robot_name:str, coordinate_system:str, position:dict=None, positions_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
         kinematics:dict = self.kinematic_manager.get_kinematics()
@@ -456,8 +452,8 @@ class RobotManager:
                         for pos in positions_data:
                             point_angles = {}
                             modul = kinematics[robot_name]
-                            position = {"x": pos[0], "y": pos[1], "z": pos[2],
-                                        "a": pos[3], "b": pos[4], "c": pos[5]}                                
+                            position = {"x": pos["x"], "y": pos["y"], "z": pos["z"],
+                                        "a": pos["a"], "b": pos["b"], "c": pos["c"]}                                
                             result_inverse:dict = modul.Inverse(robot_name, position, coordinate_system)
                             for j in range(1, int(robots[robot_name]["AngleCount"]) + 1):
                                 point_angles[f"J{j}"] = result_inverse.get(f"J{j}")
@@ -470,8 +466,8 @@ class RobotManager:
             return {"status": False, "info": "This command does not work if you are not using kinematics"}, 400
         
     """ Set current robot XYZ position """
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def set_cartesian_position(self, robot_name:str, coordinate_system:str, position:dict=None, positions_data:list=None) -> tuple:
         robots = self.robots_manager.get_robots()
         if robots[robot_name]["RobotReady"] == True:
@@ -527,9 +523,8 @@ class RobotManager:
             return {"status": False, "info": "This command does not work if you are not using kinematics"}, 400
 
     ''' Set minimal angle of rotation '''
-    @validate_types 
-    @robot_name_finder
-    def set_min_angles(self, robot_name:str, angles:dict[float]) -> tuple:
+    @validate_types
+    def set_min_angles(self, robot_name:str, angles:dict) -> tuple:
         robots = self.robots_manager.get_robots()
         if robots[robot_name]["Emergency"] == True:
             log_message = f"The robot '{robot_name}' is currently in emergency stop"
@@ -544,9 +539,8 @@ class RobotManager:
             return {"status": True, "info": f"Robot '{robot_name}' minimal angles data was been seted"}, 200
 
     ''' Set maximum angle of rotation '''
-    @validate_types 
-    @robot_name_finder
-    def set_max_angles(self, robot_name:str, angles:dict[float]) -> tuple:
+    @validate_types
+    def set_max_angles(self, robot_name:str, angles:dict) -> tuple:
         robots = self.robots_manager.get_robots()
         if robots[robot_name]["Emergency"] == True:
             log_message = f"The robot '{robot_name}' is currently in emergency stop"
@@ -561,8 +555,7 @@ class RobotManager:
             return {"status": True, "info": f"Robot '{robot_name}' maximal angles data was been seted"}, 200
 
     ''' Set program is running '''
-    @validate_types 
-    @robot_name_finder
+    @validate_types
     def set_program_run_state(self, robot_name:str, state:bool) -> tuple:
         robots = self.robots_manager.get_robots()
         robots[robot_name]["ProgramRunning"] = state
@@ -571,8 +564,8 @@ class RobotManager:
         return {"status": True, "info": f"Robot '{robot_name}' ProgramRun parameter was been seted"}, 200
     
     # set robot tool
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def set_robot_tool(self, robot_name:str, tool_id:str):
         robots:dict = self.robots_manager.get_robots()
         
@@ -609,11 +602,11 @@ class RobotManager:
         else:
             log_message = f"The tool was not found"
             self.logger.error(module=self.logger_module, msg=log_message)
-            return {"status": False, "info": log_message}, 403
+            return {"status": False, "info": log_message}, 404
         
     # set robot base
-    @validate_types 
     @robot_name_finder
+    @validate_types
     def set_robot_base(self, robot_name:str, base_id:str) -> tuple:
         robots:dict = self.robots_manager.get_robots()
         
@@ -644,4 +637,4 @@ class RobotManager:
         else:
             log_message = f"The base was not found"
             self.logger.error(module=self.logger_module, msg=log_message)
-            return {"status": False, "info": log_message}, 403
+            return {"status": False, "info": log_message}, 404

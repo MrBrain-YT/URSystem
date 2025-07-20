@@ -49,7 +49,6 @@ class FramesManager:
     
     @validate_types 
     def create_frame(self, frame_id:str) -> tuple:
-        print(self.frames)
         if not self.frames_checker.frame_exists(frame_id):
             self.frames[frame_id] = {}
             save_to_cache(frames=self.frames)

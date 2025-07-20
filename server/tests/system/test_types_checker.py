@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from tests.config import client, TestData
 
-def test_get_base_success(client):
+def test_get_base_type_error(client):
     json = {
         "id": 5,
         "token": TestData.super_admin_token

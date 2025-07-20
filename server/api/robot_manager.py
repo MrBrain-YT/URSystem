@@ -20,8 +20,10 @@ class RobotManagerAPI:
         def get_position():
             info = request.json
             robot_name = info.get("robot")
+            token = info.get("token")
             response, code = self.robot_manager.get_position(
                 robot_name=robot_name,
+                token=token
             )
             return jsonify(response), code
         
@@ -40,7 +42,7 @@ class RobotManagerAPI:
         
         """ Get current robot speed """
         @robot_bp.route('/get-speed', methods=['POST'])
-        @self.access.check_robot
+        @self.access.check_robot_or_user(user_role="user", logger_module=self.logger_module)
         def get_speed():
             info = request.json
             robot_name = info.get("robot")
@@ -83,18 +85,18 @@ class RobotManagerAPI:
         def set_motors_position():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             angles = info.get("angles")
+            token = info.get("token")
             response, code = self.robot_manager.set_motors_position(
                 robot_name=robot_name,
-                token=token,
-                angles=angles
+                angles=angles,
+                token=token
             )
             return jsonify(response), code
         
         """ Get robot ready parameter """
         @robot_bp.route('/get-ready', methods=['POST'])
-        @self.access.check_robot
+        @self.access.check_robot_or_user(user_role="user", logger_module=self.logger_module)
         def get_ready_state():
             info = request.json
             robot_name = info.get("robot")
@@ -124,28 +126,28 @@ class RobotManagerAPI:
         def set_ready_state():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             state = info.get("state")
+            token = info.get("token")
             response, code = self.robot_manager.set_ready_state(
                 robot_name=robot_name,
-                token=token,
-                state=state
+                state=state,
+                token=token
             )
             return jsonify(response), code
 
         """ Set robot position id """
         # TODO: determine access to the function (who has access)
         @robot_bp.route('/set-position-id', methods=['POST'])
-        @self.access.check_robot_user(user_role="user", logger_module=self.logger_module)
+        @self.access.check_robot
         def set_position_id():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             position_id = info.get("id")
+            token = info.get("token")
             response, code = self.robot_manager.set_position_id(
                 robot_name=robot_name,
-                token=token,
-                position_id=position_id
+                position_id=position_id,
+                token=token
             )
             return jsonify(response), code
           
@@ -155,12 +157,12 @@ class RobotManagerAPI:
         def set_emergency_state():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             state = info.get("state")
+            token = info.get("token")
             response, code = self.robot_manager.set_emergency_state(
                 robot_name=robot_name,
-                token=token,
-                state=state
+                state=state,
+                token=token
             )
             return jsonify(response), code
 
@@ -170,14 +172,14 @@ class RobotManagerAPI:
         def set_position():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             angles = info.get("angles")
             angles_data = info.get("angles_data")
+            token = info.get("token")
             response, code = self.robot_manager.set_position(
                 robot_name=robot_name,
-                token=token,
                 angles=angles,
-                angles_data=angles_data
+                angles_data=angles_data,
+                token=token
             )
             return jsonify(response), code
         
@@ -207,17 +209,15 @@ class RobotManagerAPI:
             )
             return jsonify(response), code
 
-        """ current home position"""
+        """ current home position """
         @robot_bp.route('/set-home-position', methods=['POST'])
         @self.access.check_robot_user_prog(user_role="user", logger_module=self.logger_module)
         def set_home_position():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             angles = info.get("angles")
             response, code = self.robot_manager.set_home_position(
                 robot_name=robot_name,
-                token=token,
                 angles=angles
             )
             return jsonify(response), code
@@ -228,14 +228,14 @@ class RobotManagerAPI:
         def set_speed():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             angles = info.get("angles")
             angles_data = info.get("angles_data")
+            token = info.get("token")
             response, code = self.robot_manager.set_speed(
                 robot_name=robot_name,
-                token=token,
                 angles=angles,
-                angles_data=angles_data
+                angles_data=angles_data,
+                token=token
             )
             return jsonify(response), code
         
@@ -271,40 +271,34 @@ class RobotManagerAPI:
         def set_standard_speed():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             angles = info.get("angles")
             response, code = self.robot_manager.set_standard_speed(
                 robot_name=robot_name,
-                token=token,
                 angles=angles
             )
             return jsonify(response), code
         
         """ Set program """
         @robot_bp.route('/set-program', methods=['POST'])
-        @self.access.check_robot_user(user_role="user", logger_module=self.logger_module)
+        @self.access.check_user_and_robot_data(user_role="user", logger_module=self.logger_module)
         def set_program():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             program = info.get("program")
             response, code = self.robot_manager.set_program(
                 robot_name=robot_name,
-                token=token,
-                program=program
+                program=program,
             )
             return jsonify(response), code
         
         """ Delete program """
         @robot_bp.route('/delete-program', methods=['POST'])
-        @self.access.check_robot_user(user_role="user", logger_module=self.logger_module)
+        @self.access.check_user_and_robot_data(user_role="user", logger_module=self.logger_module)
         def delete_program():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             response, code = self.robot_manager.delete_program(
                 robot_name=robot_name,
-                token=token
             )
             return jsonify(response), code
         
@@ -314,14 +308,14 @@ class RobotManagerAPI:
         def angles_to_cartesian():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             angles = info.get("angles")
             angles_data = info.get("angles_data")
+            token = info.get("token")
             response, code = self.robot_manager.angles_to_cartesian(
                 robot_name=robot_name,
-                token=token,
                 angles=angles,
-                angles_data=angles_data
+                angles_data=angles_data,
+                token=token
             )
             return jsonify(response), code
         
@@ -331,16 +325,16 @@ class RobotManagerAPI:
         def cartesian_to_angles():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             position = info.get("position")
             positions_data = info.get("positions_data")
             coords_system = info.get("coordinate_system")
+            token = info.get("token")
             response, code = self.robot_manager.cartesian_to_angles(
                 robot_name=robot_name,
-                token=token,
                 position=position,
                 positions_data=positions_data,
-                coordinate_system=coords_system
+                coordinate_system=coords_system,
+                token=token
             )
             return jsonify(response), code
         
@@ -350,16 +344,16 @@ class RobotManagerAPI:
         def set_cartesian_position():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             position = info.get("position")
             positions_data = info.get("positions_data")
             coords_system = info.get("coordinate_system")
+            token = info.get("token")
             response, code = self.robot_manager.set_cartesian_position(
                 robot_name=robot_name,
-                token=token,
                 position=position,
                 positions_data=positions_data,
-                coordinate_system=coords_system
+                coordinate_system=coords_system,
+                token=token
             )
             return jsonify(response), code
         
@@ -369,11 +363,9 @@ class RobotManagerAPI:
         def set_min_angles():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             angles = info.get("angles")
             response, code = self.robot_manager.set_min_angles(
                 robot_name=robot_name,
-                token=token,
                 angles=angles
             )
             return jsonify(response), code
@@ -384,11 +376,9 @@ class RobotManagerAPI:
         def set_max_angles():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             angles = info.get("angles")
             response, code = self.robot_manager.set_max_angles(
                 robot_name=robot_name,
-                token=token,
                 angles=angles
             )
             return jsonify(response), code
@@ -400,7 +390,10 @@ class RobotManagerAPI:
             info = request.json
             robot_name = info.get("robot")
             state = info.get("state")
-            response, code = self.robot_manager.set_program_run_state(robot_name=robot_name, state=state)
+            response, code = self.robot_manager.set_program_run_state(
+                robot_name=robot_name,
+                state=state,
+            )
             return jsonify(response), code
         
         # set robot tool
@@ -409,12 +402,12 @@ class RobotManagerAPI:
         def set_robot_tool():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             tool_id = info.get("id")
+            token = info.get("token")
             response, code = self.robot_manager.set_robot_tool(
                 robot_name=robot_name,
-                token=token,
-                tool_id=tool_id
+                tool_id=tool_id,
+                token=token
             )
             return jsonify(response), code
 
@@ -424,12 +417,12 @@ class RobotManagerAPI:
         def set_robot_base():
             info = request.json
             robot_name = info.get("robot")
-            token = info.get("token")
             base_id = info.get("id")
+            token = info.get("token")
             response, code = self.robot_manager.set_robot_base(
                 robot_name=robot_name,
-                token=token,
-                base_id=base_id
+                base_id=base_id,
+                token=token
             )
             return jsonify(response), code
 

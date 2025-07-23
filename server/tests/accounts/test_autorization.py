@@ -27,7 +27,7 @@ def test_get_account_data_error_password(client):
         "server_token": reg_token
     }
     response = client.post('/api/get-account-data', json=json)
-    assert response.status_code == 400
+    assert response.status_code == 401
     json = response.get_json()
     assert json["status"] == False
 

@@ -46,13 +46,15 @@ class AccountManagerAPI:
         @accounts_bp.route("/get-account-data", methods=['POST'])
         def get_account_data():
             info = request.json
+            user_ip = request.remote_addr
             user_name = info.get('name')
             password = info.get('password')
             server_token = info.get('server_token')
             response, code = self.accounts_manager.get_account_data(
                     name=user_name,
                     password=password,
-                    server_token=server_token
+                    server_token=server_token,
+                    user_ip=user_ip
                 )
             return jsonify(response), code
 

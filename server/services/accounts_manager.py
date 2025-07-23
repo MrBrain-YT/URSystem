@@ -83,7 +83,7 @@ class AccountManager:
         
     # get role account
     @validate_types
-    def get_account_data(self, name:str, password:str, server_token:str) -> tuple:
+    def get_account_data(self, name:str, password:str, server_token:str, user_ip:str) -> tuple:
         if self.server_checker.is_server_token(server_token):
             update_token()
             if self.user_checker.is_user(name):
@@ -91,16 +91,16 @@ class AccountManager:
                     if self.users[name]["password"] == password:
                         return {"status": True, "info": "User found", "data": self.users[name]}, 200
                     else:
-                        self.logger.error(module=self.logger_module, msg=f"Password incorrect")
-                        return {"status": False, "info": "Password incorrect"}, 400
+                        self.logger.error(module=self.logger_module, msg=f"Password incorrect. User with ip: {user_ip}")
+                        return {"status": False, "info": "Password incorrect"}, 401
                 else:
-                    self.logger.error(module=self.logger_module, msg=f"Account data with the System role cannot be transferred") # TODO: add ip address user to log
+                    self.logger.error(module=self.logger_module, msg=f"Account data with the System role cannot be transferred. User with ip: {user_ip}")
                     return {"status": False, "info": "Account data with the System role cannot be transferred"}, 400
             else:
-                self.logger.error(module=self.logger_module, msg=f"Name not in users")
+                self.logger.error(module=self.logger_module, msg=f"Name not in users. User with ip: {user_ip}")
                 return {"status": False, "info": "Name not in users"}, 404
         else:
-            self.logger.error(module=self.logger_module, msg=f"Server token incorrect")
+            self.logger.error(module=self.logger_module, msg=f"Server token incorrect. User with ip: {user_ip}")
             return {"status": False, "info": "Server token incorrect"}, 400
 
     # change password

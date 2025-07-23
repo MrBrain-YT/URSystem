@@ -41,7 +41,7 @@ class Logger():
     
     def create_message(self, type:str, msg:str, module:str=None):
         current_time = time.localtime()
-        file_name = f"{current_time[2]}_{current_time[1]}_{current_time[0]}"
+        file_name = f"{str(current_time[2]).zfill(2)}_{str(current_time[1]).zfill(2)}_{str(current_time[0]).zfill(2)}"
         if self.robot_name is None:
             with open(f'logs/{file_name}.log', 'a', encoding='utf-8') as file:
                 file.write(f"\n[{self.__get_time()}] [{type}] [{module}] {msg}")

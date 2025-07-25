@@ -63,6 +63,11 @@ class KinematicsManager:
             save_to_cache(robots=robots)
             
             if robots[robot_name]["Kinematic"] == kinematic_id:
+                try:
+                    self.kinematics[robot_name] = importlib.import_module(
+                        f'kinematics.{kinematic_id}.kin')
+                except:
+                    pass
                 log_message = f"Was created associate kinematics-{kinematic_id} and robot-{robot_name}"
                 self.logger.info(module=self.logger_module, msg=log_message)
                 return {"status": True, "info": log_message}, 200

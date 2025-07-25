@@ -14,7 +14,6 @@ from tests.bases import test_bases_management
 from tests.kinematics import test_kinematics_manager
 
 def set_ready(state:bool):
-    # set started state (set robot_ready_setted_false parametr to True)
     from tests.config import app
     client = app.test_client()
     json = {
@@ -24,6 +23,8 @@ def set_ready(state:bool):
     client.post('/api/set-ready', json=json)
 
 def test_get_position_success(client):
+    test_kinematics_manager.test_add_kinematic_success(client)
+    test_kinematics_manager.test_bind_kinematic_success(client)
     json = {
         "robot": TestData.robot_name,
         "token": TestData.super_admin_token
@@ -653,7 +654,7 @@ def test_cartesian_to_angles_error_not_used_kinematic(client):
     json = {
         "robot": TestData.robot_name,
         "code": TestData.robot_secret_code,
-        "id": "First",
+        "id": TestData.kinematic_name,
         "token": TestData.super_admin_token
     }
     response = client.post('/api/bind-kinematic', json=json)
@@ -970,3 +971,5 @@ def test_set_robot_base_error_base_not_found(client):
     assert response.status_code == 404
     json = response.get_json()
     assert json["status"] == False
+    # delete test kinematic
+    test_kinematics_manager.test_remove_kinematic_success(client)

@@ -449,11 +449,9 @@ class RobotManager:
                 else:
                     if isinstance(positions_data, list):
                         angles = []
-                        for pos in positions_data:
+                        for position in positions_data:
                             point_angles = {}
                             modul = kinematics[robot_name]
-                            position = {"x": pos["x"], "y": pos["y"], "z": pos["z"],
-                                        "a": pos["a"], "b": pos["b"], "c": pos["c"]}                                
                             result_inverse:dict = modul.Inverse(robot_name, position, coordinate_system)
                             for j in range(1, int(robots[robot_name]["AngleCount"]) + 1):
                                 point_angles[f"J{j}"] = result_inverse.get(f"J{j}")

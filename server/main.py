@@ -2,11 +2,11 @@ import ssl
 import importlib
 import os
 import json
+import sys
 
 from flask import Flask
 from threading import Thread
 
-import configuration.cache.robots_cache as robots_cache
 # Import api
 from api.frames_manager import FramesManagerAPI
 from api.multi_robots_manager import MultiRobotsManagerAPI
@@ -28,6 +28,11 @@ from utils.multicast_dns import register_mdns_service
 from utils.certs_signer import create_certs
 from utils.user_updater import update_token
 from utils.sni_registator import SNIRegistrator
+
+if "pytest" in sys.modules:
+    import configuration.cache.auto_test.robots_cache as robots_cache
+else:
+    import configuration.cache.robots_cache as robots_cache
 
 # Importing robots from cache
 robots_list = robots_cache.robots

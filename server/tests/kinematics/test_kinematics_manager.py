@@ -51,7 +51,7 @@ def test_unbind_kinematic_success(client):
     assert json["status"] == True
     json = {
         "robot": TestData.robot_name,
-        "id": "First",
+        "id": TestData.kinematic_name,
         "code": TestData.robot_secret_code,
         "token": TestData.super_admin_token
     }
@@ -75,7 +75,6 @@ def test_remove_kinematic_success(client):
         "token": TestData.super_admin_token
     }
     response = client.post('/api/delete-kinematic', json=json)
-    print(response.text)
     assert response.status_code == 200
     json = response.get_json()
     assert json["status"] == True

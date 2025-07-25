@@ -932,7 +932,7 @@
     |-|----------|------------|
     |POST| `robot` | **String** |
     || `position` | **Dict** |
-    || `positions_data` | **Array** |
+    || `positions_data` | **Array\<Dict>** |
     || `coordinate_system` | **String** |
     || `token` | **String** |
     

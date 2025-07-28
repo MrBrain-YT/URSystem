@@ -2,9 +2,12 @@ import shutil
 import os
 import importlib
 
-from utils.logger import Logger
+from werkzeug.datastructures import FileStorage
+
 from services.multi_robots_manager import MultiRobotsManager
 from configuration.cache.file_cache import save_to_cache
+from utils.logger import Logger
+from utils.validator import RobotChecker, validate_types
 
 kinematics = {}
 
@@ -12,6 +15,7 @@ class KinematicsManager:
     kinematics = kinematics
     logger = Logger()
     multi_robots_manager = MultiRobotsManager()
+    robot_checker = RobotChecker()
     
     def __init__(self, kinematics:dict=None) -> None:
         self.logger_module = "URKinematics"
@@ -22,12 +26,11 @@ class KinematicsManager:
         return self.kinematics
     
     def update_kinematics_data(self) -> None:
-        from server.API.multi_robots_manager import MultiRobotsManager
         kinematics = {}
         robots:dict = self.multi_robots_manager.get_robots()
         for robot in robots:
-            if robots.keys()[robot]["Kinematic"] == "None":
-                kinematics[robot] = "None"
+            if robots.keys()[robot]["Kinematic"] == None:
+                kinematics[robot] = None
             else:
                 try:
                     kinematics[robot] = importlib.import_module(
@@ -39,28 +42,67 @@ class KinematicsManager:
         self.kinematics.update(kinematics)
         
     """ Add kinematics to system """
-    def add_kinematic(self, kinematic_file) -> tuple:
+    @validate_types 
+    def add_kinematic(self, kinematic_file:FileStorage) -> tuple:
         zip_path = f"./kinematics/{kinematic_file.filename}"
         kinematic_file.save(zip_path)
+        os.mkdir(zip_path.replace(".zip", ""))
         shutil.unpack_archive(filename=zip_path, extract_dir=zip_path.replace(".zip", ""), format="zip")
         os.remove(zip_path)
-        log_message = f"Added new kinematic with id: {kinematic_file}"
+        log_message = f"Added new kinematic with id: {kinematic_file.filename}"
         self.logger.info(module=self.logger_module, msg=log_message)
         return {"status": True, "info": log_message}, 200
 
-
     """ Bind kinematics to robot """
+    @validate_types 
     def bind_kinematic(self, robot_name:str, kinematic_id:str) -> tuple:
         robots = self.multi_robots_manager.get_robots()
-        robots[robot_name]["Kinematic"] = kinematic_id if \
-            os.path.exists(f"./kinematics/{kinematic_id}") else robots[robot_name]["Kinematic"]
-        save_to_cache(robots=robots)
+        if kinematic_id != "":
+            robots[robot_name]["Kinematic"] = kinematic_id if \
+                os.path.exists(f"./kinematics/{kinematic_id}") else robots[robot_name]["Kinematic"]
+            save_to_cache(robots=robots)
+            
+            if robots[robot_name]["Kinematic"] == kinematic_id:
+                try:
+                    self.kinematics[robot_name] = importlib.import_module(
+                        f'kinematics.{kinematic_id}.kin')
+                except:
+                    pass
+                log_message = f"Was created associate kinematics-{kinematic_id} and robot-{robot_name}"
+                self.logger.info(module=self.logger_module, msg=log_message)
+                return {"status": True, "info": log_message}, 200
+            else:
+                log_message = f"Not created associate kinematics-{kinematic_id} and robot-{robot_name}"
+                self.logger.error(module=self.logger_module, msg=log_message)
+                return {"status": False, "info": log_message}, 400
+        else:
+            log_message = f"Kinematic id not found"
+            self.logger.error(module=self.logger_module, msg=log_message)
+            return {"status": False, "info": log_message}, 404
         
-        if robots[robot_name]["Kinematic"] == kinematic_id:
-            log_message = f"Was created associate kinematics-{kinematic_id} and robot-{robot_name}"
+    # TODO: Add documentation for API doc
+    @validate_types 
+    def unbind_kinematic(self, robot_name:str) -> tuple:
+        robots = self.multi_robots_manager.get_robots()
+        robots[robot_name]["Kinematic"] = None
+        log_message = f"Was deleted associate kinematic for robot-{robot_name}"
+        self.logger.info(module=self.logger_module, msg=log_message)
+        return {"status": True, "info": log_message}, 200
+    
+    @validate_types 
+    def remove_kinematic(self, kinematic_id:str) -> tuple:
+        kinematic_path = f"./kinematics/{kinematic_id}"
+        if os.path.exists(kinematic_path) and kinematic_id.strip(" ") != "":
+            shutil.rmtree(kinematic_path)
+            robots = self.multi_robots_manager.get_robots()
+            for robot in robots:
+                if robots[robot]["Kinematic"] == kinematic_id:
+                    robots[robot]["Kinematic"] = None
+                    del self.kinematics[robot]
+            log_message = f"Kinematic with id '{kinematic_id}' was been deleted"
             self.logger.info(module=self.logger_module, msg=log_message)
             return {"status": True, "info": log_message}, 200
         else:
-            log_message = f"Not created associate kinematics-{kinematic_id} and robot-{robot_name}"
-            self.logger.error(module=self.logger_module, msg=log_message)
-            return {"status": True, "info": log_message}, 400
+            log_message = f"Kinematic with id '{kinematic_id}' not found"
+            self.logger.info(module=self.logger_module, msg=log_message)
+            return {"status": False, "info": log_message}, 400

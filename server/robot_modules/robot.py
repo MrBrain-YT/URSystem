@@ -44,7 +44,7 @@ class Robot(tools.Tools):
     def ptp(self, angles:list) -> str:
         # Set position
         if self.check_emergency():
-            url = f"https://{self.__host}:{str(self.__port)}/CurentPosition"
+            url = f"https://{self.__host}:{str(self.__port)}/currentPosition"
             data = {
                 "Robot": self.__name,
                 "token": self.__token,
@@ -53,9 +53,9 @@ class Robot(tools.Tools):
                 }
             for i in range(1, len(angles)+1):
                 data[f"J{i}"] = angles[i-1]
-            responce = requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
+            response = requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
             # Set motor speed
-            url = f"https://{self.__host}:{str(self.__port)}/CurentSpeed"
+            url = f"https://{self.__host}:{str(self.__port)}/currentSpeed"
             data = {
                 "Robot": self.__name,
                 "token": self.__token,
@@ -65,7 +65,7 @@ class Robot(tools.Tools):
             for i in range(1, len(angles)+1):
                 data[f"J{i}"] = 1
             requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False)))
-            return responce
+            return response
         else:
             return "The robot is currently in emergency stop"
     
@@ -96,8 +96,8 @@ class Robot(tools.Tools):
             "token": self.__token,
             "Code" : self.__code
             }
-        responce = requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
-        angles_dict = ast.literal_eval(responce)
+        response = requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
+        angles_dict = ast.literal_eval(response)
         return [
             angles_dict["J1"],
             angles_dict["J2"],
@@ -116,8 +116,8 @@ class Robot(tools.Tools):
             "token": self.__token,
             "Code" : self.__code
             }
-        responce = requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
-        coord_dict = ast.literal_eval(responce)
+        response = requests.post(url, verify=True, data=json.loads(json.dumps(data, ensure_ascii=False))).text
+        coord_dict = ast.literal_eval(response)
         return [
             coord_dict["X"],
             coord_dict["Y"],
@@ -149,7 +149,7 @@ class Robot(tools.Tools):
     def lin(self, angles:list, step_count:int=100) -> None:
         if self.check_emergency():
             # Lin robot moving
-            url = f"https://{self.__host}:{str(self.__port)}/GetCurentPosition"
+            url = f"https://{self.__host}:{str(self.__port)}/GetcurrentPosition"
             data = {
                 "Robot": self.__name,
                 "token": self.__token
@@ -167,7 +167,7 @@ class Robot(tools.Tools):
             speeds = self.calculate_speed(start_angles, end_angles, steps)
 
             # send current position
-            url = f"https://{self.__host}:{str(self.__port)}/CurentPosition"
+            url = f"https://{self.__host}:{str(self.__port)}/currentPosition"
             data = {
                 "Robot": self.__name,
                 "token": self.__token,
@@ -179,7 +179,7 @@ class Robot(tools.Tools):
             requests.post(url,  verify=True ,data=json.loads(json.dumps(data, ensure_ascii=False)))
             
             # send current speed
-            url = f"https://{self.__host}:{str(self.__port)}/CurentSpeed"
+            url = f"https://{self.__host}:{str(self.__port)}/currentSpeed"
             data = {
                 "Robot": self.__name,
                 "token": self.__token,
@@ -236,7 +236,7 @@ class Robot(tools.Tools):
             for index, point in enumerate(points):
                 old_point:list = []
                 if index == 0:
-                    url = f"https://{self.__host}:{str(self.__port)}/GetCurentPosition"
+                    url = f"https://{self.__host}:{str(self.__port)}/GetcurrentPosition"
                     data = {
                         "Robot": self.__name,
                         "token": self.__token
@@ -252,7 +252,7 @@ class Robot(tools.Tools):
                 new_speeds.append(self.calculate_lin(old_point, point, lin_step_count))
                 
                 # send current position
-                url = f"https://{self.__host}:{str(self.__port)}/CurentPosition"
+                url = f"https://{self.__host}:{str(self.__port)}/currentPosition"
                 data = {
                     "Robot": self.__name,
                     "token": self.__token,
@@ -263,7 +263,7 @@ class Robot(tools.Tools):
                 requests.post(url,  verify=True ,data=data)
                 
                 # send current speed
-                url = f"https://{self.__host}:{str(self.__port)}/CurentSpeed"
+                url = f"https://{self.__host}:{str(self.__port)}/currentSpeed"
                 data = {
                     "Robot": self.__name,
                     "token": self.__token,

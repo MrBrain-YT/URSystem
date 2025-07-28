@@ -2,11 +2,13 @@ from typing import Any
 
 from utils.user_updater import update_token
 from configuration.cache.file_cache import save_to_cache
+from utils.validator import FramesChecker, validate_types
 
 frames = {}
 
 class FramesManager:
     frames = frames
+    frames_checker = FramesChecker()
     
     def __init__(self, frames: dict=None) -> None:
         if frames is not None:
@@ -21,21 +23,36 @@ class FramesManager:
     def get_frames_api(self) -> tuple:
         return {"status": True, "info": f"All frames", "data": self.frames}, 200
 
+    @validate_types 
     def get_frame(self, frame_id:str) -> tuple:
-        if self.frames.get(frame_id) is not None:
+        if self.frames_checker.frame_exists(frame_id):
             return {"status": True, "info": f"Value from frame with id {frame_id}", "data": self.frames.get(frame_id)}, 200
         else:
             return {"status": False, "info": f"Frame '{frame_id}' not found"}, 400
 
+    @validate_types 
     def set_frame(self, frame_id:str, config:Any) -> tuple:
         self.frames[frame_id] = config
         save_to_cache(frames=self.frames)
         update_token()
         return {"status": True, "info": f"The value has been changed in frame with id {frame_id}"}, 200
 
+    @validate_types 
     def delete_frame(self, frame_id:str) -> tuple:
-        if self.frames.get(frame_id) is not None:
+        if self.frames_checker.frame_exists(frame_id):
             del self.frames[frame_id]
-        save_to_cache(frames=self.frames)
-        update_token()
-        return {"status": True, "info": f"Frame with id {frame_id} has ben deleted"}, 200
+            save_to_cache(frames=self.frames)
+            update_token()
+            return {"status": True, "info": f"Frame with id {frame_id} has ben deleted"}, 200
+        else:
+            return {"status": False, "info": f"Frame not found"}, 400
+    
+    @validate_types 
+    def create_frame(self, frame_id:str) -> tuple:
+        if not self.frames_checker.frame_exists(frame_id):
+            self.frames[frame_id] = {}
+            save_to_cache(frames=self.frames)
+            update_token()
+            return {"status": True, "info": f"Frame with id {frame_id} has ben deleted"}, 200
+        else:
+            return {"status": False, "info": f"Frame already was created"}, 400

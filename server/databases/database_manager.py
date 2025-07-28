@@ -9,8 +9,9 @@ class DBWorker:
     
     @staticmethod
     def send_query(query) -> None:
-        conn.execute(query)
-        conn.commit()
+        if not conn.closed:
+            conn.execute(query)
+            conn.commit()
     
     @staticmethod
     def send_select_query(query) -> db.CursorResult[TypeVar("_T", bound=Any)]:

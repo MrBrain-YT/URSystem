@@ -17,7 +17,9 @@
 | `get-frame` | Получение фрейма по идентификационному номеру | [Посмотреть здесь](#GetFrame) |
 | `set-frame` | Установка значения для фрейма по идентификационному номеру | [Посмотреть здесь](#SetFrame) |
 | `add-kinematic` | Добавление файлов кинематики в систему | [Посмотреть здесь](#AddKinematics) |
-| `bind-kinematic` | Привязка файлов кинематики к роботу | [Посмотреть здесь](#AddKinematics) |
+| `bind-kinematic` | Привязка файлов кинематики к роботу | [Посмотреть здесь](#bind-kinematics) |
+| `unbind-kinematic` | Отвязка файлов кинематики к роботу | [Посмотреть здесь](#unbind-kinematics) |
+| `delete-kinematic` | Удаление файлов кинематики из системы | [Посмотреть здесь](#delete-kinematics) |
 | `get-robot-log` | Получение логов робота | [Посмотреть здесь](#GetRobotLogs) |
 | `add-robot-log` | Добавление логов робота | [Посмотреть здесь](#AddRobotLog) |
 | `get-system-log` | Получение системного лога  | [Посмотреть здесь](#GetSystemLogs) |
@@ -68,6 +70,9 @@
 | `create-base` | создание базы | [Посмотреть здесь](#create-base) |
 | `set-base` | установка значения каллибровки базы | [Посмотреть здесь](#set-base) |
 | `delete-base` | Удаление базы | [Посмотреть здесь](#delete-base) |
+| `get-certs` | Получить все сертификаты | [Посмотреть здесь](#get-certs) |
+| `download-cert` | Скачать сертификат | [Посмотреть здесь](#download-cert) |
+
 
 ## Возвращаемый результат
 ```JSON
@@ -101,7 +106,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="DeleteAccount"> deleteaccount </h3>
+- <h3 id="DeleteAccount"> delete-account </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -137,12 +142,14 @@
     |-|----------|------------|
     |POST| `name` | **String** |
     || `password` | **String** |
+    || `server_token` | **String** |
 
     - ### Пример
         ```python
         data = {
             "name": 'TestAccount',
             "password": '12345'
+            "server_token": 'htf121jhbt124e...'
         }
         requests.post(url, verify=True, json=data)
         ```
@@ -170,14 +177,12 @@
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
     |POST| `name` | **String** |
-    || `password` | **String** |
     || `token` | **String** |
 
     - ### Пример
         ```python
         data = {
             "name": 'TestAccount',
-            "password": '12345',
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -283,7 +288,7 @@
         requests.post(url, verify=True, json=data, files=files)
         ```
     ---
-- <h3 id="BindKinematics"> bind-kinematic </h3>
+- <h3 id="bind-kinematics"> bind-kinematic </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -301,7 +306,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="GetRobotLogs"> get-robot-logs </h3>
+- <h3 id="unbind-kinematics"> unbind-kinematic </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -312,6 +317,40 @@
         ```python
         data = {
             "robot": "TestRobot",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="delete-kinematics"> delete-kinematic </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `id` | **String** |
+    || `token` | **String** |
+
+    - ### Пример
+        ```python
+        data = {
+            "id": "TestKinematic",
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="GetRobotLogs"> get-robot-logs </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `robot` | **String** |
+    || `timestamp` | **String** |
+    || `token` | **String** |
+
+    - ### Пример
+        ```python
+        data = {
+            "robot": "TestRobot",
+            "timestamp": "1746013996", # Unix time (Не обязательный параметр)
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -369,7 +408,7 @@
         requests.post(url, verify=True, json=data)
         ```
     ---
-- <h3 id="CreateRobot"> crate-robot </h3>
+- <h3 id="CreateRobot"> create-robot </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
@@ -399,6 +438,7 @@
     |POST| `robots` | **Dict** |
     || `tools` | **Dict** |
     || `frames` | **Dict** |
+    || `bases` | **Dict** |
     || `token` | **String** |
 
     - ### Пример
@@ -407,6 +447,7 @@
             "robots": {"testRobot": ...},
             "tools": {"Tool_1": ...},
             "frames": {"Frame_1": ...},
+            "bases": {"Base_1": ...},
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -891,7 +932,8 @@
     |-|----------|------------|
     |POST| `robot` | **String** |
     || `position` | **Dict** |
-    || `positions_data` | **Array** |
+    || `positions_data` | **Array\<Dict>** |
+    || `coordinate_system` | **String** |
     || `token` | **String** |
     
     - ### Пример
@@ -899,6 +941,7 @@
         data = {
             "robot": "TestRobot",
             "position": {"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, # Передавать либо point либо points_data для multipoint position
+            "coordinate_system": "world",
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -919,6 +962,7 @@
     |POST| `robot` | **String** |
     || `position` | **Dict** |
     || `positions_data` | **Array** |
+    || `coordinate_system` | **String** |
     || `token` | **String** |
     
     - ### Пример
@@ -926,6 +970,7 @@
         data = {
             "robot": "TestRobot",
             "position": {"x": 10, "y": 100, "z": 0, "a": 0, "b": 90, "c": 0}, # Передавать либо angles либо angles_data для multipoint position
+            "coordinate_system": "world",
             "token": "akjy7wefwjgv6qohg..."
         }
         requests.post(url, verify=True, json=data)
@@ -1068,7 +1113,7 @@
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
     |POST| `id` | **String** |
-    || `config` | **Any** |
+    || `value` | **Any** |
     || `parameter` | **String** |
     || `token` | **String** |
     
@@ -1076,7 +1121,7 @@
         ```python
         data = {
             "id": "ToolID",
-            "config": {"status": 1},
+            "value": {"status": 1},
             "parameter": "info",
             "token": "akjy7wefwjgv6qohg..."
         }
@@ -1088,7 +1133,6 @@
     | Метод | Параметр | Тип данных |
     |-|----------|------------|
     |POST| `id` | **String** |
-    || `id` | **Any** |
     || `calibration_data` | **Dict** |
     || `token` | **String** |
     
@@ -1212,6 +1256,36 @@
         data = {
             "id": "ToolID",
             "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="get-certs"> get-certs </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="download-cert"> download-cert </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `file_name` | **String** |
+    || `server_token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "file_name": "localhost.crt",
+            "server_token": 'htf121jhbt124e...'
         }
         requests.post(url, verify=True, json=data)
         ```

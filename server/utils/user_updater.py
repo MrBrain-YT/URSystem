@@ -7,7 +7,7 @@ from databases.connection import users_table
 from databases.database_manager import DBWorker
 
 def update_user_info() -> dict:
-    from API.accounts_manager import AccountManager
+    from services.accounts_manager import AccountManager
     users = {}
     query = users_table.select()
     rows = DBWorker().send_select_query(query).fetchall()

@@ -1,5 +1,5 @@
 import secrets
-import json
+import hashlib
 
 import sqlalchemy as db
 
@@ -7,7 +7,7 @@ from utils.logger import Logger
 from databases.connection import users_table
 from databases.database_manager import DBWorker
 from utils.user_updater import update_token
-import configuration.server_token as server_auth_token
+from utils.validator import UserChecker, ServerChecker, validate_types
 
 users = {}
 
@@ -15,6 +15,8 @@ class AccountManager:
     users = users
     logger = Logger()
     database_worker = DBWorker()
+    user_checker = UserChecker()
+    server_checker = ServerChecker()
     
     def __init__(self, users:dict=None) -> None:
         self.logger_module = "URAccounts"
@@ -27,8 +29,9 @@ class AccountManager:
     def set_users(self, users:dict) -> None:
         self.users.update(users)
 
+    @validate_types
     def create_account(self, name:str, password:str, role:str) -> tuple:
-        if name not in self.users:
+        if not self.user_checker.is_user(name):
             token:str
             tokens = []
             for i in [i for i in self.users]:
@@ -39,24 +42,27 @@ class AccountManager:
                     break
             
             # DB query send
+            password = hashlib.sha256(password.encode(encoding="utf-8")).hexdigest()
             query = db.insert(users_table).values(name=name, password=password, role=role, token=token)
             self.database_worker.send_query(query=query)
 
             update_token()
             log_message = f"Account with name: {name} was created"
             self.logger.info(module=self.logger_module, msg=log_message)
-            return {"status": True, "info": log_message, "token": token}, 200
+            return {"status": True, "info": log_message, "data": {"token": token}}, 200
         else:
-            log_message = f"The account has already been created"
+            log_message = "The account has already been created"
             self.logger.info(module=self.logger_module, msg=log_message)
             return {"status": False, "info": log_message}, 400
 
+    @validate_types
     def delete_account(self, name:str) -> tuple:
-        if name in self.users:
+        if self.user_checker.is_user(name):
             if self.users[name]["role"] not in {"SuperAdmin", "System"}:
                 # DB query send
                 query = users_table.delete().where(users_table.columns.name == name)
                 self.database_worker.send_query(query=query)
+                del self.users[name]
 
                 update_token()
                 log_message = f"Account with name: {name} was deleted"
@@ -65,39 +71,42 @@ class AccountManager:
         else:
             return {"status": False, "info": "No such account exists"}, 400
         
-    # get account
+    # get accounts
+    @validate_types
     def get_accounts(self) -> tuple:
-        user = {}
+        _users = {}
         for info in self.users.copy():
             if self.users[info]["role"] not in {"SuperAdmin", "System"}:
-                user[info] = self.users.get(info)
+                _users[info] = self.users.get(info)
         update_token()
-        return {"status": True, "info": "Found users", "users": json.dumps(user)}, 200
+        return {"status": True, "info": "Found users", "data": _users}, 200
         
     # get role account
-    def get_account_data(self, name:str, password:str, server_token:str) -> tuple:
-        if server_token == server_auth_token.reg_token:
+    @validate_types
+    def get_account_data(self, name:str, password:str, server_token:str, user_ip:str) -> tuple:
+        if self.server_checker.is_server_token(server_token):
             update_token()
-            if name in self.users:
-                if self.users[name]["role"] not in {"System"}:
+            if self.user_checker.is_user(name):
+                if self.users[name]["role"] != "System":
                     if self.users[name]["password"] == password:
                         return {"status": True, "info": "User found", "data": self.users[name]}, 200
                     else:
-                        self.logger.error(module=self.logger_module, msg=f"Password incorrect")
-                        return {"status": False, "info": "Password incorrect"}, 400
+                        self.logger.error(module=self.logger_module, msg=f"Password incorrect. User with ip: {user_ip}")
+                        return {"status": False, "info": "Password incorrect"}, 401
                 else:
-                    self.logger.error(module=self.logger_module, msg=f"Account data with the System role cannot be transferred") # TODO: add ip address user to log
+                    self.logger.error(module=self.logger_module, msg=f"Account data with the System role cannot be transferred. User with ip: {user_ip}")
                     return {"status": False, "info": "Account data with the System role cannot be transferred"}, 400
             else:
-                self.logger.error(module=self.logger_module, msg=f"Name not in users")
+                self.logger.error(module=self.logger_module, msg=f"Name not in users. User with ip: {user_ip}")
                 return {"status": False, "info": "Name not in users"}, 404
         else:
-            self.logger.error(module=self.logger_module, msg=f"Server token incorrect")
+            self.logger.error(module=self.logger_module, msg=f"Server token incorrect. User with ip: {user_ip}")
             return {"status": False, "info": "Server token incorrect"}, 400
 
     # change password
+    @validate_types
     def change_password(self, name:str, password:str) -> tuple:
-        if name in self.users:
+        if self.user_checker.is_user(name):
             if name != "":
                 # DB query send
                 query = users_table.update().where(
@@ -115,12 +124,13 @@ class AccountManager:
             return {"status": False, "info": "Name not in users"}, 404
         
     # get user token
-    def get_user_token(self, name:str, password:str) -> tuple:
-        if name in self.users:
+    @validate_types
+    def get_user_token(self, name:str) -> tuple:
+        if self.user_checker.is_user(name):
             if name != "":
-                query = db.select(users_table.columns.token).where(db.and_(users_table.columns.name == name, users_table.columns.password == password))
+                query = db.select(users_table.columns.token).where(db.and_(users_table.columns.name == name))
                 token = self.database_worker.send_select_query(query=query).fetchone()._tuple()
-                return {"status": True, "info": "", "data": {"token": token}}, 200
+                return {"status": True, "info": "User token", "data": {"token": token[0]}}, 200
             else:
                 self.logger.error(module=self.logger_module, msg=f"You try get token system account")
                 return {"status": False, "info": "You try get token system account"}, 400
@@ -129,22 +139,23 @@ class AccountManager:
             return {"status": False, "info": "Name not in users"}, 404
 
     # change user token
-    def change_token(self, name:str, password:str) -> tuple:
-        while True:
-            token = secrets.token_hex(32)
-            tokens = []
-            for i in [i for i in self.users]:
-                tokens.append(self.users.get(i)["token"])
-            if token not in tokens:
-                break
+    @validate_types
+    def change_token(self, name:str, token:str=None) -> tuple:
+        if token is None:
+            while True:
+                token = secrets.token_hex(32)
+                tokens = []
+                for i in [i for i in self.users]:
+                    tokens.append(self.users.get(i)["token"])
+                if token not in tokens:
+                    break
         # DB query send
         query = users_table.update().where(db.and_(
             users_table.columns.name == name,
-            users_table.columns.password == password,
-            users_table.columns.role != "System"),
-            users_table.columns.role != "robot").values(token=token)
+            users_table.columns.role != "System",
+            users_table.columns.role != "robot")).values(token=token)
         self.database_worker.send_query(query=query)
 
         log_message = f"Token was changed for account with name: {name}"
         self.logger.info(module=self.logger_module, msg=log_message)
-        return {"status": True, "info": log_message, "token": token}, 200
+        return {"status": True, "info": log_message, "data": {"token": token}}, 200

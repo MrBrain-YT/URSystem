@@ -8,7 +8,7 @@ class Logger():
     def __init__(self, robot_name:str=None) -> None:
         current_time = time.localtime()
         self.robot_name = robot_name
-        file_name = f"{current_time[2]}_{current_time[1]}_{current_time[0]}"
+        file_name = f"{str(current_time[2]).zfill(2)}_{str(current_time[1]).zfill(2)}_{str(current_time[0]).zfill(2)}"
         if robot_name is None:
             file_path = f'logs/{file_name}.log'
         else:
@@ -66,7 +66,7 @@ class Logger():
             current_time = time.localtime()
         else:
             current_time = time.localtime(timestamp)
-        file_name = f"{current_time[2]}_{current_time[1]}_{current_time[0]}"
+        file_name = f"{str(current_time[2]).zfill(2)}_{str(current_time[1]).zfill(2)}_{str(current_time[0]).zfill(2)}"
         if self.robot_name is None:
             with open(f'logs/{file_name}.log', 'r') as file:
                 return file.readlines()

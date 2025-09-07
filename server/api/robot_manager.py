@@ -86,6 +86,7 @@ class RobotManagerAPI:
             info = request.json
             robot_name = info.get("robot")
             angles = info.get("angles")
+            print(angles)
             token = info.get("token")
             response, code = self.robot_manager.set_motors_position(
                 robot_name=robot_name,

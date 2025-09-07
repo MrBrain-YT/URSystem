@@ -38,7 +38,8 @@ class RobotManager:
     def robot_name_finder(func:Callable):
         """Auto finding robot name by token or getted string\n
         Using @robot_name_finder\n
-        Automatically removes the token from the key arguments after verification
+        Automatically removes the token from the key arguments after verification.\n
+        When calling a decorated function, you must pass the key argument `token`
         """
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -169,7 +170,7 @@ class RobotManager:
         robots[robot_name]["Emergency"] = True if state == True else False
         if robots[robot_name]["Emergency"] == True:
             robots[robot_name]["Position"] = robots[robot_name]["MotorsPosition"].copy()
-            robots[robot_name]["MotorsSpeed"] = robots[robot_name]["standardSpeed"].copy()
+            robots[robot_name]["MotorsSpeed"] = robots[robot_name]["StandardSpeed"].copy()
             robots[robot_name]["RobotReady"] = False
             robots[robot_name]["Program"] = ""
             
@@ -349,7 +350,7 @@ class RobotManager:
     def set_standard_speed(self, robot_name:str, angles:dict) -> tuple:
         robots = self.robots_manager.get_robots()
         for i in range(1, int(robots[robot_name]["AngleCount"])+1):
-            robots["First"]["standardSpeed"][f"J{i}"] = float(angles.get(f'J{i}'))
+            robots["First"]["StandardSpeed"][f"J{i}"] = float(angles.get(f'J{i}'))
         save_to_cache(robots=robots)
         update_token()
         Logger(robot_name=robot_name).info(f"""Was setted robot standard speed: {angles}""")

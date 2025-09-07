@@ -28,6 +28,7 @@ from utils.multicast_dns import register_mdns_service
 from utils.certs_signer import create_certs
 from utils.user_updater import update_token
 from utils.sni_registator import SNIRegistrator
+from utils.websocket.data_transfer import WebsocketServer
 
 if "pytest" in sys.modules:
     import configuration.cache.auto_test.robots_cache as robots_cache
@@ -44,7 +45,7 @@ for robot in _robots:
     robots_list[robot]["RobotReady"] = True
     robots_list[robot]["PositionID"] = ""
     robots_list[robot]["Emergency"] = False
-    robots_list[robot]["MotorsSpeed"] = robots_list[robot]['standardSpeed'].copy()
+    robots_list[robot]["MotorsSpeed"] = robots_list[robot]['StandardSpeed'].copy()
     if isinstance(robots_list[robot]["Position"], dict):
         robots_list[robot]["Position"] = robots_list[robot]["MotorsPosition"].copy()
     elif isinstance(robots_list[robot]["Position"], list):
@@ -135,7 +136,12 @@ if __name__ == "__main__":
     ups = Thread(target=lambda:programs_starter.UPS())
     ups.start()
     logger.info(module="UPStarter", msg="Succes starting UPStarter")
+    # Starting websocket server
+    websocket_p = Thread(target=lambda:WebsocketServer().start_websocket_server(host, 5001, ssl_context=context))
+    websocket_p.start()
+    logger.info(module="UPStarter", msg="Succes starting websocket server")
     # Joining processes
     logger.info(module="URSystem", msg="System started")
     ups.join()
     server.join()
+    websocket_p.join()

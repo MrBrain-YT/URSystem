@@ -345,12 +345,23 @@ class RobotManager:
         elif isinstance(robots[robot_name]["Position"], dict):
             return {"status": False, "info": "current robot point speed is not multi point"}, 400
 
-    """ standard robot speed"""
+    """ standard robot speed """
     @validate_types
     def set_standard_speed(self, robot_name:str, angles:dict) -> tuple:
         robots = self.robots_manager.get_robots()
         for i in range(1, int(robots[robot_name]["AngleCount"])+1):
             robots["First"]["StandardSpeed"][f"J{i}"] = float(angles.get(f'J{i}'))
+        save_to_cache(robots=robots)
+        update_token()
+        Logger(robot_name=robot_name).info(f"""Was setted robot standard speed: {angles}""")
+        return {"status": True, "info": "The robot default speed parameter was been seted"}, 200
+    
+    """ phisical robot speed """
+    @validate_types
+    def set_phisical_speed(self, robot_name:str, angles:dict) -> tuple:
+        robots = self.robots_manager.get_robots()
+        for i in range(1, int(robots[robot_name]["AngleCount"])+1):
+            robots["First"]["PhysicalSpeed"][f"J{i}"] = float(angles.get(f'J{i}'))
         save_to_cache(robots=robots)
         update_token()
         Logger(robot_name=robot_name).info(f"""Was setted robot standard speed: {angles}""")

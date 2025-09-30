@@ -45,10 +45,11 @@
 | `remove-curent-point-position` | Удаление первой целевой позиции в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveCurentPointPosition) |
 | `remove-all-point-position` | Удаление всех целевых позиций в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveAllPointPosition) |
 | `set-home-position` | Установка домашней позиции робота | [Посмотреть здесь](#HomePosition) |
-| `set-speed` | Установка актуальной скорости робота | [Посмотреть здесь](#CurentSpeed) |
+| `set-speed` | Установка актуальных множителей скорости робота | [Посмотреть здесь](#CurentSpeed) |
 | `remove-curent-point-speed` | Удаление первой целевой скорости в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveCurentPointSpeed) |
 | `remove-all-point-speed` | Удаление всех целевых скоростей в многоточечной позиции (`multipoint position`) | [Посмотреть здесь](#RemoveAllPointSpeed) |
-| `set-standart-speed` | Установка скорости робота по умолчанию (при включении) | [Посмотреть здесь](#StandartSpeed) |
+| `set-standart-speed` | Установка множителей скорости робота по умолчанию (при включении) | [Посмотреть здесь](#StandartSpeed) |
+| `set-phisical-speed` | Установка физической скорости мотора (°/с) | [Посмотреть здесь](#set-phisical-speed) |
 | `set-program` | Загрузить програму автоматики для робота | [Посмотреть здесь](#SetProgram) |
 | `delete-program` | Удалить програму автоматики для робота (Останавливаеться программа автоматики или происходит адаление поле завершения программы)| [Посмотреть здесь](#DeleteProgram) |
 | `angles-to-cartesian` | Преобразование углов в декартовые координаты | [Посмотреть здесь](#angle_to_xyz) |
@@ -848,6 +849,24 @@
         ```
     ---
 - <h3 id="StandartSpeed"> set-standart-speed </h3>
+
+    | Метод | Параметр | Тип данных |
+    |-|----------|------------|
+    |POST| `robot` | **String** |
+    || `angles` | **Dict** |
+    || `token` | **String** |
+    
+    - ### Пример
+        ```python
+        data = {
+            "robot": "TestRobot",
+            "angles": {"J1": 1, "J2": 0.5, ...},
+            "token": "akjy7wefwjgv6qohg..."
+        }
+        requests.post(url, verify=True, json=data)
+        ```
+    ---
+- <h3 id="set-phisical-speed"> set-phisical-speed </h3>
 
     | Метод | Параметр | Тип данных |
     |-|----------|------------|

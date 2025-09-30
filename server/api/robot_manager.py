@@ -266,7 +266,7 @@ class RobotManagerAPI:
             )
             return jsonify(response), code
 
-        """ standard robot speed"""
+        """ standard robot speed """
         @robot_bp.route('/set-standard-speed', methods=['POST'])
         @self.access.check_robot_user_prog(user_role="user", logger_module=self.logger_module)
         def set_standard_speed():
@@ -274,6 +274,19 @@ class RobotManagerAPI:
             robot_name = info.get("robot")
             angles = info.get("angles")
             response, code = self.robot_manager.set_standard_speed(
+                robot_name=robot_name,
+                angles=angles
+            )
+            return jsonify(response), code
+        
+        """ phisical robot speed """
+        @robot_bp.route('/set-phisical-speed', methods=['POST'])
+        @self.access.check_robot_user_prog(user_role="administrator", logger_module=self.logger_module)
+        def set_phisical_speed():
+            info = request.json
+            robot_name = info.get("robot")
+            angles = info.get("angles")
+            response, code = self.robot_manager.set_phisical_speed(
                 robot_name=robot_name,
                 angles=angles
             )

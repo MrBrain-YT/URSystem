@@ -531,6 +531,29 @@ def test_set_standard_speed_error_robot_not_found(client):
     json = response.get_json()
     assert json["status"] == False
 
+def test_set_phisical_speed_success(client):
+    json = {
+        "robot": TestData.robot_name,
+        "angles": {'J1': 1.0, 'J2': 1.0, 'J3': 1.0, 'J4': 1.0},
+        "code": TestData.robot_secret_code,
+        "token": TestData.super_admin_token
+    }
+    response = client.post('/api/set-phisical-speed', json=json)
+    assert response.status_code == 200
+    json = response.get_json()
+    assert json["status"] == True
+    
+def test_set_phisical_speed_error_robot_not_found(client):
+    json = {
+        "robot": "",
+        "angles": {'J1': 1, 'J2': 1, 'J3': 1, 'J4': 1},
+        "token": TestData.super_admin_token
+    }
+    response = client.post('/api/set-phisical-speed', json=json)
+    assert response.status_code == 403
+    json = response.get_json()
+    assert json["status"] == False
+
 def test_set_program_success(client):
     json = {
         "robot": TestData.robot_name,

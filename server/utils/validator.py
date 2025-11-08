@@ -1,4 +1,4 @@
-from typing import Union, get_type_hints, Any, get_args
+from typing import Union, get_type_hints, Any, get_args, Callable
 from functools import wraps
 
 import sqlalchemy as db
@@ -47,6 +47,25 @@ def validate_types(func):
     return wrapper
 
 class RobotChecker:
+
+    @staticmethod
+    def robot_name_finder(func:Callable):
+        """Auto finding robot name by token or getted string\n
+        Using @robot_name_finder\n
+        Automatically removes the token from the key arguments after verification.\n
+        When calling a decorated function, you must pass the key argument `token`
+        """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            robot_name = kwargs["robot_name"]
+            token = kwargs["token"]
+            robot_name = RobotChecker().auto_robot_name_finder(robot_name, token)
+            if robot_name is None:
+                return {"status": False, "info": "Robot name is not defined"}, 400
+            kwargs.pop("token")
+            kwargs["robot_name"] = robot_name
+            return func(*args, **kwargs)
+        return wrapper
     
     @staticmethod
     def check_angles(robot_name:str, angles:dict, robots:dict) -> bool: 

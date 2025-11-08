@@ -56,7 +56,8 @@ def create_certs() -> None:
         create_self_signed_cert("certs", "localhost")
     # check other ip adresses certificates
     for ip in get_my_ip_adresses():
-        create_self_signed_cert("certs", ip)
+        if not os.path.exists(f"certs/{ip}.crt") or not os.path.exists(f"certs/{ip}.key"):
+            create_self_signed_cert("certs", ip)
 
 if __name__ == "__main__":
     for ip in get_my_ip_adresses():

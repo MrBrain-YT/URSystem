@@ -11,11 +11,11 @@ from services.multi_robots_manager import MultiRobotsManager
 from services.kinematics_manager import KinematicsManager
 
 is_robot_ready_setted_false = {}
-
 class RobotManager:
     is_robot_ready_setted_false = is_robot_ready_setted_false
     logger = Logger()
     robot_checker = RobotChecker()
+    robot_name_finder = RobotChecker.robot_name_finder
     user_checker = UserChecker()
     tools_checker = ToolsChecker()
     bases_checker = BasesChecker()
@@ -34,24 +34,6 @@ class RobotManager:
     def remove_new_robot_ready(self, robot_name:str) -> None:
         if self.is_robot_ready_setted_false.get(robot_name) is not None:
             del self.is_robot_ready_setted_false[robot_name]
-    
-    def robot_name_finder(func:Callable):
-        """Auto finding robot name by token or getted string\n
-        Using @robot_name_finder\n
-        Automatically removes the token from the key arguments after verification.\n
-        When calling a decorated function, you must pass the key argument `token`
-        """
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            robot_name = kwargs["robot_name"]
-            token = kwargs["token"]
-            robot_name = RobotChecker().auto_robot_name_finder(robot_name, token)
-            if robot_name is None:
-                return {"status": False, "info": "Robot name is not defined"}, 400
-            kwargs.pop("token")
-            kwargs["robot_name"] = robot_name
-            return func(*args, **kwargs)
-        return wrapper
     
     """ Get current robot position """
     @robot_name_finder

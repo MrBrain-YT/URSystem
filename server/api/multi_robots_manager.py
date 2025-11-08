@@ -72,11 +72,12 @@ class MultiRobotsManagerAPI:
 
         # get robot
         @robots_bp.route("/get-robot", methods=['POST'])
-        @self.access.check_user(user_role="administrator", logger_module=self.logger_module)
+        @self.access.check_robot_or_user(user_role="user", logger_module=self.logger_module)
         def get_robot():
             info = request.json
+            token = info.get("token")
             robot_name = info.get("robot")
-            response, code = self.multi_robot_manager.get_robot(robot_name=robot_name)
+            response, code = self.multi_robot_manager.get_robot(token=token, robot_name=robot_name)
             return jsonify(response), code
             
         # get robots

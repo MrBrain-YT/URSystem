@@ -29,6 +29,7 @@ class MultiRobotsManager:
     frames_checker = FramesChecker()
     bases_checker = BasesChecker()
     tools_checker = ToolsChecker()
+    robot_name_finder = RobotChecker.robot_name_finder
     
     def __init__(self, robots:dict=None) -> None:
         self.logger_module = "URMSystem"
@@ -192,6 +193,7 @@ class MultiRobotsManager:
         return {"status": True, "info": "Current cache from RAM", "data": new_cache}, 200
 
     # get robot
+    @robot_name_finder
     @validate_types 
     def get_robot(self, robot_name:str) -> tuple:
         robots:dict = copy.deepcopy(self.robots)

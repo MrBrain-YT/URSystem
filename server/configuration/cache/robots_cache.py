@@ -1,4 +1,4 @@
-robots = {}
-tools = {}
-bases = {}
+robots = {'First': {'AngleCount': 4, 'Tool': '', 'Base': '', 'Position': {'J1': 126.206024, 'J2': 150.746567, 'J3': 141.730881, 'J4': -99.015686}, 'PositionID': '', 'HomePosition': {'J1': 0.0, 'J2': 0.0, 'J3': 0.0, 'J4': 0.0}, 'MotorsPosition': {'J1': 126.206024, 'J2': 150.746567, 'J3': 141.730881, 'J4': -99.015686}, 'MotorsSpeed': {'J1': 1.0, 'J2': 1.0, 'J3': 1.0, 'J4': 1.0}, 'StandardSpeed': {'J1': 1.0, 'J2': 1.0, 'J3': 1.0, 'J4': 1.0}, 'PhysicalSpeed': {'J1': 1.0, 'J2': 1.0, 'J3': 1.0, 'J4': 1.0}, 'MinAngles': {'J1': 0.0, 'J2': 0.0, 'J3': 0.0, 'J4': 0.0}, 'MaxAngles': {'J1': 300.0, 'J2': 300.0, 'J3': 300.0, 'J4': 300.0}, 'Program': '', 'ProgramRunning': False, 'Kinematic': None, 'Logs': '', 'RobotReady': True, 'Emergency': False, 'SecureCode': '654123', 'XYZposition': {'x': 0, 'y': 0, 'z': 0, 'a': 0, 'b': 0, 'c': 0}, 'ProgramToken': ''}}
+tools = {'gripper': {'calibrated_vector': {'x': 0, 'y': 0, 'z': 0}}}
+bases = {'test': {'x': 0.0, 'y': 0.0, 'z': 0.0, 'a': 125.26439, 'b': 1e-06, 'c': 1e-06}}
 frames = {}
